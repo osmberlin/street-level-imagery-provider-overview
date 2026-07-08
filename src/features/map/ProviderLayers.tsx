@@ -1,3 +1,4 @@
+import type { ExpressionSpecification } from 'maplibre-gl'
 import { Layer, Source } from 'react-map-gl/maplibre'
 import type { AppSearch } from '@/app/searchSchema'
 import {
@@ -62,6 +63,11 @@ const FEATURE_CIRCLE_RADIUS: ['interpolate', ['linear'], ['zoom'], ...number[]] 
   4,
 ]
 
+// Render newer points above older ones; unknown dates sink to the bottom.
+// circle-sort-key sorts ascending, so the epoch-ms timestamp works directly.
+const PHOTO_SORT_KEY: ExpressionSpecification = ['coalesce', ['get', 'capturedAt'], 0]
+const FEATURE_SORT_KEY: ExpressionSpecification = ['coalesce', ['get', 'lastSeenAt'], 0]
+
 const PhotoProviderLayer = ({
   providerId,
   bbox,
@@ -96,6 +102,7 @@ const PhotoProviderLayer = ({
           id={photoLayerId(providerId)}
           type="circle"
           filter={photoFilter}
+          layout={{ 'circle-sort-key': PHOTO_SORT_KEY }}
           paint={{
             'circle-radius': CIRCLE_RADIUS,
             'circle-color': styleDefinition.circleColorExpression,
@@ -143,6 +150,7 @@ const MapFeatureProviderLayer = ({ providerId, bbox, zoom, style, date }: Provid
         id={featureLayerId(providerId)}
         type="circle"
         filter={featureFilter}
+        layout={{ 'circle-sort-key': FEATURE_SORT_KEY }}
         paint={{
           'circle-radius': FEATURE_CIRCLE_RADIUS,
           'circle-color': styleDefinition.circleColorExpression,
