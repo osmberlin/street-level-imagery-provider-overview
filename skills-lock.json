@@ -19,6 +19,18 @@
       "skillPath": "skills/playwright-skill/SKILL.md",
       "computedHash": "82dca8d03cc94bbd594838dbfecbf5ea69710a8923cde8fd326a9836077618f9"
     },
+    "react-dev": {
+      "source": "FixMyBerlin/fixmyskills",
+      "sourceType": "github",
+      "skillPath": "skills/react-dev/SKILL.md",
+      "computedHash": "ed6a83384a44b6c430b696b58841cecc492c8463001ceab490cc4b9878d10c8f"
+    },
+    "react-map-gl": {
+      "source": "FixMyBerlin/fixmyskills",
+      "sourceType": "github",
+      "skillPath": "skills/react-map-gl/SKILL.md",
+      "computedHash": "5b7b0e880a78aab0fbab36494e6601d4c9fef67cecf1c0109753fe9bb367504b"
+    },
     "review-dependabot": {
       "source": "FixMyBerlin/fixmyskills",
       "sourceType": "github",
@@ -36,6 +48,12 @@
       "sourceType": "github",
       "skillPath": "skills/tech-stack/SKILL.md",
       "computedHash": "a2e2e1b5dd099af508ac6d6221e429826b7ac22ecb4876c666547936d4ff8846"
+    },
+    "zustand-state-management": {
+      "source": "FixMyBerlin/fixmyskills",
+      "sourceType": "github",
+      "skillPath": "skills/zustand-state-management/SKILL.md",
+      "computedHash": "7d6d64aee41189884cad34afb26214245b55d2e2118af833538c714631c467bd"
     }
   }
 }
