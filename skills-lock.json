@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-orchestration": {
+      "source": "FixMyBerlin/fixmyskills",
+      "sourceType": "github",
+      "skillPath": "skills/agent-orchestration/SKILL.md",
+      "computedHash": "10d9526ef9ca2f5d1e4ca4dc37fa350686a23156978441529fa70f783de2d7fe"
+    },
+    "finish-work": {
+      "source": "FixMyBerlin/fixmyskills",
+      "sourceType": "github",
+      "skillPath": "skills/finish-work/SKILL.md",
+      "computedHash": "ae21dcd7725c0f2631e34ab29265d8abb17c10dad432286030c4f5a52a4c17db"
+    },
+    "playwright-skill": {
+      "source": "FixMyBerlin/fixmyskills",
+      "sourceType": "github",
+      "skillPath": "skills/playwright-skill/SKILL.md",
+      "computedHash": "82dca8d03cc94bbd594838dbfecbf5ea69710a8923cde8fd326a9836077618f9"
+    },
+    "review-dependabot": {
+      "source": "FixMyBerlin/fixmyskills",
+      "sourceType": "github",
+      "skillPath": "skills/review-dependabot/SKILL.md",
+      "computedHash": "24075b958c648c11c62bfa70b3632a92bb196c316eb4a3ca57c104f6be67a285"
+    },
+    "tanstack-start-conventions": {
+      "source": "FixMyBerlin/fixmyskills",
+      "sourceType": "github",
+      "skillPath": "skills/tanstack-start-conventions/SKILL.md",
+      "computedHash": "14a05666d7d4190b468b9b1dd87759aeda0e0b35154ee5ea39e3c129f471e2e6"
+    },
+    "tech-stack": {
+      "source": "FixMyBerlin/fixmyskills",
+      "sourceType": "github",
+      "skillPath": "skills/tech-stack/SKILL.md",
+      "computedHash": "a2e2e1b5dd099af508ac6d6221e429826b7ac22ecb4876c666547936d4ff8846"
+    }
+  }
+}
