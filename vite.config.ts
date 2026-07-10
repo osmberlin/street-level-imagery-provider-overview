@@ -10,7 +10,7 @@ import { defineConfig } from 'vite'
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  base: '/streetlevel-imagery-provider-overview/',
+  base: '/street-level-imagery-provider-overview/',
   resolve: {
     alias: {
       '@': path.resolve(rootDir, 'src'),

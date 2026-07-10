@@ -3,7 +3,7 @@ import { AppShell } from '@/app/AppShell'
 import { routerSearch } from '@/app/routerSearch'
 import { appSearchSchema } from '@/app/searchSchema'
 
-const BASE_PATH = '/streetlevel-imagery-provider-overview'
+const BASE_PATH = '/street-level-imagery-provider-overview'
 
 const rootRoute = createRootRoute({
   validateSearch: appSearchSchema,

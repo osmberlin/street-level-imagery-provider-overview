@@ -57,7 +57,7 @@ export const LeftPanel = () => {
     <aside className="flex h-full w-80 shrink-0 flex-col border-r border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-5 py-5">
         <h1 className="text-lg font-semibold tracking-tight text-slate-900">
-          Streetlevel Imagery Provider Overview
+          Street-Level Imagery Provider Overview
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           Explore and compare street-level imagery from multiple open and commercial providers on

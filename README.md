@@ -1,6 +1,6 @@
-# Streetlevel Imagery Provider Overview
+# Street-Level Imagery Provider Overview
 
-A meta-catalog of street-level imagery providers on one full-screen map. Compare where Mapillary, Panoramax, KartaView, Mapilio, Bing Streetside, and Vegbilder have coverage, inspect individual photos, and share exactly what you see via the URL.
+A meta-catalog of street-level imagery providers on one full-screen map. Compare where [Mapillary](https://www.mapillary.com), [Panoramax](https://panoramax.xyz), [KartaView](https://kartaview.org), [Mapilio](https://mapilio.com), [Bing Streetside](https://www.bing.com/maps), and [Vegbilder](https://vegbilder.atlas.vegvesen.no) have coverage, inspect individual photos, and share exactly what you see via the URL.
 
 ## What you can do
 
