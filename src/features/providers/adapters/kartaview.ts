@@ -116,20 +116,36 @@ export const normalizeKartaviewItem = (
   }
 }
 
+// The documented bbox params (bbTopLeft/bbBottomRight) now return HTTP 400 from the API;
+// only the coordinate+radius form still works, and radius fails above ~1500 m.
+const MAX_RADIUS_METERS = 1400
+
+const tileCenterAndRadius = (tile: TileCoord): { lng: number; lat: number; radius: number } => {
+  const [west, south, east, north] = tileBbox(tile)
+  const lng = (west + east) / 2
+  const lat = (south + north) / 2
+  const metersPerDegreeLat = 111_320
+  const halfHeight = ((north - south) / 2) * metersPerDegreeLat
+  const halfWidth = ((east - west) / 2) * metersPerDegreeLat * Math.cos((lat * Math.PI) / 180)
+  const radius = Math.ceil(Math.hypot(halfWidth, halfHeight))
+  return { lng, lat, radius: Math.min(radius, MAX_RADIUS_METERS) }
+}
+
 const fetchKartaviewTilePhotos = async (
   tile: TileCoord,
   maxPages: number,
   signal: AbortSignal,
 ): Promise<NormalizedPhoto[]> => {
   const [west, south, east, north] = tileBbox(tile)
+  const { lng, lat, radius } = tileCenterAndRadius(tile)
   const photos: NormalizedPhoto[] = []
 
   for (let page = 1; page <= maxPages; page += 1) {
     const body = new URLSearchParams({
       ipp: String(RESULTS_PER_PAGE),
       page: String(page),
-      bbTopLeft: `${north},${west}`,
-      bbBottomRight: `${south},${east}`,
+      coordinate: `${lat},${lng}`,
+      radius: String(radius),
     })
 
     const response = await fetch(API_URL, {
@@ -154,9 +170,16 @@ const fetchKartaviewTilePhotos = async (
 
     for (const item of items) {
       const normalized = normalizeKartaviewItem(item)
-      if (normalized) {
-        photos.push({ providerId: 'kartaview', ...normalized })
+      if (!normalized) {
+        continue
       }
+      // The query circle overlaps neighbor tiles; keep only photos inside this tile
+      // so aggregating tiles does not duplicate them.
+      const [photoLng, photoLat] = normalized.lngLat
+      if (photoLng < west || photoLng > east || photoLat < south || photoLat > north) {
+        continue
+      }
+      photos.push({ providerId: 'kartaview', ...normalized })
     }
 
     if (items.length < RESULTS_PER_PAGE) {
