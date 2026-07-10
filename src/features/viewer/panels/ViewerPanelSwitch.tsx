@@ -10,12 +10,18 @@ const MapillaryPanel = lazy(() =>
   })),
 )
 
+const PanoramaxPanel = lazy(() =>
+  import('@/features/viewer/panels/PanoramaxPanel').then((module) => ({
+    default: module.PanoramaxPanel,
+  })),
+)
+
 type ViewerPanelSwitchProps = {
   photo: NormalizedPhoto
   groupPhotos: NormalizedPhoto[]
 }
 
-const MapillaryPanelPlaceholder = () => (
+const ViewerPanelPlaceholder = () => (
   <div className="flex min-h-48 animate-pulse items-center justify-center rounded-lg border border-slate-200 bg-slate-100">
     <span className="text-sm text-slate-500">Loading viewer…</span>
   </div>
@@ -34,8 +40,19 @@ export const ViewerPanelSwitch = ({ photo, groupPhotos }: ViewerPanelSwitchProps
   if (photo.providerId === 'mapillary') {
     return (
       <div className="space-y-3">
-        <Suspense fallback={<MapillaryPanelPlaceholder />}>
+        <Suspense fallback={<ViewerPanelPlaceholder />}>
           <MapillaryPanel photo={photo} groupPhotos={groupPhotos} />
+        </Suspense>
+        <PhotoMetadata photo={photo} />
+      </div>
+    )
+  }
+
+  if (photo.providerId === 'panoramax') {
+    return (
+      <div className="space-y-3">
+        <Suspense fallback={<ViewerPanelPlaceholder />}>
+          <PanoramaxPanel photo={photo} groupPhotos={groupPhotos} />
         </Suspense>
         <PhotoMetadata photo={photo} />
       </div>
