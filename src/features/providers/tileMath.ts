@@ -44,15 +44,23 @@ export const isNullIslandTile = (tile: TileCoord): boolean => {
 
 export const tilesForBbox = (bbox: Bbox, z: number, options?: TilesForBboxOptions): TileCoord[] => {
   const [west, south, east, north] = bbox
-  const minX = lonToTileX(west, z)
-  const maxX = lonToTileX(east, z)
-  const minY = latToTileY(north, z)
-  const maxY = latToTileY(south, z)
+  const tileCount = 2 ** z
+  let minX = lonToTileX(west, z)
+  let maxX = lonToTileX(east, z)
+  // MapLibre can report longitudes outside ±180 (wrapped world copies). Wrap x into
+  // range; if the span covers the whole world or west > east, use the full x range.
+  if (minX > maxX || maxX - minX + 1 >= tileCount) {
+    minX = 0
+    maxX = tileCount - 1
+  }
+  const minY = Math.max(0, Math.min(tileCount - 1, latToTileY(north, z)))
+  const maxY = Math.max(0, Math.min(tileCount - 1, latToTileY(south, z)))
 
   const tiles: TileCoord[] = []
   for (let x = minX; x <= maxX; x += 1) {
+    const wrappedX = ((x % tileCount) + tileCount) % tileCount
     for (let y = minY; y <= maxY; y += 1) {
-      const tile = { z, x, y }
+      const tile = { z, x: wrappedX, y }
       if (options?.skipNullIsland && isNullIslandTile(tile)) {
         continue
       }

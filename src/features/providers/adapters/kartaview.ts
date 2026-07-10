@@ -1,5 +1,9 @@
 import type { Bbox, NormalizedPhoto, ProviderAdapter, TileCoord } from '@/features/providers/model'
-import { fetchTileCached, getTileCacheKey } from '@/features/providers/tileCache'
+import {
+  collectSettledTiles,
+  fetchTileCached,
+  getTileCacheKey,
+} from '@/features/providers/tileCache'
 import { tileBbox, tilesForBbox } from '@/features/providers/tileMath'
 
 const API_URL = 'https://kartaview.org/1.0/list/nearby-photos/'
@@ -111,11 +115,10 @@ export const normalizeKartaviewItem = (
 
 const fetchKartaviewTilePhotos = async (
   tile: TileCoord,
-  zoom: number,
+  maxPages: number,
   signal: AbortSignal,
 ): Promise<NormalizedPhoto[]> => {
   const [west, south, east, north] = tileBbox(tile)
-  const maxPages = Math.min(maxPageAtZoom(zoom), 5) // Politeness cap: iD allows up to 80 pages at high zoom
   const photos: NormalizedPhoto[] = []
 
   for (let page = 1; page <= maxPages; page += 1) {
@@ -133,10 +136,14 @@ const fetchKartaviewTilePhotos = async (
       body: body.toString(),
     })
 
+    if (!response.ok) {
+      break
+    }
+
     const data = (await response.json()) as KartaviewResponse & {
       status?: { httpCode?: number }
     }
-    if (!response.ok || data.status?.httpCode !== 200) {
+    if (data.status?.httpCode !== 200) {
       break
     }
 
@@ -157,14 +164,23 @@ const fetchKartaviewTilePhotos = async (
   return photos
 }
 
-const fetchKartaviewTile = async (tile: TileCoord, zoom: number, _signal: AbortSignal) => {
-  const key = getTileCacheKey('kartaview', tile)
-  return fetchTileCached(key, (innerSignal) => fetchKartaviewTilePhotos(tile, zoom, innerSignal))
+const fetchKartaviewTile = async (tile: TileCoord, maxPages: number, signal: AbortSignal) => {
+  // Page count depends on map zoom, so the cache key must include it — otherwise a
+  // tile cached at low zoom (fewer pages) would silently miss photos at high zoom.
+  const key = getTileCacheKey(`kartaview:${maxPages}`, tile)
+  return fetchTileCached(
+    key,
+    (innerSignal) => fetchKartaviewTilePhotos(tile, maxPages, innerSignal),
+    signal,
+  )
 }
 
 const fetchPhotos = async (bbox: Bbox, zoom: number, signal: AbortSignal) => {
+  const maxPages = Math.min(maxPageAtZoom(zoom), 5) // Politeness cap: iD allows up to 80 pages at high zoom
   const tiles = tilesForBbox(bbox, TILE_ZOOM, { skipNullIsland: true })
-  const tileResults = await Promise.all(tiles.map((tile) => fetchKartaviewTile(tile, zoom, signal)))
+  const tileResults = await collectSettledTiles(
+    tiles.map((tile) => fetchKartaviewTile(tile, maxPages, signal)),
+  )
   return tileResults.flat()
 }
 

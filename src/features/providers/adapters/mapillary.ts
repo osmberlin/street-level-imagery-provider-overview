@@ -1,31 +1,14 @@
-import type { Feature, Point } from 'geojson'
-import { fetchMvt } from '@/features/providers/fetchMvt'
+import type { Feature } from 'geojson'
+import { pointLngLat } from '@/features/providers/fetchMvt'
+import { fetchMapillaryMvtTiles } from '@/features/providers/mapillaryShared'
 import type {
   Bbox,
   NormalizedPhoto,
   NormalizedSequence,
   ProviderAdapter,
-  TileCoord,
 } from '@/features/providers/model'
-import { fetchTileCached, getTileCacheKey } from '@/features/providers/tileCache'
-import { tilesForBbox } from '@/features/providers/tileMath'
 
-const ACCESS_TOKEN = 'MLY|4100327730013843|5bb78b81720791946a9a7b956c57b7cf'
-const TILE_ZOOM = 14
-
-const tileUrl = (tile: TileCoord) =>
-  `https://tiles.mapillary.com/maps/vtp/mly1_public/2/${tile.z}/${tile.x}/${tile.y}?access_token=${ACCESS_TOKEN}`
-
-const pointLngLat = (feature: Feature): [number, number] | null => {
-  if (feature.geometry.type !== 'Point') {
-    return null
-  }
-  const [lng, lat] = (feature.geometry as Point).coordinates
-  if (lng === undefined || lat === undefined) {
-    return null
-  }
-  return [lng, lat]
-}
+const MVT_PATH = 'mly1_public'
 
 export const normalizeMapillaryImageFeature = (
   feature: Feature,
@@ -71,15 +54,8 @@ export const normalizeMapillarySequenceFeature = (
   }
 }
 
-const fetchMapillaryTile = async (tile: TileCoord, _signal: AbortSignal) => {
-  const key = getTileCacheKey('mapillary', tile)
-  return fetchTileCached(key, (innerSignal) => fetchMvt(tileUrl(tile), tile, innerSignal))
-}
-
-const fetchMapillaryTiles = async (bbox: Bbox, signal: AbortSignal) => {
-  const tiles = tilesForBbox(bbox, TILE_ZOOM, { skipNullIsland: true })
-  return Promise.all(tiles.map((tile) => fetchMapillaryTile(tile, signal)))
-}
+const fetchMapillaryTiles = async (bbox: Bbox, signal: AbortSignal) =>
+  fetchMapillaryMvtTiles('mapillary', MVT_PATH, bbox, signal)
 
 const fetchPhotos = async (bbox: Bbox, _zoom: number, signal: AbortSignal) => {
   const tileLayers = await fetchMapillaryTiles(bbox, signal)

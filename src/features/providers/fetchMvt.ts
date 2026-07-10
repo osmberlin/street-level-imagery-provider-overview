@@ -1,9 +1,20 @@
 import { VectorTile } from '@mapbox/vector-tile'
-import type { Feature } from 'geojson'
+import type { Feature, Point } from 'geojson'
 import { PbfReader } from 'pbf'
 import type { TileCoord } from '@/features/providers/model'
 
 export type MvtLayers = Record<string, Feature[]>
+
+export const pointLngLat = (feature: Feature): [number, number] | null => {
+  if (feature.geometry.type !== 'Point') {
+    return null
+  }
+  const [lng, lat] = (feature.geometry as Point).coordinates
+  if (lng === undefined || lat === undefined) {
+    return null
+  }
+  return [lng, lat]
+}
 
 // Tile coordinates must be passed explicitly: URL parsing is unreliable because
 // providers embed other numeric path segments (e.g. Mapillary's `/2/` API version).

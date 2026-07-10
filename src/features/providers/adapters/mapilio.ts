@@ -1,7 +1,5 @@
-import { VectorTile } from '@mapbox/vector-tile'
-import type { Feature, LineString, MultiLineString, Point } from 'geojson'
-import { PbfReader } from 'pbf'
-import type { MvtLayers } from '@/features/providers/fetchMvt'
+import type { Feature, LineString, MultiLineString } from 'geojson'
+import { fetchMvt, pointLngLat } from '@/features/providers/fetchMvt'
 import type {
   Bbox,
   NormalizedPhoto,
@@ -9,7 +7,11 @@ import type {
   ProviderAdapter,
   TileCoord,
 } from '@/features/providers/model'
-import { fetchTileCached, getTileCacheKey } from '@/features/providers/tileCache'
+import {
+  collectSettledTiles,
+  fetchTileCached,
+  getTileCacheKey,
+} from '@/features/providers/tileCache'
 import { tilesForBbox } from '@/features/providers/tileMath'
 
 const TILE_ZOOM = 14
@@ -18,17 +20,6 @@ const ROADS_LAYER = 'mapilio:map_roads_line'
 
 const wmtsUrl = (layer: string, tile: TileCoord) =>
   `https://geo.mapilio.com/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=${layer}&STYLE=&TILEMATRIX=EPSG:900913:${tile.z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL=${tile.x}&TILEROW=${tile.y}`
-
-const pointLngLat = (feature: Feature): [number, number] | null => {
-  if (feature.geometry.type !== 'Point') {
-    return null
-  }
-  const [lng, lat] = (feature.geometry as Point).coordinates
-  if (lng === undefined || lat === undefined) {
-    return null
-  }
-  return [lng, lat]
-}
 
 export const parseMapilioCaptureTime = (value: unknown): number | null => {
   if (typeof value !== 'string' && typeof value !== 'number') {
@@ -110,52 +101,19 @@ export const normalizeMapilioRoadFeature = (
   }
 }
 
-const fetchWmtsMvt = async (
-  url: string,
-  tile: TileCoord,
-  signal: AbortSignal,
-): Promise<MvtLayers> => {
-  const response = await fetch(url, { signal })
-  if (!response.ok) {
-    throw new Error(`MVT fetch failed (${response.status}): ${url}`)
-  }
-
-  const buffer = await response.arrayBuffer()
-  if (buffer.byteLength === 0) {
-    return {}
-  }
-
-  const vectorTile = new VectorTile(new PbfReader(buffer))
-  const layers: MvtLayers = {}
-
-  for (const layerName of Object.keys(vectorTile.layers)) {
-    const layer = vectorTile.layers[layerName]
-    if (!layer) {
-      continue
-    }
-
-    const features: Feature[] = []
-    for (let i = 0; i < layer.length; i += 1) {
-      const mvtFeature = layer.feature(i)
-      features.push(mvtFeature.toGeoJSON(tile.x, tile.y, tile.z) as Feature)
-    }
-    layers[layerName] = features
-  }
-
-  return layers
-}
-
-const fetchMapilioTile = async (layer: string, tile: TileCoord, _signal: AbortSignal) => {
+const fetchMapilioTile = async (layer: string, tile: TileCoord, signal: AbortSignal) => {
   const cacheLayer = layer === POINTS_LAYER ? 'points' : 'roads'
   const key = getTileCacheKey(`mapilio:${cacheLayer}`, tile)
-  return fetchTileCached(key, (innerSignal) =>
-    fetchWmtsMvt(wmtsUrl(layer, tile), tile, innerSignal),
+  return fetchTileCached(
+    key,
+    (innerSignal) => fetchMvt(wmtsUrl(layer, tile), tile, innerSignal),
+    signal,
   )
 }
 
 const fetchMapilioPointTiles = async (bbox: Bbox, signal: AbortSignal) => {
   const tiles = tilesForBbox(bbox, TILE_ZOOM, { skipNullIsland: true })
-  return Promise.all(tiles.map((tile) => fetchMapilioTile(POINTS_LAYER, tile, signal)))
+  return collectSettledTiles(tiles.map((tile) => fetchMapilioTile(POINTS_LAYER, tile, signal)))
 }
 
 const fetchPhotos = async (bbox: Bbox, _zoom: number, signal: AbortSignal) => {
@@ -177,7 +135,7 @@ const fetchPhotos = async (bbox: Bbox, _zoom: number, signal: AbortSignal) => {
 
 const fetchSequences = async (bbox: Bbox, _zoom: number, signal: AbortSignal) => {
   const tiles = tilesForBbox(bbox, TILE_ZOOM, { skipNullIsland: true })
-  const tileLayers = await Promise.all(
+  const tileLayers = await collectSettledTiles(
     tiles.map((tile) => fetchMapilioTile(ROADS_LAYER, tile, signal)),
   )
 

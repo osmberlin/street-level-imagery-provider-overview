@@ -1,5 +1,5 @@
-import type { Feature, Point } from 'geojson'
-import { fetchMvt } from '@/features/providers/fetchMvt'
+import type { Feature } from 'geojson'
+import { fetchMvt, pointLngLat } from '@/features/providers/fetchMvt'
 import type {
   Bbox,
   NormalizedPhoto,
@@ -7,7 +7,11 @@ import type {
   ProviderAdapter,
   TileCoord,
 } from '@/features/providers/model'
-import { fetchTileCached, getTileCacheKey } from '@/features/providers/tileCache'
+import {
+  collectSettledTiles,
+  fetchTileCached,
+  getTileCacheKey,
+} from '@/features/providers/tileCache'
 import { clampZoom, tilesForBbox } from '@/features/providers/tileMath'
 
 const PHOTO_TILE_MAX_ZOOM = 15
@@ -16,17 +20,6 @@ const SEQUENCE_TILE_MAX_ZOOM = 15
 
 const tileUrl = (tile: TileCoord) =>
   `https://api.panoramax.xyz/api/map/${tile.z}/${tile.x}/${tile.y}.mvt`
-
-const pointLngLat = (feature: Feature): [number, number] | null => {
-  if (feature.geometry.type !== 'Point') {
-    return null
-  }
-  const [lng, lat] = (feature.geometry as Point).coordinates
-  if (lng === undefined || lat === undefined) {
-    return null
-  }
-  return [lng, lat]
-}
 
 export const parsePanoramaxTimestamp = (value: unknown): number | null => {
   if (typeof value !== 'string' || value.length === 0) {
@@ -87,21 +80,23 @@ export const normalizePanoramaxSequenceFeature = (
   }
 }
 
-const fetchPanoramaxTile = async (tile: TileCoord, _signal: AbortSignal) => {
+const fetchPanoramaxTile = async (tile: TileCoord, signal: AbortSignal) => {
   const key = getTileCacheKey('panoramax', tile)
-  return fetchTileCached(key, (innerSignal) => fetchMvt(tileUrl(tile), tile, innerSignal))
+  return fetchTileCached(key, (innerSignal) => fetchMvt(tileUrl(tile), tile, innerSignal), signal)
 }
 
 const fetchPanoramaxTiles = async (bbox: Bbox, zoom: number, signal: AbortSignal) => {
   const tileZoom = clampZoom(zoom, SEQUENCE_TILE_MIN_ZOOM, SEQUENCE_TILE_MAX_ZOOM)
   const tiles = tilesForBbox(bbox, tileZoom)
-  return Promise.all(tiles.map((tile) => fetchPanoramaxTile(tile, signal)))
+  return collectSettledTiles(tiles.map((tile) => fetchPanoramaxTile(tile, signal)))
 }
 
 const fetchPhotos = async (bbox: Bbox, zoom: number, signal: AbortSignal) => {
   const tileZoom = clampZoom(zoom, PHOTO_TILE_MAX_ZOOM, PHOTO_TILE_MAX_ZOOM)
   const tiles = tilesForBbox(bbox, tileZoom)
-  const tileLayers = await Promise.all(tiles.map((tile) => fetchPanoramaxTile(tile, signal)))
+  const tileLayers = await collectSettledTiles(
+    tiles.map((tile) => fetchPanoramaxTile(tile, signal)),
+  )
   const photos: NormalizedPhoto[] = []
 
   for (const layers of tileLayers) {

@@ -1,5 +1,9 @@
 import type { Bbox, NormalizedPhoto, ProviderAdapter, TileCoord } from '@/features/providers/model'
-import { fetchTileCached, getTileCacheKey } from '@/features/providers/tileCache'
+import {
+  collectSettledTiles,
+  fetchTileCached,
+  getTileCacheKey,
+} from '@/features/providers/tileCache'
 import { tileBbox, tilesForBbox } from '@/features/providers/tileMath'
 
 // Bing Maps key as used by iD editor
@@ -94,14 +98,16 @@ const fetchStreetsideTilePhotos = async (
   return photos
 }
 
-const fetchStreetsideTile = async (tile: TileCoord, _signal: AbortSignal) => {
+const fetchStreetsideTile = async (tile: TileCoord, signal: AbortSignal) => {
   const key = getTileCacheKey('streetside', tile)
-  return fetchTileCached(key, (innerSignal) => fetchStreetsideTilePhotos(tile, innerSignal))
+  return fetchTileCached(key, (innerSignal) => fetchStreetsideTilePhotos(tile, innerSignal), signal)
 }
 
 const fetchPhotos = async (bbox: Bbox, _zoom: number, signal: AbortSignal) => {
   const tiles = tilesForBbox(bbox, TILE_ZOOM, { skipNullIsland: true })
-  const tileResults = await Promise.all(tiles.map((tile) => fetchStreetsideTile(tile, signal)))
+  const tileResults = await collectSettledTiles(
+    tiles.map((tile) => fetchStreetsideTile(tile, signal)),
+  )
 
   const byId = new Map<string, NormalizedPhoto>()
   for (const photos of tileResults) {

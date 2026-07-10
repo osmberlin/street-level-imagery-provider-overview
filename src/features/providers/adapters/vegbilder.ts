@@ -1,6 +1,11 @@
-import type { Feature, Point } from 'geojson'
+import type { Feature } from 'geojson'
+import { pointLngLat } from '@/features/providers/fetchMvt'
 import type { Bbox, NormalizedPhoto, ProviderAdapter, TileCoord } from '@/features/providers/model'
-import { fetchTileCached, getTileCacheKey } from '@/features/providers/tileCache'
+import {
+  collectSettledTiles,
+  fetchTileCached,
+  getTileCacheKey,
+} from '@/features/providers/tileCache'
 import { bboxIntersects, tileBbox, tilesForBbox } from '@/features/providers/tileMath'
 
 const TILE_ZOOM = 14
@@ -17,17 +22,6 @@ export type VegbilderLayerInfo = {
 
 type WfsFeatureCollection = {
   features?: Feature[]
-}
-
-const pointLngLat = (feature: Feature): [number, number] | null => {
-  if (feature.geometry.type !== 'Point') {
-    return null
-  }
-  const [lng, lat] = (feature.geometry as Point).coordinates
-  if (lng === undefined || lat === undefined) {
-    return null
-  }
-  return [lng, lat]
 }
 
 export const parseVegbilderLayerNames = (capabilitiesXml: string): VegbilderLayerInfo[] => {
@@ -181,19 +175,23 @@ type VegbilderLayerFeatures = {
 const fetchVegbilderTile = async (
   tile: TileCoord,
   layers: VegbilderLayerInfo[],
-  _signal: AbortSignal,
+  signal: AbortSignal,
 ): Promise<VegbilderLayerFeatures[]> => {
   const key = getTileCacheKey('vegbilder', tile)
-  return fetchTileCached(key, async (innerSignal) => {
-    const bbox = tileBbox(tile)
-    return Promise.all(
-      layers.map(async (layer) => ({
-        layer: layer.name,
-        year: layer.year,
-        features: await fetchWfsLayer(layer.name, bbox, innerSignal),
-      })),
-    )
-  })
+  return fetchTileCached(
+    key,
+    async (innerSignal) => {
+      const bbox = tileBbox(tile)
+      return Promise.all(
+        layers.map(async (layer) => ({
+          layer: layer.name,
+          year: layer.year,
+          features: await fetchWfsLayer(layer.name, bbox, innerSignal),
+        })),
+      )
+    },
+    signal,
+  )
 }
 
 const fetchPhotos = async (bbox: Bbox, _zoom: number, signal: AbortSignal) => {
@@ -209,7 +207,7 @@ const fetchPhotos = async (bbox: Bbox, _zoom: number, signal: AbortSignal) => {
   }
 
   const tiles = tilesForBbox(bbox, TILE_ZOOM)
-  const tileFeatures = await Promise.all(
+  const tileFeatures = await collectSettledTiles(
     tiles.map((tile) => fetchVegbilderTile(tile, layers, signal)),
   )
 
