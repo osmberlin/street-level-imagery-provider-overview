@@ -103,10 +103,19 @@ export const RightPanel = () => {
         return
       }
 
+      const nearest = findNearestPhoto(group.photos, clicked.lng, clicked.lat)
+      if (!nearest) {
+        return
+      }
+
       autoSelectKeyRef.current = key
-      selectGroup(group)
+      updateSelected({
+        provider: group.providerId,
+        sequenceId: group.sequenceId,
+        photoId: nearest.photoId,
+      })
     },
-    [clicked, groups, isFetching, isLoading, mapFeatures.length, selected],
+    [clicked, groups, isFetching, isLoading, mapFeatures.length, selected, updateSelected],
   )
 
   return (
