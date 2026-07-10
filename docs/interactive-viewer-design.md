@@ -31,13 +31,13 @@ One interactive panel per provider family, selected by `ViewerPanelSwitch` based
 `SequenceGroupCard`), with a taller container (aspect ~4:3, full card width). `PhotoViewer`'s
 metadata `<dl>` + external link stay below the panel.
 
-| providerId | isPano | Panel | Library | prev/next |
-|---|---|---|---|---|
-| mapillary | any | `MapillaryPanel` | `mapillary-js@^4.1.2` | native sequence component |
-| panoramax | any | `PanoramaxPanel` | `@panoramax/web-viewer@^5.1.2` `<pnx-photo-viewer>` | native |
-| streetside | always pano | `StreetsidePanel` | PSV core + `cubemap-tiles-adapter` | virtual-tour arrows (nearby bubbles) |
+| providerId                    | isPano                   | Panel              | Library                                                   | prev/next                                      |
+| ----------------------------- | ------------------------ | ------------------ | --------------------------------------------------------- | ---------------------------------------------- |
+| mapillary                     | any                      | `MapillaryPanel`   | `mapillary-js@^4.1.2`                                     | native sequence component                      |
+| panoramax                     | any                      | `PanoramaxPanel`   | `@panoramax/web-viewer@^5.1.2` `<pnx-photo-viewer>`       | native                                         |
+| streetside                    | always pano              | `StreetsidePanel`  | PSV core + `cubemap-tiles-adapter`                        | virtual-tour arrows (nearby bubbles)           |
 | mapilio, vegbilder, kartaview | pano (`isPano === true`) | `PsvEquirectPanel` | `@photo-sphere-viewer/core@^5.14` + `virtual-tour-plugin` | virtual-tour GPS-mode arrows from group photos |
-| mapilio, vegbilder, kartaview | flat / unknown | `FlatPhotoPanel` | none (pointer pan + wheel zoom, ~100 lines) | existing card buttons |
+| mapilio, vegbilder, kartaview | flat / unknown           | `FlatPhotoPanel`   | none (pointer pan + wheel zoom, ~100 lines)               | existing card buttons                          |
 
 New deps: `mapillary-js`, `@panoramax/web-viewer`, `@photo-sphere-viewer/core`,
 `@photo-sphere-viewer/cubemap-tiles-adapter`, `@photo-sphere-viewer/virtual-tour-plugin`,
@@ -76,7 +76,7 @@ Rendered inside `MapRoot` next to `MapSelectionHighlight`. Declarative `Source`/
 - **Flat**: narrower wedge (~30°) at static `photo.heading`; no live rotation (except providers
   whose viewer reports yaw — then heading + yaw). If `heading` is null → no indicator.
 - Geometry helper `src/features/map/viewCone.ts`: `viewConeGeoJson(lngLat, bearingDeg, fovDeg,
-  radiusMeters)` — hand-rolled sector (no turf dep), unit-tested (bearing 0/90/wraparound at ±180°,
+radiusMeters)` — hand-rolled sector (no turf dep), unit-tested (bearing 0/90/wraparound at ±180°,
   degenerate fov).
 
 Additionally (nice-to-have, phase A): the existing provider circle layers stay as-is; direction
@@ -86,15 +86,17 @@ display is selected-photo-only for now.
 
 **Map → viewer**: panels receive `photo` (from `selected`) as prop; when `selected.photoId` changes
 externally (map click → group select, card prev/next), the panel navigates its viewer:
+
 - mapillary: `viewer.moveTo(id)` guarded by the **`navigable` event + pendingImageId queue**
   (api-demo pattern — `moveTo` throws mid-transition; queue the id, flush on navigable).
 - panoramax: set `picture` attribute/property on `<pnx-photo-viewer>`.
 - PSV: `virtualTour.setCurrentNode(id)` / `viewer.setPanorama(url)`.
-Panels must distinguish self-initiated changes (see below) to avoid loops: keep a
-`lastViewerPhotoIdRef`; only call moveTo when prop ≠ ref.
+  Panels must distinguish self-initiated changes (see below) to avoid loops: keep a
+  `lastViewerPhotoIdRef`; only call moveTo when prop ≠ ref.
 
 **Viewer → map**: on viewer-native navigation (mapillary `image` event, panoramax picture-change
 event, virtual-tour `node-changed`):
+
 1. set `lastViewerPhotoIdRef`, then write `selected.photoId` (+ sequenceId if changed) via
    `useAppSearchNavigation` `updateSelected` `{replace: true}`.
 2. `map.easeTo({center})` via `useMap()` (`MAIN_MAP_ID`) **only when the new photo is outside the

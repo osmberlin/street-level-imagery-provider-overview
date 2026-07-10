@@ -23,6 +23,7 @@ export default defineConfig({
   sortPackageJson: true,
   ignorePatterns: [
     '.agents/**',
+    '.claude/**',
     '.cursor/**',
     'dist/**',
     'playwright-report/**',

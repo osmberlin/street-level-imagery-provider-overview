@@ -3,7 +3,7 @@ import type { AppSearch } from '@/app/searchSchema'
 import { providerById } from '@/features/providers/registry'
 import type { PhotoSequenceGroup } from '@/features/viewer/groupClickedPhotos'
 import { findPhotoIndexInGroup } from '@/features/viewer/groupClickedPhotos'
-import { PhotoViewer } from '@/features/viewer/PhotoViewer'
+import { ViewerPanelSwitch } from '@/features/viewer/panels/ViewerPanelSwitch'
 
 type SequenceGroupCardProps = {
   group: PhotoSequenceGroup
@@ -111,7 +111,7 @@ export const SequenceGroupCard = ({
 
       {isActive && activePhoto ? (
         <div className="space-y-3 border-t border-slate-200 px-4 py-4">
-          <PhotoViewer photo={activePhoto} />
+          <ViewerPanelSwitch groupPhotos={group.photos} photo={activePhoto} />
 
           {group.photos.length > 1 ? (
             <div className="flex items-center justify-between gap-2">

@@ -18,13 +18,15 @@
     "@mapbox/vector-tile": "^3.0.0",
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.141.2",
+    "mapillary-js": "^4.1.2",
     "maplibre-gl": "^5.15.0",
     "pbf": "^5.1.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-map-gl": "^8.1.0",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "zustand": "^5"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",

@@ -9,6 +9,7 @@ import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
 import { MAIN_MAP_ID } from '@/features/map/constants'
 import { MapSelectionHighlight } from '@/features/map/MapSelectionHighlight'
 import { ProviderLayers } from '@/features/map/ProviderLayers'
+import { ViewDirectionIndicator } from '@/features/map/ViewDirectionIndicator'
 import { featureLayerId, photoLayerId } from '@/features/providers/registry'
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
@@ -131,6 +132,7 @@ export const MapRoot = () => {
         style={style}
         zoom={map.z}
       />
+      <ViewDirectionIndicator />
       <MapSelectionHighlight />
     </Map>
   )
