@@ -88,6 +88,10 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
+  // The dev-only dependency optimizer bypasses the shims above; serve the package unbundled.
+  optimizeDeps: {
+    exclude: ['@panoramax/web-viewer'],
+  },
   build: {
     target: browserslistToEsbuild(),
     sourcemap: true,
