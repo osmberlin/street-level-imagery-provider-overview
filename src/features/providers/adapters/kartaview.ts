@@ -96,9 +96,11 @@ export const normalizeKartaviewItem = (
         : Number.parseInt(String(sequenceIndexRaw), 10)
 
   // Prefer the large thumbnail (lth) over the full processed image for viewer display.
-  const imagePath = item.lth_name ?? item.name
+  const thumbPath = item.lth_name ?? item.name
   const thumbUrl =
-    typeof imagePath === 'string' && imagePath.length > 0 ? kartaviewImageUrl(imagePath) : undefined
+    typeof thumbPath === 'string' && thumbPath.length > 0 ? kartaviewImageUrl(thumbPath) : undefined
+  const fullUrl =
+    typeof item.name === 'string' && item.name.length > 0 ? kartaviewImageUrl(item.name) : undefined
 
   return {
     photoId: String(id),
@@ -110,6 +112,7 @@ export const normalizeKartaviewItem = (
     heading: heading != null && !Number.isNaN(heading) ? heading : null,
     lngLat: [lng, lat],
     thumbUrl,
+    fullUrl,
   }
 }
 

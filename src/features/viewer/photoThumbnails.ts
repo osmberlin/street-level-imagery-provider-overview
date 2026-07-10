@@ -25,6 +25,26 @@ type MapilioSequenceResponse = {
   data?: MapilioSequenceItem[] | { data?: MapilioSequenceItem[] }
 }
 
+const mapilioCdnUrl = (uploadedHash: string, filename: string, size: '1080' | '2080') =>
+  `https://cdn.mapilio.com/im/${uploadedHash}/${filename}/${size}`
+
+export const fetchMapilioSequenceItem = async (
+  sequenceId: string,
+  photoId: string,
+): Promise<MapilioSequenceItem | null> => {
+  const response = await fetch(
+    `https://end.mapilio.com/api/sequence-detail?sequence_uuid=${encodeURIComponent(sequenceId)}`,
+  )
+  if (!response.ok) {
+    throw new Error(`Mapilio sequence detail failed (${response.status})`)
+  }
+
+  const data = (await response.json()) as MapilioSequenceResponse
+  const items = Array.isArray(data.data) ? data.data : (data.data?.data ?? [])
+  const match = items.find((item) => String(item.id) === photoId)
+  return match ?? null
+}
+
 export const fetchMapillaryThumbnail = async (photoId: string): Promise<string | null> => {
   const url = new URL(`https://graph.mapillary.com/${photoId}`)
   url.searchParams.set('fields', 'thumb_1024_url')
@@ -58,21 +78,66 @@ export const fetchMapilioThumbnail = async (
   sequenceId: string,
   photoId: string,
 ): Promise<string | null> => {
-  const response = await fetch(
-    `https://end.mapilio.com/api/sequence-detail?sequence_uuid=${encodeURIComponent(sequenceId)}`,
-  )
-  if (!response.ok) {
-    throw new Error(`Mapilio sequence detail failed (${response.status})`)
-  }
-
-  const data = (await response.json()) as MapilioSequenceResponse
-  const items = Array.isArray(data.data) ? data.data : (data.data?.data ?? [])
-  const match = items.find((item) => String(item.id) === photoId)
+  const match = await fetchMapilioSequenceItem(sequenceId, photoId)
   if (!match?.uploaded_hash || !match.filename) {
     return null
   }
 
-  return `https://cdn.mapilio.com/im/${match.uploaded_hash}/${match.filename}/1080`
+  return mapilioCdnUrl(match.uploaded_hash, match.filename, '1080')
+}
+
+export const fetchMapilioFullUrl = async (
+  sequenceId: string,
+  photoId: string,
+): Promise<string | null> => {
+  const match = await fetchMapilioSequenceItem(sequenceId, photoId)
+  if (!match?.uploaded_hash || !match.filename) {
+    return null
+  }
+
+  return mapilioCdnUrl(match.uploaded_hash, match.filename, '2080')
+}
+
+export const resolvePhotoFullUrl = async (photo: NormalizedPhoto): Promise<string | null> => {
+  if (photo.fullUrl) {
+    return photo.fullUrl
+  }
+
+  switch (photo.providerId) {
+    case 'mapilio':
+      if (!photo.sequenceId) {
+        return null
+      }
+      return fetchMapilioFullUrl(photo.sequenceId, photo.photoId)
+    case 'kartaview':
+    case 'vegbilder':
+      return photo.thumbUrl ?? null
+    case 'mapillary': {
+      throw new Error('Not implemented yet: "mapillary" case')
+    }
+    case 'mapillary-map-features': {
+      throw new Error('Not implemented yet: "mapillary-map-features" case')
+    }
+    case 'mapillary-signs': {
+      throw new Error('Not implemented yet: "mapillary-signs" case')
+    }
+    case 'panoramax': {
+      throw new Error('Not implemented yet: "panoramax" case')
+    }
+    case 'streetside': {
+      throw new Error('Not implemented yet: "streetside" case')
+    }
+    default:
+      return null
+  }
+}
+
+export const resolvePhotoPanoramaUrl = async (photo: NormalizedPhoto): Promise<string | null> => {
+  const fullUrl = await resolvePhotoFullUrl(photo)
+  if (fullUrl) {
+    return fullUrl
+  }
+  return photo.thumbUrl ?? null
 }
 
 export const resolvePhotoThumbnailUrl = async (photo: NormalizedPhoto): Promise<string | null> => {
@@ -107,6 +172,22 @@ export const resolvePhotoThumbnailUrl = async (photo: NormalizedPhoto): Promise<
       return null
   }
 }
+
+export const photoFullUrlQueryKey = (photo: NormalizedPhoto) =>
+  ['photo-full-url', photo.providerId, photo.sequenceId, photo.photoId] as const
+
+export const usePhotoFullUrl = (photo: NormalizedPhoto | null) =>
+  useQuery({
+    queryKey: photo ? photoFullUrlQueryKey(photo) : ['photo-full-url', 'none'],
+    queryFn: () => {
+      if (!photo) {
+        return null
+      }
+      return resolvePhotoPanoramaUrl(photo)
+    },
+    enabled: photo != null,
+    staleTime: 24 * 60 * 60 * 1000,
+  })
 
 export const photoThumbnailQueryKey = (photo: NormalizedPhoto) =>
   ['photo-thumbnail', photo.providerId, photo.sequenceId, photo.photoId] as const

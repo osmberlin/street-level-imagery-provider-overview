@@ -102,6 +102,8 @@ export const normalizeVegbilderFeature = (
   const previewPath = props.URLPREVIEW
   const thumbUrl =
     typeof previewPath === 'string' && previewPath.length > 0 ? previewPath : undefined
+  const fullPath = props.URL
+  const fullUrl = typeof fullPath === 'string' && fullPath.length > 0 ? fullPath : undefined
 
   const yearFromTimestamp = (() => {
     const capturedAt = parseVegbilderTimestamp(props.TIDSPUNKT)
@@ -116,6 +118,7 @@ export const normalizeVegbilderFeature = (
     heading: heading != null && !Number.isNaN(heading) ? heading : null,
     lngLat,
     thumbUrl,
+    fullUrl,
     viewerYear: layerYear ?? yearFromTimestamp,
   }
 }

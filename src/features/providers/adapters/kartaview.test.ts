@@ -68,22 +68,29 @@ describe('normalizeKartaviewItem', () => {
 
   it('builds CDN proxy thumbUrl from the storage image path', () => {
     const expectedStorageUrl = 'https://storage5.openstreetcam.org/files/photo/1.jpg'
-    expect(
-      normalizeKartaviewItem({
-        ...berlinFixture,
-        name: '/storage5/files/photo/1.jpg',
-      })?.thumbUrl,
-    ).toBe(`https://cdn.kartaview.org/pr:sharp/${btoa(expectedStorageUrl).replace(/=+$/, '')}`)
+    const normalized = normalizeKartaviewItem({
+      ...berlinFixture,
+      name: '/storage5/files/photo/1.jpg',
+    })
+    expect(normalized?.thumbUrl).toBe(
+      `https://cdn.kartaview.org/pr:sharp/${btoa(expectedStorageUrl).replace(/=+$/, '')}`,
+    )
+    expect(normalized?.fullUrl).toBe(
+      `https://cdn.kartaview.org/pr:sharp/${btoa(expectedStorageUrl).replace(/=+$/, '')}`,
+    )
   })
 
-  it('prefers lth_name over name for the thumbnail', () => {
+  it('prefers lth_name over name for the thumbnail but keeps fullUrl from name', () => {
     const thumbUrl = normalizeKartaviewItem({
       ...berlinFixture,
       name: 'storage5/files/photo/proc/1.jpg',
       lth_name: 'storage5/files/photo/lth/1.jpg',
-    })?.thumbUrl
-    expect(thumbUrl).toBe(
+    })
+    expect(thumbUrl?.thumbUrl).toBe(
       `https://cdn.kartaview.org/pr:sharp/${btoa('https://storage5.openstreetcam.org/files/photo/lth/1.jpg').replace(/=+$/, '')}`,
+    )
+    expect(thumbUrl?.fullUrl).toBe(
+      `https://cdn.kartaview.org/pr:sharp/${btoa('https://storage5.openstreetcam.org/files/photo/proc/1.jpg').replace(/=+$/, '')}`,
     )
   })
 

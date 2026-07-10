@@ -10,7 +10,13 @@ const CONE_SOURCE_ID = 'view-direction-cone'
 const CONE_FILL_LAYER_ID = 'view-direction-cone-fill'
 const CONE_LINE_LAYER_ID = 'view-direction-cone-line'
 
-const INTERACTIVE_VIEWER_PROVIDERS = new Set(['mapillary', 'panoramax'])
+const INTERACTIVE_PANO_PROVIDERS = new Set([
+  'mapillary',
+  'panoramax',
+  'kartaview',
+  'mapilio',
+  'vegbilder',
+])
 
 export const ViewDirectionIndicator = () => {
   const { search } = useAppSearchNavigation()
@@ -43,15 +49,15 @@ export const ViewDirectionIndicator = () => {
 
     const apex = storeLngLat ?? selectedPhoto.lngLat
     const isPano = selectedPhoto.isPano === true
-    const hasInteractiveViewer = INTERACTIVE_VIEWER_PROVIDERS.has(selectedPhoto.providerId)
+    const hasLiveBearing = isPano && INTERACTIVE_PANO_PROVIDERS.has(selectedPhoto.providerId)
 
     let bearing: number | null = null
     let fov = 30
 
     if (isPano) {
-      bearing = storeBearing ?? selectedPhoto.heading
-      fov = storeHfov ?? 60
-    } else if (hasInteractiveViewer) {
+      bearing = hasLiveBearing ? (storeBearing ?? selectedPhoto.heading) : selectedPhoto.heading
+      fov = hasLiveBearing ? (storeHfov ?? 60) : 60
+    } else if (selectedPhoto.providerId === 'panoramax') {
       bearing = storeBearing ?? selectedPhoto.heading
       fov = 30
     } else {

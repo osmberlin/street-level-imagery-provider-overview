@@ -24,6 +24,8 @@ export type NormalizedPhoto = {
   lngLat: [number, number]
   /** Direct thumbnail URL when the list API already provides one. */
   thumbUrl?: string
+  /** Full-resolution image URL when the list API already provides one. */
+  fullUrl?: string
   /** Vegbilder atlas year for external viewer links. */
   viewerYear?: number
 }

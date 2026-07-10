@@ -105,8 +105,25 @@ describe('normalizeVegbilderFeature', () => {
       heading: 162.20098403073797,
       lngLat: [10.76038414, 59.90144676],
       thumbUrl: undefined,
+      fullUrl: undefined,
       viewerYear: 2025,
     })
+  })
+
+  it('maps fullUrl from the WFS URL property', () => {
+    const feature: Feature = {
+      type: 'Feature',
+      id: 'vegbilder-full',
+      geometry: { type: 'Point', coordinates: [10.76, 59.9] },
+      properties: {
+        BILDETYPE: '360',
+        URL: 'https://example.com/full.jpg',
+        URLPREVIEW: 'https://example.com/preview.jpg',
+      },
+    }
+
+    expect(normalizeVegbilderFeature(feature)?.fullUrl).toBe('https://example.com/full.jpg')
+    expect(normalizeVegbilderFeature(feature)?.thumbUrl).toBe('https://example.com/preview.jpg')
   })
 
   it('maps 360 WFS features as panoramas', () => {
