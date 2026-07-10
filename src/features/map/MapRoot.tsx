@@ -12,7 +12,7 @@ import { ProviderLayers } from '@/features/map/ProviderLayers'
 import { ViewDirectionIndicator } from '@/features/map/ViewDirectionIndicator'
 import { featureLayerId, photoLayerId } from '@/features/providers/registry'
 
-const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
+const MAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 
 export { MAIN_MAP_ID } from '@/features/map/constants'
 

@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, type PointerEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { NormalizedPhoto } from '@/features/providers/model'
 import { usePhotoFullUrl } from '@/features/viewer/photoThumbnails'
 import { useViewerActions } from '@/features/viewer/useViewerStore'
 
 const MIN_SCALE = 1
 const MAX_SCALE = 8
+const ZOOM_STEP = 1.5
 
 const getContainedImageSize = (
   containerWidth: number,
@@ -37,7 +38,7 @@ type FlatPhotoPanelProps = {
   groupPhotos: NormalizedPhoto[]
 }
 
-export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
+const FlatPhotoViewer = ({ photo }: { photo: NormalizedPhoto }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
   const transformRef = useRef({ x: 0, y: 0, scale: MIN_SCALE })
@@ -48,6 +49,8 @@ export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
     originX: number
     originY: number
   } | null>(null)
+  const [scale, setScale] = useState(MIN_SCALE)
+  const [isDragging, setIsDragging] = useState(false)
   const { data: imageUrl, isLoading, isError } = usePhotoFullUrl(photo)
   const actions = useViewerActions()
 
@@ -66,8 +69,8 @@ export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
     if (!image) {
       return
     }
-    const { x, y, scale } = transformRef.current
-    image.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
+    const { x, y, scale: currentScale } = transformRef.current
+    image.style.transform = `translate(${x}px, ${y}px) scale(${currentScale})`
   }, [])
 
   const clampTransform = useCallback(() => {
@@ -77,7 +80,7 @@ export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
       return
     }
 
-    const { scale } = transformRef.current
+    const { scale: currentScale } = transformRef.current
     const containerRect = container.getBoundingClientRect()
     const naturalWidth = image.naturalWidth
     const naturalHeight = image.naturalHeight
@@ -91,8 +94,8 @@ export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
       naturalWidth,
       naturalHeight,
     )
-    const scaledWidth = contained.width * scale
-    const scaledHeight = contained.height * scale
+    const scaledWidth = contained.width * currentScale
+    const scaledHeight = contained.height * currentScale
     const maxX = scaledWidth <= containerRect.width ? 0 : (scaledWidth - containerRect.width) / 2
     const maxY =
       scaledHeight <= containerRect.height ? 0 : (scaledHeight - containerRect.height) / 2
@@ -102,17 +105,24 @@ export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
     applyTransform()
   }, [applyTransform])
 
+  const updateScale = useCallback(
+    (nextScale: number) => {
+      transformRef.current.scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, nextScale))
+      if (transformRef.current.scale <= MIN_SCALE) {
+        transformRef.current.x = 0
+        transformRef.current.y = 0
+      }
+      setScale(transformRef.current.scale)
+      clampTransform()
+    },
+    [clampTransform],
+  )
+
   const resetTransform = useCallback(() => {
     transformRef.current = { x: 0, y: 0, scale: MIN_SCALE }
+    setScale(MIN_SCALE)
     applyTransform()
   }, [applyTransform])
-
-  useEffect(
-    function resetPanZoomOnPhotoChange() {
-      resetTransform()
-    },
-    [photo.photoId, resetTransform],
-  )
 
   useEffect(
     function observeContainerResize() {
@@ -146,12 +156,7 @@ export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
         }
         event.preventDefault()
         const delta = event.deltaY > 0 ? 0.9 : 1.1
-        const nextScale = Math.min(
-          MAX_SCALE,
-          Math.max(MIN_SCALE, transformRef.current.scale * delta),
-        )
-        transformRef.current.scale = nextScale
-        clampTransform()
+        updateScale(transformRef.current.scale * delta)
       }
 
       container.addEventListener('wheel', onWheel, { passive: false })
@@ -160,13 +165,14 @@ export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
         container.removeEventListener('wheel', onWheel)
       }
     },
-    [clampTransform, imageUrl],
+    [imageUrl, updateScale],
   )
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (!imageUrl) {
+    if (!imageUrl || scale <= MIN_SCALE) {
       return
     }
+    setIsDragging(true)
     dragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -193,12 +199,16 @@ export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
       return
     }
     dragRef.current = null
+    setIsDragging(false)
     event.currentTarget.releasePointerCapture(event.pointerId)
   }
 
   const onDoubleClick = () => {
     resetTransform()
   }
+
+  const isPannable = scale > MIN_SCALE
+  const imageCursor = isDragging ? 'cursor-grabbing' : isPannable ? 'cursor-grab' : 'cursor-default'
 
   return (
     <div
@@ -219,7 +229,7 @@ export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
         <img
           ref={imageRef}
           alt="Street-level photo"
-          className="mx-auto h-full w-full max-w-none cursor-grab object-contain active:cursor-grabbing"
+          className={`mx-auto h-full w-full max-w-none object-contain ${imageCursor}`}
           draggable={false}
           src={imageUrl}
           onLoad={clampTransform}
@@ -229,6 +239,46 @@ export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => {
           {isError ? 'Image unavailable' : 'No image for this photo'}
         </div>
       )}
+
+      {imageUrl ? (
+        <div className="absolute right-2 bottom-2 flex flex-col gap-1 rounded-md bg-black/50 p-1 backdrop-blur-sm">
+          <button
+            aria-label="Zoom in"
+            className="flex size-7 items-center justify-center rounded text-sm font-medium text-white hover:bg-white/20 disabled:opacity-40"
+            disabled={scale >= MAX_SCALE}
+            type="button"
+            onClick={() => {
+              updateScale(transformRef.current.scale * ZOOM_STEP)
+            }}
+          >
+            +
+          </button>
+          <button
+            aria-label="Zoom out"
+            className="flex size-7 items-center justify-center rounded text-sm font-medium text-white hover:bg-white/20 disabled:opacity-40"
+            disabled={scale <= MIN_SCALE}
+            type="button"
+            onClick={() => {
+              updateScale(transformRef.current.scale / ZOOM_STEP)
+            }}
+          >
+            −
+          </button>
+          <button
+            aria-label="Reset zoom"
+            className="flex size-7 items-center justify-center rounded text-xs font-medium text-white hover:bg-white/20 disabled:opacity-40"
+            disabled={scale <= MIN_SCALE}
+            type="button"
+            onClick={resetTransform}
+          >
+            ⟲
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }
+
+export const FlatPhotoPanel = ({ photo }: FlatPhotoPanelProps) => (
+  <FlatPhotoViewer key={photo.photoId} photo={photo} />
+)

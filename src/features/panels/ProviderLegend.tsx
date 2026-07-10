@@ -57,6 +57,7 @@ export const ProviderLegend = ({
 
   const total = totalPhotoCount(counts)
   const belowMinZoom = zoom < meta.minZoom
+  const isEmpty = !belowMinZoom && total === 0
 
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
@@ -77,7 +78,7 @@ export const ProviderLegend = ({
       {belowMinZoom ? (
         <p className="mt-1.5 text-xs text-slate-500">Zoom in to z{meta.minZoom}+ for counts</p>
       ) : (
-        <ul className="mt-2 space-y-1">
+        <ul className={isEmpty ? 'mt-2 space-y-1 opacity-50' : 'mt-2 space-y-1'}>
           {styleDefinition.categories.map((category) => (
             <li key={category.id} className="flex items-center gap-2 text-xs text-slate-600">
               <span

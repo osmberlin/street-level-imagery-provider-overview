@@ -28,6 +28,18 @@ export type ProviderMeta = {
   color: string
   minZoom: number
   sequencesMinZoom: number
+  homepageUrl?: string
+}
+
+const PROVIDER_HOMEPAGE_URLS: Partial<Record<ProviderId, string>> = {
+  mapillary: 'https://www.mapillary.com',
+  panoramax: 'https://panoramax.xyz',
+  kartaview: 'https://kartaview.org',
+  mapilio: 'https://mapilio.com',
+  streetside: 'https://www.bing.com/maps',
+  vegbilder: 'https://vegbilder.atlas.vegvesen.no',
+  'mapillary-signs': 'https://www.mapillary.com',
+  'mapillary-map-features': 'https://www.mapillary.com',
 }
 
 export const PROVIDER_ADAPTERS: ProviderAdapter[] = [
@@ -52,6 +64,7 @@ export const PROVIDERS: ProviderMeta[] = PROVIDER_ADAPTERS.map((adapter) => ({
   color: adapter.color,
   minZoom: adapter.minZoom,
   sequencesMinZoom: adapter.sequencesMinZoom ?? adapter.minZoom,
+  homepageUrl: PROVIDER_HOMEPAGE_URLS[adapter.id],
 }))
 
 // Feature overlays (signs, map features) are so dense they bury the photo layers,

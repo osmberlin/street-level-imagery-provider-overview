@@ -86,7 +86,7 @@ export const SequenceGroupCard = ({
       )}
     >
       <button
-        className="flex w-full items-start gap-3 px-4 py-3 text-left"
+        className="flex w-full items-start gap-3 rounded-t-xl px-4 py-3 text-left hover:bg-slate-50"
         type="button"
         onClick={() => {
           onSelectGroup(group)

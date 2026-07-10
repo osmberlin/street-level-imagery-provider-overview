@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { isProviderId } from '@/app/searchSchema'
 import { useAllProviderMapFeaturesLoading } from '@/features/data/useAllProviderMapFeatures'
@@ -73,6 +74,47 @@ export const RightPanel = () => {
       : undefined
 
   const resultCount = groups.length + mapFeatures.length
+  const autoSelectKeyRef = useRef<string | null>(null)
+
+  useEffect(
+    function resetAutoSelectOnNewClick() {
+      autoSelectKeyRef.current = null
+    },
+    [clicked?.lng, clicked?.lat],
+  )
+
+  useEffect(
+    function autoSelectSinglePhotoGroup() {
+      // Wait for all providers so a fast provider's lone group is not selected prematurely.
+      if (isLoading || isFetching) {
+        return
+      }
+      if (!clicked || selected != null || mapFeatures.length > 0 || groups.length !== 1) {
+        return
+      }
+
+      const group = groups[0]
+      if (!group) {
+        return
+      }
+
+      const key = `${clicked.lng},${clicked.lat},${group.groupKey}`
+      if (autoSelectKeyRef.current === key) {
+        return
+      }
+
+      autoSelectKeyRef.current = key
+      selectGroup(group)
+    },
+    [
+	clicked,
+	groups,
+	isFetching,
+	isLoading,
+	mapFeatures.length,
+	selected
+],
+  )
 
   return (
     <aside className="flex h-full w-96 shrink-0 flex-col border-l border-slate-200 bg-white">

@@ -11,6 +11,23 @@ const STYLE_OPTIONS: { value: AppSearch['style']; label: string }[] = [
   { value: 'age', label: 'Age' },
 ]
 
+const ExternalLinkIcon = () => (
+  <svg
+    aria-hidden
+    className="size-4"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={1.75}
+    viewBox="0 0 24 24"
+  >
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    <path d="M15 3h6v6" />
+    <path d="M10 14 21 3" />
+  </svg>
+)
+
 export const LeftPanel = () => {
   const { search, updateProviders, updateStyle, updatePhotoTypes, updateDate } =
     useAppSearchNavigation()
@@ -61,7 +78,15 @@ export const LeftPanel = () => {
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           Explore and compare street-level imagery from multiple open and commercial providers on
-          one map. Toggle providers and switch visualization styles to see coverage at a glance.
+          one map. Toggle providers and switch visualization styles to see coverage at a glance.{' '}
+          <a
+            className="text-slate-800 underline decoration-slate-300 underline-offset-2 hover:text-slate-900 hover:decoration-slate-500"
+            href="https://github.com/osmberlin/street-level-imagery-provider-overview"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Source on GitHub
+          </a>
         </p>
       </div>
 
@@ -77,29 +102,42 @@ export const LeftPanel = () => {
               const belowMinZoom = currentZoom < meta.minZoom
               return (
                 <li key={provider.id}>
-                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-transparent px-2 py-2 hover:border-slate-200 hover:bg-slate-50">
-                    <input
-                      checked={checked}
-                      className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
-                      type="checkbox"
-                      onChange={() => {
-                        toggleProvider(provider.id)
-                      }}
-                    />
-                    <span
-                      aria-hidden
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: provider.color }}
-                    />
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="text-sm font-medium text-slate-800">{provider.label}</span>
-                      {belowMinZoom ? (
-                        <span className="text-xs text-slate-500">
-                          Zoom in to see data (z{meta.minZoom}+)
-                        </span>
-                      ) : null}
-                    </span>
-                  </label>
+                  <div className="flex items-center justify-between gap-1 rounded-lg border border-transparent hover:border-slate-200 hover:bg-slate-50">
+                    <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-2 py-2">
+                      <input
+                        checked={checked}
+                        className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
+                        type="checkbox"
+                        onChange={() => {
+                          toggleProvider(provider.id)
+                        }}
+                      />
+                      <span
+                        aria-hidden
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: provider.color }}
+                      />
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="text-sm font-medium text-slate-800">{provider.label}</span>
+                        {belowMinZoom ? (
+                          <span className="text-xs text-slate-500">
+                            Zoom in to see data (z{meta.minZoom}+)
+                          </span>
+                        ) : null}
+                      </span>
+                    </label>
+                    {meta.homepageUrl ? (
+                      <a
+                        aria-label={`Open ${provider.label} website`}
+                        className="shrink-0 p-2 text-slate-400 hover:text-slate-600"
+                        href={meta.homepageUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        <ExternalLinkIcon />
+                      </a>
+                    ) : null}
+                  </div>
                 </li>
               )
             })}
