@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
+import { MAPILLARY_ACCESS_TOKEN } from '@/features/providers/mapillaryShared'
 import type { NormalizedPhoto } from '@/features/providers/model'
 import { buildStreetsidePreviewUrl } from '@/features/viewer/streetsidePreview'
-
-const MAPILLARY_TOKEN = 'MLY|4100327730013843|5bb78b81720791946a9a7b956c57b7cf'
 
 type MapillaryThumbResponse = {
   thumb_1024_url?: string
@@ -29,7 +28,7 @@ type MapilioSequenceResponse = {
 export const fetchMapillaryThumbnail = async (photoId: string): Promise<string | null> => {
   const url = new URL(`https://graph.mapillary.com/${photoId}`)
   url.searchParams.set('fields', 'thumb_1024_url')
-  url.searchParams.set('access_token', MAPILLARY_TOKEN)
+  url.searchParams.set('access_token', MAPILLARY_ACCESS_TOKEN)
 
   const response = await fetch(url)
   if (!response.ok) {
@@ -102,12 +101,8 @@ export const resolvePhotoThumbnailUrl = async (photo: NormalizedPhoto): Promise<
     case 'streetside':
     case 'vegbilder':
       return null
-    case 'mapillary-map-features': {
-      throw new Error('Not implemented yet: "mapillary-map-features" case')
-    }
-    case 'mapillary-signs': {
-      throw new Error('Not implemented yet: "mapillary-signs" case')
-    }
+    case 'mapillary-map-features':
+    case 'mapillary-signs':
     default:
       return null
   }

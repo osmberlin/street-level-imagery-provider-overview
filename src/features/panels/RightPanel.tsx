@@ -53,7 +53,12 @@ export const RightPanel = () => {
 
   const activeGroup =
     selected != null && isProviderId(selected.provider) && selected.photoId
-      ? findGroupBySelection(groups, selected.provider, selected.sequenceId ?? '')
+      ? findGroupBySelection(
+          groups,
+          selected.provider,
+          // Photos without a sequence are grouped under a photo:<id> fallback key.
+          selected.sequenceId ?? `photo:${selected.photoId}`,
+        )
       : null
 
   const resultCount = groups.length + mapFeatures.length

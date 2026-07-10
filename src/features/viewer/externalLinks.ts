@@ -21,12 +21,8 @@ export const providerExternalLink = (photo: NormalizedPhoto): string => {
       const year = photo.viewerYear ?? new Date(photo.capturedAt ?? Date.now()).getUTCFullYear()
       return `https://vegbilder.atlas.vegvesen.no/?year=${year}&lat=${lat}&lng=${lng}&view=image&imageId=${encodeURIComponent(photo.photoId)}`
     }
-    case 'mapillary-map-features': {
-      throw new Error('Not implemented yet: "mapillary-map-features" case')
-    }
-    case 'mapillary-signs': {
-      throw new Error('Not implemented yet: "mapillary-signs" case')
-    }
+    case 'mapillary-map-features':
+    case 'mapillary-signs':
     default:
       return '#'
   }

@@ -28,7 +28,10 @@ export const LeftPanel = () => {
       ? search.providers.filter((id) => id !== providerId)
       : [...search.providers, providerId]
 
-    updateProviders(next.length > 0 ? next : [...search.providers])
+    if (next.length === 0) {
+      return
+    }
+    updateProviders(next)
   }
 
   const togglePhotoType = (type: 'flat' | 'pano', checked: boolean) => {
@@ -39,7 +42,15 @@ export const LeftPanel = () => {
       next.delete(type)
     }
 
-    updatePhotoTypes(next.size > 0 ? [...next] : [...DEFAULT_PHOTO_TYPES])
+    // Unchecking the last type resets to both, but skip the no-op navigation.
+    const resolved = next.size > 0 ? [...next] : [...DEFAULT_PHOTO_TYPES]
+    const isSameAsCurrent =
+      resolved.length === search.photoTypes.length &&
+      resolved.every((type) => photoTypeSet.has(type))
+    if (isSameAsCurrent) {
+      return
+    }
+    updatePhotoTypes(resolved)
   }
 
   return (

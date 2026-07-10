@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react'
-import type { MapLayerMouseEvent, ViewStateChangeEvent } from 'react-map-gl/maplibre'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { MapLayerMouseEvent, MapRef, ViewStateChangeEvent } from 'react-map-gl/maplibre'
 import { Map } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { useAppSearchNavigation } from '@/app/searchNavigation'
-import { roundMapForUrl } from '@/app/searchSchema'
+import { roundMapForUrl, type MapSearch } from '@/app/searchSchema'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
 import { MAIN_MAP_ID } from '@/features/map/constants'
 import { MapSelectionHighlight } from '@/features/map/MapSelectionHighlight'
@@ -20,6 +20,42 @@ export const MapRoot = () => {
   const { map, providers, style, photoTypes, date } = search
   const bbox = useMapViewportBbox()
   const [cursor, setCursor] = useState('grab')
+  const mapRef = useRef<MapRef>(null)
+  // Viewport this component last wrote to the URL, so external URL changes
+  // (back/forward, pasted links) can be told apart from our own move echoes.
+  const lastWrittenViewportRef = useRef<MapSearch | null>(null)
+
+  useEffect(
+    function syncCameraWithUrlViewport() {
+      const mapInstance = mapRef.current
+      if (!mapInstance) {
+        return
+      }
+
+      const lastWritten = lastWrittenViewportRef.current
+      if (
+        lastWritten &&
+        lastWritten.lat === map.lat &&
+        lastWritten.lon === map.lon &&
+        lastWritten.z === map.z
+      ) {
+        return
+      }
+
+      const center = mapInstance.getCenter()
+      const zoom = mapInstance.getZoom()
+      const alreadyThere =
+        Math.abs(center.lat - map.lat) < 1e-5 &&
+        Math.abs(center.lng - map.lon) < 1e-5 &&
+        Math.abs(zoom - map.z) < 0.01
+      if (alreadyThere) {
+        return
+      }
+
+      mapInstance.jumpTo({ center: [map.lon, map.lat], zoom: map.z })
+    },
+    [map.lat, map.lon, map.z],
+  )
 
   const interactiveLayerIds = useMemo(
     () => [
@@ -31,13 +67,13 @@ export const MapRoot = () => {
 
   const handleMoveEnd = (event: ViewStateChangeEvent) => {
     const { latitude, longitude, zoom } = event.viewState
-    updateMapViewport(
-      roundMapForUrl({
-        z: zoom,
-        lat: latitude,
-        lon: longitude,
-      }),
-    )
+    const nextViewport = roundMapForUrl({
+      z: zoom,
+      lat: latitude,
+      lon: longitude,
+    })
+    lastWrittenViewportRef.current = nextViewport
+    updateMapViewport(nextViewport)
   }
 
   const handleClick = (event: MapLayerMouseEvent) => {
@@ -50,7 +86,10 @@ export const MapRoot = () => {
 
     updateSearch(
       {
-        clicked: { lng: event.lngLat.lng, lat: event.lngLat.lat },
+        clicked: {
+          lng: Math.round(event.lngLat.lng * 1e6) / 1e6,
+          lat: Math.round(event.lngLat.lat * 1e6) / 1e6,
+        },
         selected: undefined,
       },
       { replace: true },
@@ -67,6 +106,7 @@ export const MapRoot = () => {
 
   return (
     <Map
+      ref={mapRef}
       id={MAIN_MAP_ID}
       initialViewState={{
         longitude: map.lon,

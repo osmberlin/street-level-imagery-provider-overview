@@ -80,11 +80,30 @@ describe('appSearchSchema', () => {
     expect(parsed.style).toBe('photoType')
   })
 
-  it('validates selected provider against provider id enum', () => {
-    expect(() =>
-      parseAppSearch({
-        selected: { provider: 'not-a-provider', photoId: '1' },
-      }),
-    ).toThrow()
+  it('degrades an invalid selected provider to undefined', () => {
+    const parsed = parseAppSearch({
+      selected: { provider: 'not-a-provider', photoId: '1' },
+    })
+    expect(parsed.selected).toBeUndefined()
+  })
+
+  it('degrades a malformed clicked value to undefined', () => {
+    const parsed = parseAppSearch({ clicked: { lng: 'not-a-number', lat: 999 } })
+    expect(parsed.clicked).toBeUndefined()
+  })
+
+  it('degrades a malformed date value to undefined', () => {
+    const parsed = parseAppSearch({ date: { from: 'nonsense' } })
+    expect(parsed.date).toBeUndefined()
+  })
+
+  it('rejects impossible calendar dates', () => {
+    const parsed = parseAppSearch({ date: { from: '2024-13-99' } })
+    expect(parsed.date).toBeUndefined()
+  })
+
+  it('accepts real calendar dates including leap days', () => {
+    const parsed = parseAppSearch({ date: { from: '2024-02-29', to: '2024-12-31' } })
+    expect(parsed.date).toEqual({ from: '2024-02-29', to: '2024-12-31' })
   })
 })

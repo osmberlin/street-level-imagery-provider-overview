@@ -3,7 +3,21 @@ import { DEFAULT_PROVIDER_IDS, PROVIDER_IDS, type ProviderId } from '@/features/
 
 const providerIdSchema = z.enum(PROVIDER_IDS)
 
-const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+const isoDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((value) => {
+    const [year, month, day] = value.split('-').map(Number)
+    if (year === undefined || month === undefined || day === undefined) {
+      return false
+    }
+    const date = new Date(Date.UTC(year, month - 1, day))
+    return (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day
+    )
+  }, 'Invalid calendar date')
 
 const mapSearchSchema = z.object({
   z: z.coerce.number().min(0).max(22),
@@ -46,9 +60,9 @@ export const appSearchSchema = z.object({
     .array(photoTypeSchema)
     .default([...DEFAULT_PHOTO_TYPES])
     .catch([...DEFAULT_PHOTO_TYPES]),
-  date: dateSearchSchema.optional(),
-  clicked: clickedSchema.optional(),
-  selected: selectedSchema.optional(),
+  date: dateSearchSchema.optional().catch(undefined),
+  clicked: clickedSchema.optional().catch(undefined),
+  selected: selectedSchema.optional().catch(undefined),
 })
 
 export type AppSearch = z.infer<typeof appSearchSchema>
