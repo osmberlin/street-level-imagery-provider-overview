@@ -13,6 +13,7 @@ const CONE_LINE_LAYER_ID = 'view-direction-cone-line'
 const INTERACTIVE_PANO_PROVIDERS = new Set([
   'mapillary',
   'panoramax',
+  'streetside',
   'kartaview',
   'mapilio',
   'vegbilder',

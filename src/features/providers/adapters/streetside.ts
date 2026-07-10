@@ -13,9 +13,12 @@ const STREETSIDE_API = 'https://dev.virtualearth.net/REST/v1/Imagery/MetaData/St
 const TILE_ZOOM = 16
 const MAX_RESULTS = 500
 
+const DEFAULT_SUBDOMAINS = ['t0', 't1', 't2', 't3']
+
 export type StreetsideBubble = {
   id?: string
   imageUrl?: string
+  imageUrlSubdomains?: string[]
   lon?: number
   longitude?: number
   lat?: number
@@ -64,6 +67,15 @@ export const normalizeStreetsideBubble = (
     heading: heading != null && !Number.isNaN(heading) ? heading : null,
     lngLat: [lng, lat],
     thumbUrl: bubble.imageUrl,
+    streetside: bubble.imageUrl
+      ? {
+          urlTemplate: bubble.imageUrl,
+          subdomains:
+            bubble.imageUrlSubdomains && bubble.imageUrlSubdomains.length > 0
+              ? bubble.imageUrlSubdomains
+              : DEFAULT_SUBDOMAINS,
+        }
+      : undefined,
   }
 }
 

@@ -8,6 +8,7 @@ import {
 const seattleFixture: StreetsideBubble = {
   imageUrl:
     'https://ecn.{subdomain}.tiles.virtualearth.net/tiles/hs1032000332102312{faceId}{tileId}?g=15580&key=test',
+  imageUrlSubdomains: ['t0', 't1', 't2', 't3'],
   vintageEnd: '24 Mar 2019 GMT',
   he: 142.48,
   lat: 47.609941,
@@ -44,6 +45,10 @@ describe('normalizeStreetsideBubble', () => {
       heading: 142.48,
       lngLat: [-122.340087, 47.609941],
       thumbUrl: seattleFixture.imageUrl,
+      streetside: {
+        urlTemplate: seattleFixture.imageUrl,
+        subdomains: ['t0', 't1', 't2', 't3'],
+      },
     })
   })
 
@@ -56,6 +61,10 @@ describe('normalizeStreetsideBubble', () => {
       heading: 90,
       lngLat: [2.3522, 48.8566],
       thumbUrl: longitudeFallbackFixture.imageUrl,
+      streetside: {
+        urlTemplate: longitudeFallbackFixture.imageUrl,
+        subdomains: ['t0', 't1', 't2', 't3'],
+      },
     })
   })
 

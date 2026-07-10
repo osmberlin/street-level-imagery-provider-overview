@@ -3,6 +3,7 @@ import { isProviderId } from '@/app/searchSchema'
 import { useAllProviderMapFeaturesLoading } from '@/features/data/useAllProviderMapFeatures'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
 import {
+  collectNearbyStreetsidePhotos,
   findGroupBySelection,
   findNearestPhoto,
   type PhotoSequenceGroup,
@@ -60,6 +61,16 @@ export const RightPanel = () => {
           selected.sequenceId ?? `photo:${selected.photoId}`,
         )
       : null
+
+  const activeStreetsideNearbyPhotos =
+    activeGroup?.providerId === 'streetside' && selected?.photoId
+      ? (() => {
+          const activePhoto =
+            activeGroup.photos.find((photo) => photo.photoId === selected.photoId) ??
+            activeGroup.photos[0]
+          return activePhoto ? collectNearbyStreetsidePhotos(groups, activePhoto) : undefined
+        })()
+      : undefined
 
   const resultCount = groups.length + mapFeatures.length
 
@@ -127,6 +138,11 @@ export const RightPanel = () => {
                     <li key={group.groupKey}>
                       <SequenceGroupCard
                         group={group}
+                        nearbyPhotos={
+                          activeGroup?.groupKey === group.groupKey
+                            ? activeStreetsideNearbyPhotos
+                            : undefined
+                        }
                         selected={activeGroup?.groupKey === group.groupKey ? selected : undefined}
                         onSelectGroup={selectGroup}
                         onStepPhoto={(photoId) => {

@@ -8,6 +8,7 @@
         "@mapbox/vector-tile": "^3.0.0",
         "@panoramax/web-viewer": "^5",
         "@photo-sphere-viewer/core": "^5",
+        "@photo-sphere-viewer/cubemap-tiles-adapter": "^5",
         "@photo-sphere-viewer/virtual-tour-plugin": "^5",
         "@tanstack/react-query": "^5.90.12",
         "@tanstack/react-router": "^1.141.2",
@@ -283,6 +284,10 @@
     "@panoramax/web-viewer": ["@panoramax/web-viewer@5.1.1", "", { "dependencies": { "@fontsource/atkinson-hyperlegible-next": "^5.2.2", "@fortawesome/fontawesome-svg-core": "^6.7.2", "@fortawesome/free-regular-svg-icons": "^6.7.2", "@fortawesome/free-solid-svg-icons": "^6.7.2", "@maplibre/vt-pbf": "^4.0.3", "@photo-sphere-viewer/core": "5.14.1", "@photo-sphere-viewer/equirectangular-tiles-adapter": "5.14.1", "@photo-sphere-viewer/markers-plugin": "5.14.1", "@photo-sphere-viewer/virtual-tour-plugin": "5.14.1", "geojson-vt": "^4.0.2", "iconify-icon": "^3.0.0", "json5": "^2.2.3", "lit": "^3.2.1", "maplibre-gl": "^5.17.0", "pmtiles": "^4.3.0" } }, "sha512-QDNfm4WKpBCoet+WyhaRIpeidignciv7JmJr02NOC7i+v6k5G3muCk38zCiTgrJg0nzX0rtwG/SzmcQhja6F5g=="],
 
     "@photo-sphere-viewer/core": ["@photo-sphere-viewer/core@5.14.1", "", { "dependencies": { "three": "^0.179.0" } }, "sha512-qrwUudrX9YZms4c2shlY/H3jUP0oh9FyGEqIDr/95ulNZgKbhQ6C/i8zDQ4j8ooFR4+z5FDORQtGvLgPyX8VCA=="],
+
+    "@photo-sphere-viewer/cubemap-adapter": ["@photo-sphere-viewer/cubemap-adapter@5.14.3", "", { "peerDependencies": { "@photo-sphere-viewer/core": "5.14.3" } }, "sha512-rF9zdT0RaQqtgC0fX5/hnH+RhW+mzJGM2ERvmdd0SWvEBE7zfEkfqJgBI6esxSfvflOkMGni39VvygirMRI3fA=="],
+
+    "@photo-sphere-viewer/cubemap-tiles-adapter": ["@photo-sphere-viewer/cubemap-tiles-adapter@5.14.3", "", { "peerDependencies": { "@photo-sphere-viewer/core": "5.14.3", "@photo-sphere-viewer/cubemap-adapter": "5.14.3" } }, "sha512-9z3rzRHSoKsp8hrozDME3fqjNHi6rJCiGLde8I43Ro05C095ZNHYLMYqEwKI0xviy7RKXRQjmnT0cfBJEpB6nw=="],
 
     "@photo-sphere-viewer/equirectangular-tiles-adapter": ["@photo-sphere-viewer/equirectangular-tiles-adapter@5.14.1", "", { "peerDependencies": { "@photo-sphere-viewer/core": "5.14.1" } }, "sha512-QHd9y5cIFXAAZInbKbh+nUz5uzSRTiR8HYApm+ONlDu8JHAp410xNhB1vNm2Q1mVgg8IigQpD9Za5mPq10fESA=="],
 

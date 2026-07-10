@@ -28,6 +28,11 @@ export type NormalizedPhoto = {
   fullUrl?: string
   /** Vegbilder atlas year for external viewer links. */
   viewerYear?: number
+  /** Bing Streetside cubemap tile template from the metadata API. */
+  streetside?: {
+    urlTemplate: string
+    subdomains: string[]
+  }
 }
 
 export type NormalizedMapFeature = {

@@ -29,6 +29,12 @@ const FlatPhotoPanel = lazy(() =>
   })),
 )
 
+const StreetsidePanel = lazy(() =>
+  import('@/features/viewer/panels/StreetsidePanel').then((module) => ({
+    default: module.StreetsidePanel,
+  })),
+)
+
 const PSV_FLAT_PROVIDERS = new Set<ProviderId>(['kartaview', 'mapilio', 'vegbilder'])
 
 type ViewerPanelSwitchProps = {
@@ -68,6 +74,17 @@ export const ViewerPanelSwitch = ({ photo, groupPhotos }: ViewerPanelSwitchProps
       <div className="space-y-3">
         <Suspense fallback={<ViewerPanelPlaceholder />}>
           <PanoramaxPanel photo={photo} groupPhotos={groupPhotos} />
+        </Suspense>
+        <PhotoMetadata photo={photo} />
+      </div>
+    )
+  }
+
+  if (photo.providerId === 'streetside') {
+    return (
+      <div className="space-y-3">
+        <Suspense fallback={<ViewerPanelPlaceholder />}>
+          <StreetsidePanel photo={photo} groupPhotos={groupPhotos} />
         </Suspense>
         <PhotoMetadata photo={photo} />
       </div>

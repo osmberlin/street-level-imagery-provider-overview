@@ -1,5 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 import type { AppSearch } from '@/app/searchSchema'
+import type { NormalizedPhoto } from '@/features/providers/model'
 import { providerById } from '@/features/providers/registry'
 import type { PhotoSequenceGroup } from '@/features/viewer/groupClickedPhotos'
 import { findPhotoIndexInGroup } from '@/features/viewer/groupClickedPhotos'
@@ -7,6 +8,7 @@ import { ViewerPanelSwitch } from '@/features/viewer/panels/ViewerPanelSwitch'
 
 type SequenceGroupCardProps = {
   group: PhotoSequenceGroup
+  nearbyPhotos?: NormalizedPhoto[]
   selected: AppSearch['selected']
   onSelectGroup: (group: PhotoSequenceGroup) => void
   onStepPhoto: (photoId: string) => void
@@ -55,6 +57,7 @@ const panoLabel = (group: PhotoSequenceGroup): string => {
 
 export const SequenceGroupCard = ({
   group,
+  nearbyPhotos,
   selected,
   onSelectGroup,
   onStepPhoto,
@@ -111,7 +114,7 @@ export const SequenceGroupCard = ({
 
       {isActive && activePhoto ? (
         <div className="space-y-3 border-t border-slate-200 px-4 py-4">
-          <ViewerPanelSwitch groupPhotos={group.photos} photo={activePhoto} />
+          <ViewerPanelSwitch groupPhotos={nearbyPhotos ?? group.photos} photo={activePhoto} />
 
           {group.photos.length > 1 ? (
             <div className="flex items-center justify-between gap-2">
