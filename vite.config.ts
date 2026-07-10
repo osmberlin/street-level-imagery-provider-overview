@@ -76,6 +76,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(rootDir, 'src'),
+      // The package root pulls in its full map UI, which relies on a maplibregl UMD global
+      // and crashes when bundled; the photo-only entry avoids it but is not in `exports`.
+      '@panoramax/web-viewer': path.resolve(
+        rootDir,
+        'node_modules/@panoramax/web-viewer/build/esm/index_photoviewer.js',
+      ),
     },
   },
   plugins: [
@@ -88,9 +94,11 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
-  // The dev-only dependency optimizer bypasses the shims above; serve the package unbundled.
+  // The dev-only dependency optimizer bypasses the shims above; serve the package unbundled
+  // but still prebundle its CJS deps so their default imports work.
   optimizeDeps: {
     exclude: ['@panoramax/web-viewer'],
+    include: ['@panoramax/web-viewer > json5'],
   },
   build: {
     target: browserslistToEsbuild(),
