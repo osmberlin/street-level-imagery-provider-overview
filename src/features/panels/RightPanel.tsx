@@ -106,14 +106,7 @@ export const RightPanel = () => {
       autoSelectKeyRef.current = key
       selectGroup(group)
     },
-    [
-	clicked,
-	groups,
-	isFetching,
-	isLoading,
-	mapFeatures.length,
-	selected
-],
+    [clicked, groups, isFetching, isLoading, mapFeatures.length, selected],
   )
 
   return (
