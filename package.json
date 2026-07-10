@@ -18,7 +18,6 @@
     "@mapbox/vector-tile": "^3.0.0",
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.141.2",
-    "@types/geojson": "^7946.0.16",
     "maplibre-gl": "^5.15.0",
     "pbf": "^5.1.0",
     "react": "^19.2.3",
@@ -29,6 +28,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^26.1.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
