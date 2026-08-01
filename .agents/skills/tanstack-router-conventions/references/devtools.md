@@ -1,8 +1,10 @@
 # TanStack devtools panel (Query, Router, Form)
 
-**Canonical FMC pattern** for the unified TanStack debug panel. Reference implementation: [trassenscout `TanStackAppDevtools.tsx`](https://github.com/FixMyBerlin/trassenscout/blob/main/src/components/shared/devtools/TanStackAppDevtools.tsx) (see commit `15672e30`).
+**Canonical FMC pattern** for the unified TanStack debug panel (Vite SPA or TanStack Start). Reference implementation: [trassenscout `TanStackAppDevtools.tsx`](https://github.com/FixMyBerlin/trassenscout/blob/main/src/components/shared/devtools/TanStackAppDevtools.tsx) (see commit `15672e30`).
 
 **Official docs:** [TanStack Devtools](https://tanstack.com/devtools/latest)
+
+**SPA note:** `<ClientOnly>` is still fine without SSR (it mounts after hydration / first client paint). On Start apps it also avoids rendering the overlay during SSR.
 
 ---
 
@@ -34,7 +36,7 @@ export default defineConfig({
         },
       },
     }),
-    // …tanstackStart, viteReact, etc.
+    // …tanstackRouter / tanstackStart, viteReact, etc.
   ],
 })
 ```
@@ -73,6 +75,8 @@ export function TanStackAppDevtools() {
           panelLocation: 'bottom',
         }}
         eventBusConfig={{
+          // Start apps: true connects to the Vite/devtools server bus.
+          // SPA-only: omit or set false if you have no server bus.
           connectToServerBus: true,
         }}
         plugins={[

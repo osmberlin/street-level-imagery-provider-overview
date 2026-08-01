@@ -3,7 +3,7 @@
 TanStack Router’s default `stringifySearch` percent-encodes characters that are safe in query values but ugly in the location bar: `"`, `,`, `'`, `(`, `)`, `:`, `;`, `[`, `]`, `{`, `}`, `/`, etc. Parsing still works, but share links look like `answers=%7B%22sidepath%22%3A%22yes%22%7D` instead of readable text.
 
 **Primary reference:** `osm-traffic-sign-tools` → `routerSearch.ts` (JSON parse/stringify + selective decode).  
-**FMC region apps:** also see map slashes (`react-map-gl` → `map-url-state.md`) and optional jsurl for very large objects (below).
+**Map viewport (`?map=zoom/lat/lng`):** [map-search-param.md](map-search-param.md). Map `<Map>` sync → `react-map-gl` → `map-url-state.md`. Optional jsurl for very large objects (below).
 
 **Official:** [TanStack Router — custom search param serialization](https://tanstack.com/router/latest/docs/framework/react/guide/search-params#custom-search-param-serialization)
 
@@ -11,7 +11,7 @@ TanStack Router’s default `stringifySearch` percent-encodes characters that ar
 
 ## Required `router.tsx` setup
 
-Every FMC TanStack Start app **must** wire custom `parseSearch` / `stringifySearch` in `createRouter` — even before any param needs special encoding. Start with the pretty-JSON wrapper; add per-param serializers in `validateSearch` / Zod preprocess as needed.
+Every FMC TanStack Router app **must** wire custom `parseSearch` / `stringifySearch` in `createRouter` — even before any param needs special encoding. Start with the pretty-JSON wrapper; add per-param serializers in `validateSearch` / Zod preprocess as needed.
 
 ```ts
 import { createRouter } from '@tanstack/react-router'
@@ -97,14 +97,14 @@ export const routerSearch = {
 
 Router pretty-JSON is the baseline. Each search param picks the **smallest** encoding that round-trips and stays readable.
 
-| Shape                   | Encoding                               | Example                                  | When                                                           |
-| ----------------------- | -------------------------------------- | ---------------------------------------- | -------------------------------------------------------------- |
-| Enum / flag             | plain string                           | `qa=actionable`                          | Single choice; omit at default                                 |
-| List of tokens          | comma-separated string                 | `focus=area1,area2`                      | Short lists; parse with `.split(',')`                          |
-| Structured but bounded  | domain compact string                  | `answers=240.sidepath.yes,237.color.red` | Avoid JSON `"` churn; custom parse/serialize in Zod preprocess |
-| Small object / array    | TanStack JSON + pretty stringify       | `filter={"users":[1,2]}`                 | Few keys; router handles (de)serialization                     |
-| Slash-containing scalar | custom string, no `encodeURIComponent` | `map=13.5/52.4918/13.4261`               | `/` is part of the value — see map-url-state.md                |
-| **Large** nested state  | **jsurl2** (optional)                  | `notesMode=(folder~7~…)`                 | Only when JSON/compact strings get too long                    |
+| Shape                   | Encoding                               | Example                                  | When                                                                  |
+| ----------------------- | -------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| Enum / flag             | plain string                           | `qa=actionable`                          | Single choice; omit at default                                        |
+| List of tokens          | comma-separated string                 | `focus=area1,area2`                      | Short lists; parse with `.split(',')`                                 |
+| Structured but bounded  | domain compact string                  | `answers=240.sidepath.yes,237.color.red` | Avoid JSON `"` churn; custom parse/serialize in Zod preprocess        |
+| Small object / array    | TanStack JSON + pretty stringify       | `filter={"users":[1,2]}`                 | Few keys; router handles (de)serialization                            |
+| Slash-containing scalar | custom string, no `encodeURIComponent` | `map=13.5/52.4918/13.4261`               | `/` is part of the value — [map-search-param.md](map-search-param.md) |
+| **Large** nested state  | **jsurl2** (optional)                  | `notesMode=(folder~7~…)`                 | Only when JSON/compact strings get too long                           |
 
 Implement per-param logic in:
 
@@ -148,7 +148,9 @@ export const parseSearchWithJsurl = (searchStr: string) => {
 
 ## `map=zoom/lat/lng`
 
-The `/` characters are **part of the value**, not path segments. Add `%2F` → `/` to `makeSearchPretty` if map is stored as a JSON string through the router, or serialize via a dedicated parser that never uses `encodeURIComponent`:
+The `/` characters are **part of the value**, not path segments. Do **not** wrap the serialized value in `encodeURIComponent`.
+
+Full contract (format, rounding, `validateSearch`, `loaderDeps`, redirects): **[map-search-param.md](map-search-param.md)** (tilda-geo `mapParam.ts`).
 
 ```ts
 // ❌ Produces 13.5%2F52.4918%2F13.4261
@@ -158,7 +160,7 @@ encodeURIComponent(serializeMapParam({ zoom, lat, lng }))
 serializeMapParam({ zoom, lat, lng }) // → "13.5/52.4918/13.4261"
 ```
 
-See `react-map-gl` → `map-url-state.md`.
+Map `<Map>` / `onMoveEnd` wiring: `react-map-gl` → `map-url-state.md`.
 
 ---
 
@@ -168,7 +170,7 @@ See `react-map-gl` → `map-url-state.md`.
 
 - **History mode:** TanStack defaults to **push** (`replace: false` — [NavigateOptions](https://tanstack.com/router/latest/docs/framework/react/api/router/NavigateOptionsType)). Pass **`replace: true`** for toggles, filters, and viewport updates. Use push only for real navigation.
 - **Clear on default:** set the key to **`undefined`** or add **`stripSearchParams`** with defaults ([search middlewares](https://tanstack.com/router/latest/docs/framework/react/guide/search-params#transforming-search-with-search-middlewares)). Zod defaults only affect reading.
-- **Throttle high-frequency writes:** map pans/drags need `@tanstack/react-pacer`; see `react-map-gl` → `map-url-state.md`.
+- **Throttle high-frequency writes:** map pans/drags need `@tanstack/react-pacer`; see [map-search-param.md](map-search-param.md) and `react-map-gl` → `map-url-state.md`.
 
 Use one route-local `updateSearch` wrapper so setters compose from fresh `prev` state ([functional search updater](https://tanstack.com/router/latest/docs/framework/react/guide/search-params#usenavigate-navigate-search)) and `undefined` deletes keys:
 

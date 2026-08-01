@@ -60,8 +60,8 @@ describe('buildStreetsidePanoramaConfig', () => {
       { faceSize: 512, nbTiles: 1 },
       { faceSize: 1024, nbTiles: 2 },
     ])
-    const baseUrl = config?.baseUrl as Cubemap | undefined
-    expect(baseUrl?.front).toContain('hs103200033210231201')
+    const baseUrl = config?.baseUrl as Cubemap
+    expect(baseUrl.front).toContain('hs103200033210231201')
     expect(config?.tileUrl('back', 1, 1, 1)).toContain('hs1032000332102312033')
   })
 

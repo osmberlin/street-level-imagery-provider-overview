@@ -1,16 +1,17 @@
 ---
 name: agent-orchestration
 description: >-
-  Fable 5 orchestrator with Composer 2.5 workers. Two separate setups: Cursor IDE
-  (subagents in .cursor/agents) or Claude Code (cursor-agent CLI + .claude/skills).
-  Use when configuring Fable orchestration; pick the guide for your host.
+  Orchestrator (default Grok 4.5) with composer-2.5[fast=false] workers. Two
+  separate setups: Cursor IDE (subagents in .cursor/agents) or Claude Code
+  (cursor-agent CLI + .claude/skills). Use when configuring orchestration;
+  pick the guide for your host.
 user-invocable: true
 disable-model-invocation: true
 ---
 
 # Agent orchestration
 
-**Goal:** **Fable 5** plans; **Composer 2.5** executes bulk work cheaper.
+**Goal:** **Grok 4.5** (default orchestrator) plans; **`composer-2.5[fast=false]`** executes bulk work cheaper.
 
 Install once, then run **only** the init for your host from `.agents/skills/agent-orchestration/`:
 
