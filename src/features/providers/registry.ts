@@ -1,3 +1,4 @@
+import { googleStreetViewAdapter } from '@/features/providers/adapters/google-streetview'
 import { kartaviewAdapter } from '@/features/providers/adapters/kartaview'
 import { mapilioAdapter } from '@/features/providers/adapters/mapilio'
 import { mapillaryAdapter } from '@/features/providers/adapters/mapillary'
@@ -15,6 +16,7 @@ export const PROVIDER_IDS = [
   'mapilio',
   'streetside',
   'vegbilder',
+  'google-streetview',
   'mapillary-signs',
   'mapillary-map-features',
 ] as const
@@ -38,6 +40,7 @@ const PROVIDER_HOMEPAGE_URLS: Partial<Record<ProviderId, string>> = {
   mapilio: 'https://mapilio.com',
   streetside: 'https://www.bing.com/maps',
   vegbilder: 'https://vegbilder.atlas.vegvesen.no',
+  'google-streetview': 'https://www.google.com/maps',
   'mapillary-signs': 'https://www.mapillary.com',
   'mapillary-map-features': 'https://www.mapillary.com',
 }
@@ -49,6 +52,7 @@ export const PROVIDER_ADAPTERS: ProviderAdapter[] = [
   mapilioAdapter,
   streetsideAdapter,
   vegbilderAdapter,
+  googleStreetViewAdapter,
   mapillarySignsAdapter,
   mapillaryMapFeaturesAdapter,
 ]
@@ -70,8 +74,13 @@ export const PROVIDERS: ProviderMeta[] = PROVIDER_ADAPTERS.map((adapter) => ({
 // Feature overlays (signs, map features) are so dense they bury the photo layers,
 // so only photo providers are enabled by default.
 export const DEFAULT_PROVIDER_IDS: ProviderId[] = PROVIDER_IDS.filter(
-  (id) => adapterById[id].kind === 'photo',
+  (id) => adapterById[id].kind === 'photo' && adapterById[id].defaultEnabled !== false,
 )
+
+export const isClickOnlyPhotoProvider = (providerId: ProviderId): boolean => {
+  const adapter = adapterById[providerId]
+  return adapter.kind === 'photo' && adapter.fetchPhotos == null
+}
 
 export const providerById = Object.fromEntries(
   PROVIDERS.map((provider) => [provider.id, provider]),

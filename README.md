@@ -1,6 +1,6 @@
 # Street-Level Imagery Provider Overview
 
-A meta-catalog of street-level imagery providers on one full-screen map. Compare where [Mapillary](https://www.mapillary.com), [Panoramax](https://panoramax.xyz), [KartaView](https://kartaview.org), [Mapilio](https://mapilio.com), [Bing Streetside](https://www.bing.com/maps), and [Vegbilder](https://vegbilder.atlas.vegvesen.no) have coverage, inspect individual photos, and share exactly what you see via the URL.
+A meta-catalog of street-level imagery providers on one full-screen map. Compare where [Mapillary](https://www.mapillary.com), [Panoramax](https://panoramax.xyz), [KartaView](https://kartaview.org), [Mapilio](https://mapilio.com), [Bing Streetside](https://www.bing.com/maps), [Vegbilder](https://vegbilder.atlas.vegvesen.no), and [Google Street View](https://www.google.com/maps) have coverage, inspect individual photos, and share exactly what you see via the URL.
 
 ## What you can do
 
@@ -14,19 +14,19 @@ A meta-catalog of street-level imagery providers on one full-screen map. Compare
 
 ## Provider support
 
-| Feature                               | Mapillary |     Panoramax      | KartaView | Mapilio | Bing Streetside  | Vegbilder |
-| ------------------------------------- | :-------: | :----------------: | :-------: | :-----: | :--------------: | :-------: |
-| Photo dots on map                     |    ✅     |         ✅         |    ✅     |   ✅    |        ✅        |    ✅     |
-| Sequence lines                        |    ✅     |         ✅         |     —     |   ✅    |        —         |     —     |
-| Flat vs panorama detection            |    ✅     |         ✅         |     —     |   ✅    | ✅ (always pano) |    ✅     |
-| Capture date (age style, date filter) |    ✅     |         ✅         |    ✅     |   ✅    |        ✅        |    ✅     |
-| Photo thumbnails in viewer            |    ✅     |         ✅         |    ✅     |   ✅    |        ✅        |    ✅     |
-| Deep link to provider viewer          |    ✅     |         ✅         |    ✅     |   ✅    |        ✅        |    ✅     |
-| Traffic signs overlay                 |    ✅     |         —          |     —     |    —    |        —         |     —     |
-| Map features overlay (POIs etc.)      |    ✅     |         —          |     —     |    —    |        —         |     —     |
-| Minimum zoom for data                 |    12     | 15 (lines from 10) |    12     |   14    |        14        |    14     |
+| Feature                               | Mapillary |     Panoramax      | KartaView | Mapilio | Bing Streetside  | Vegbilder | Google Street View |
+| ------------------------------------- | :-------: | :----------------: | :-------: | :-----: | :--------------: | :-------: | :----------------: |
+| Photo dots on map                     |    ✅     |         ✅         |    ✅     |   ✅    |        ✅        |    ✅     |         —          |
+| Sequence lines                        |    ✅     |         ✅         |     —     |   ✅    |        —         |     —     |         —          |
+| Flat vs panorama detection            |    ✅     |         ✅         |     —     |   ✅    | ✅ (always pano) |    ✅     |  ✅ (always pano)  |
+| Capture date (age style, date filter) |    ✅     |         ✅         |    ✅     |   ✅    |        ✅        |    ✅     |  ✅ (click only)   |
+| Photo thumbnails in viewer            |    ✅     |         ✅         |    ✅     |   ✅    |        ✅        |    ✅     |         —          |
+| Deep link to provider viewer          |    ✅     |         ✅         |    ✅     |   ✅    |        ✅        |    ✅     |         ✅         |
+| Traffic signs overlay                 |    ✅     |         —          |     —     |    —    |        —         |     —     |         —          |
+| Map features overlay (POIs etc.)      |    ✅     |         —          |     —     |    —    |        —         |     —     |         —          |
+| Minimum zoom for data                 |    12     | 15 (lines from 10) |    12     |   14    |        14        |    14     |   click metadata   |
 
-The Mapillary signs and map-features overlays are separate toggles (off by default — they are dense enough to bury the photo layers). Panoramax traffic signs are not available: the public Panoramax MVT endpoint only exposes `pictures` / `sequences` layers, and the iD editor does not implement a Panoramax signs overlay either — see [docs/id-provider-research.md](docs/id-provider-research.md).
+The Mapillary signs and map-features overlays are separate toggles (off by default — they are dense enough to bury the photo layers). Google Street View is also off by default: it is click-only (no map dots or in-app imagery) and uses the Street View Static metadata API when you click the map. Set `VITE_GOOGLE_MAPS_API_KEY` in `.env` (see `.env.example`) with the Street View Static API enabled. Panoramax traffic signs are not available: the public Panoramax MVT endpoint only exposes `pictures` / `sequences` layers, and the iD editor does not implement a Panoramax signs overlay either — see [docs/id-provider-research.md](docs/id-provider-research.md).
 
 ## Development
 

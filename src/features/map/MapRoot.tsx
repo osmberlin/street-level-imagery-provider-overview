@@ -10,7 +10,11 @@ import { MAIN_MAP_ID } from '@/features/map/constants'
 import { MapSelectionHighlight } from '@/features/map/MapSelectionHighlight'
 import { ProviderLayers } from '@/features/map/ProviderLayers'
 import { ViewDirectionIndicator } from '@/features/map/ViewDirectionIndicator'
-import { featureLayerId, photoLayerId } from '@/features/providers/registry'
+import {
+  featureLayerId,
+  isClickOnlyPhotoProvider,
+  photoLayerId,
+} from '@/features/providers/registry'
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 
@@ -77,20 +81,26 @@ export const MapRoot = () => {
     updateMapViewport(nextViewport)
   }
 
+  const hasClickOnlyProvider = useMemo(
+    () => providers.some((providerId) => isClickOnlyPhotoProvider(providerId)),
+    [providers],
+  )
+
   const handleClick = (event: MapLayerMouseEvent) => {
     const features = event.features ?? []
+    const clickPoint = {
+      lng: Math.round(event.lngLat.lng * 1e6) / 1e6,
+      lat: Math.round(event.lngLat.lat * 1e6) / 1e6,
+    }
 
-    if (features.length === 0) {
+    if (features.length === 0 && !hasClickOnlyProvider) {
       updateSearch({ clicked: undefined, selected: undefined }, { replace: true })
       return
     }
 
     updateSearch(
       {
-        clicked: {
-          lng: Math.round(event.lngLat.lng * 1e6) / 1e6,
-          lat: Math.round(event.lngLat.lat * 1e6) / 1e6,
-        },
+        clicked: clickPoint,
         selected: undefined,
       },
       { replace: true },

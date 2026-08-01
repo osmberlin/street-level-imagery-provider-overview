@@ -18,7 +18,12 @@ export const RightPanel = () => {
   const { search, updateSelected } = useAppSearchNavigation()
   const { clicked, selected, providers, map } = search
   const bbox = useMapViewportBbox()
-  const { groups, isLoading: photosLoading, isFetching: photosFetching } = useClickedPhotos()
+  const {
+    groups,
+    isLoading: photosLoading,
+    isFetching: photosFetching,
+    gsvStatus,
+  } = useClickedPhotos()
   const mapFeatures = useClickedMapFeatures()
   const { isLoading: featuresLoading, isFetching: featuresFetching } =
     useAllProviderMapFeaturesLoading(providers, bbox, map.z)
@@ -27,6 +32,21 @@ export const RightPanel = () => {
   const isFetching = photosFetching || featuresFetching
   const hasResults = groups.length > 0 || mapFeatures.length > 0
   const showLoading = clicked != null && (isLoading || isFetching) && !hasResults
+
+  const gsvOnly = providers.length === 1 && providers[0] === 'google-streetview'
+
+  const emptyMessage = (() => {
+    if (hasResults || showLoading || !clicked) {
+      return null
+    }
+    if (gsvStatus === 'none') {
+      return 'No Google Street View coverage here.'
+    }
+    if (gsvStatus === 'no-key' && gsvOnly) {
+      return 'Set VITE_GOOGLE_MAPS_API_KEY to check Google Street View.'
+    }
+    return 'No photos or map features from enabled providers in this area yet. Try zooming in, enabling more providers, or adjusting filters.'
+  })()
 
   const selectGroup = (group: PhotoSequenceGroup) => {
     if (!clicked) {
@@ -148,10 +168,7 @@ export const RightPanel = () => {
           </div>
         ) : !hasResults ? (
           <div className="flex h-full items-center justify-center px-2 text-center">
-            <p className="text-sm leading-relaxed text-slate-500">
-              No photos or map features from enabled providers in this area yet. Try zooming in,
-              enabling more providers, or adjusting filters.
-            </p>
+            <p className="text-sm leading-relaxed text-slate-500">{emptyMessage}</p>
           </div>
         ) : (
           <div className="space-y-3">

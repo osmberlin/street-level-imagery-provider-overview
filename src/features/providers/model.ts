@@ -59,6 +59,8 @@ export type ProviderAdapter = {
   minZoom: number
   /** Minimum map zoom before sequence lines are fetched (defaults to minZoom). */
   sequencesMinZoom?: number
+  /** When false, provider is omitted from the default enabled set. */
+  defaultEnabled?: boolean
   fetchPhotos?: (bbox: Bbox, zoom: number, signal: AbortSignal) => Promise<NormalizedPhoto[]>
   fetchSequences?: (bbox: Bbox, zoom: number, signal: AbortSignal) => Promise<NormalizedSequence[]>
   fetchMapFeatures?: (
