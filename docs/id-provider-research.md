@@ -49,6 +49,8 @@ Username filter shown when: `(kartaview only, no mapillary/streetside) OR panora
 
 ## 1. Mapillary
 
+**Image ID precision:** some `mly1_public` tile ids are wrong for values > 2⁵³ (encoded as double in the PBF). See [mapillary-image-id-precision.md](mapillary-image-id-precision.md).
+
 **Files:** `modules/services/mapillary.js`, `modules/svg/mapillary_images.js`, `modules/svg/mapillary_signs.js`, `modules/svg/mapillary_map_features.js`, `modules/svg/mapillary_position.js`
 
 ### 1.1 API endpoints & fetch method
