@@ -11,6 +11,8 @@ import {
 import { useAllProviderPhotos } from '@/features/data/useAllProviderPhotos'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
 import { useProviderSequences } from '@/features/data/useProviderData'
+import { photoGroupSequenceId } from '@/features/viewer/groupClickedPhotos'
+import { useGoogleStreetViewClickPhoto } from '@/features/viewer/useGoogleStreetViewClickPhoto'
 
 const HIGHLIGHT_SOURCE_ID = 'selection-highlight'
 const HIGHLIGHT_LAYER_ID = 'selection-highlight-layer'
@@ -20,23 +22,38 @@ const SEQUENCE_HIGHLIGHT_LAYER_ID = 'sequence-highlight-layer'
 export const MapSelectionHighlight = () => {
   const { search } = useAppSearchNavigation()
   const bbox = useMapViewportBbox()
-  const { selected, providers, map, photoTypes, date } = search
+  const { clicked, selected, providers, map, photoTypes, date } = search
 
   const { photos: allPhotos } = useAllProviderPhotos(providers, bbox, map.z, photoTypes, date)
+  const gsvEnabled = providers.includes('google-streetview')
+  const streetViewQuery = useGoogleStreetViewClickPhoto(clicked, gsvEnabled)
 
   const selectedPhoto = useMemo(() => {
     if (!selected) {
       return null
     }
-    return (
-      allPhotos.find(
-        (photo) =>
-          photo.providerId === selected.provider &&
-          photo.photoId === selected.photoId &&
-          (photo.sequenceId ?? `photo:${photo.photoId}`) === selected.sequenceId,
-      ) ?? null
+    const fromAllPhotos = allPhotos.find(
+      (photo) =>
+        photo.providerId === selected.provider &&
+        photo.photoId === selected.photoId &&
+        photoGroupSequenceId(photo) === (selected.sequenceId ?? `photo:${selected.photoId}`),
     )
-  }, [allPhotos, selected])
+    if (fromAllPhotos) {
+      return fromAllPhotos
+    }
+
+    const gsvPhoto = streetViewQuery.data
+    if (
+      selected.provider === 'google-streetview' &&
+      gsvPhoto &&
+      gsvPhoto.photoId === selected.photoId &&
+      photoGroupSequenceId(gsvPhoto) === (selected.sequenceId ?? `photo:${selected.photoId}`)
+    ) {
+      return gsvPhoto
+    }
+
+    return null
+  }, [allPhotos, selected, streetViewQuery.data])
 
   const selectedProviderId = selected && isProviderId(selected.provider) ? selected.provider : null
 

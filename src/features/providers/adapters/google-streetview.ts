@@ -74,10 +74,13 @@ export const fetchStreetViewMetadata = async (
   if (data.status === 'ZERO_RESULTS') {
     return null
   }
+  if (data.status !== 'OK') {
+    throw new Error(`Google Street View metadata: ${data.status}`)
+  }
 
   const normalized = normalizeStreetViewMetadata(data, lng, lat)
   if (!normalized) {
-    return null
+    throw new Error('Google Street View metadata: unexpected empty OK response')
   }
 
   return { providerId: 'google-streetview', ...normalized }

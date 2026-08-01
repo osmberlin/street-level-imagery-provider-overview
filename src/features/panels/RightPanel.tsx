@@ -42,6 +42,9 @@ export const RightPanel = () => {
     if (gsvStatus === 'none') {
       return 'No Google Street View coverage here.'
     }
+    if (gsvStatus === 'error') {
+      return 'Could not load Google Street View. Check your API key and network.'
+    }
     if (gsvStatus === 'no-key' && gsvOnly) {
       return 'Set VITE_GOOGLE_MAPS_API_KEY to check Google Street View.'
     }

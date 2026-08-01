@@ -1,20 +1,18 @@
-import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useAllProviderPhotos } from '@/features/data/useAllProviderPhotos'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
-import {
-  fetchStreetViewMetadata,
-  getGoogleMapsApiKey,
-} from '@/features/providers/adapters/google-streetview'
+import { photoMatchesFilters } from '@/features/filters/searchFilters'
+import { getGoogleMapsApiKey } from '@/features/providers/adapters/google-streetview'
 import { clickRadiusMeters } from '@/features/viewer/clickRadius'
 import {
   distanceToPhoto,
   groupClickedPhotos,
   type PhotoSequenceGroup,
 } from '@/features/viewer/groupClickedPhotos'
+import { useGoogleStreetViewClickPhoto } from '@/features/viewer/useGoogleStreetViewClickPhoto'
 
-export type GsvStatus = 'idle' | 'loading' | 'ok' | 'none' | 'no-key'
+export type GsvStatus = 'idle' | 'loading' | 'ok' | 'none' | 'no-key' | 'error'
 
 export type ClickedPhotosResult = {
   groups: PhotoSequenceGroup[]
@@ -23,9 +21,6 @@ export type ClickedPhotosResult = {
   isFetching: boolean
   gsvStatus: GsvStatus
 }
-
-const streetViewMetadataQueryKey = (lng: number, lat: number) =>
-  ['google-streetview-metadata', lng, lat] as const
 
 export const useClickedPhotos = (): ClickedPhotosResult => {
   const { search } = useAppSearchNavigation()
@@ -42,19 +37,7 @@ export const useClickedPhotos = (): ClickedPhotosResult => {
   const gsvEnabled = providers.includes('google-streetview')
   const googleMapsApiKey = getGoogleMapsApiKey()
 
-  const streetViewQuery = useQuery({
-    queryKey: clicked
-      ? streetViewMetadataQueryKey(clicked.lng, clicked.lat)
-      : ['google-streetview-metadata', 'none'],
-    queryFn: ({ signal }) => {
-      if (!clicked) {
-        return null
-      }
-      return fetchStreetViewMetadata(clicked.lat, clicked.lng, signal)
-    },
-    enabled: gsvEnabled && clicked != null && googleMapsApiKey != null,
-    staleTime: 5 * 60 * 1000,
-  })
+  const streetViewQuery = useGoogleStreetViewClickPhoto(clicked, gsvEnabled)
 
   const groups = useMemo(() => {
     if (!clicked) {
@@ -65,9 +48,11 @@ export const useClickedPhotos = (): ClickedPhotosResult => {
       (photo) => distanceToPhoto(photo, clicked.lng, clicked.lat) <= radiusMeters,
     )
 
-    const photos = streetViewQuery.data ? [...nearby, streetViewQuery.data] : nearby
+    const gsvPhoto = streetViewQuery.data
+    const photos =
+      gsvPhoto && photoMatchesFilters(gsvPhoto, photoTypes, date) ? [...nearby, gsvPhoto] : nearby
     return groupClickedPhotos(photos, clicked.lng, clicked.lat)
-  }, [allPhotos, clicked, radiusMeters, streetViewQuery.data])
+  }, [allPhotos, clicked, date, photoTypes, radiusMeters, streetViewQuery.data])
 
   const gsvPending =
     gsvEnabled && clicked != null && googleMapsApiKey != null && streetViewQuery.isPending
@@ -82,6 +67,9 @@ export const useClickedPhotos = (): ClickedPhotosResult => {
     if (streetViewQuery.isPending) {
       return 'loading'
     }
+    if (streetViewQuery.isError) {
+      return 'error'
+    }
     if (streetViewQuery.data) {
       return 'ok'
     }
@@ -94,6 +82,7 @@ export const useClickedPhotos = (): ClickedPhotosResult => {
     googleMapsApiKey,
     gsvEnabled,
     streetViewQuery.data,
+    streetViewQuery.isError,
     streetViewQuery.isFetched,
     streetViewQuery.isPending,
   ])

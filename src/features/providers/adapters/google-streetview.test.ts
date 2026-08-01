@@ -102,4 +102,18 @@ describe('fetchStreetViewMetadata', () => {
 
     await expect(fetchStreetViewMetadata(0, 0, new AbortController().signal)).resolves.toBeNull()
   })
+
+  it('throws for REQUEST_DENIED', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: 'REQUEST_DENIED' }),
+      }),
+    )
+
+    await expect(
+      fetchStreetViewMetadata(37.4, -122.1, new AbortController().signal),
+    ).rejects.toThrow('Google Street View metadata: REQUEST_DENIED')
+  })
 })
