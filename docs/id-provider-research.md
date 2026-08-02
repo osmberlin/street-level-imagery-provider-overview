@@ -591,11 +591,11 @@ If Panoramax adds a signs/features MVT layer later, model it like Mapillary sign
 
 Apple does **not** publish a bulk coverage listing API comparable to Mapillary MVT or Bing Streetside metadata. Official web access is MapKit JS 6 `LookAround` / `LookAroundPreview` (WWDC 2025), which embeds Apple’s viewer for a single place/coordinate and does not expose photo IDs, capture dates, headings, or bbox enumeration.
 
-| Aspect             | Detail                                                                                                                        |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| Deep link (no key) | `https://maps.apple.com/look-around?coordinate={lat},{lng}`                                                                   |
-| MapKit JS          | Requires Apple Developer Program ($99/yr); 250k map views / 25k service calls per day                                         |
-| Bulk listing       | None official; reverse-engineered tiles (e.g. streetlevel) conflict with Apple Maps Service terms (no scrape / derivative DB) |
-| iD                 | Not present                                                                                                                   |
+| Aspect             | Detail                                                                                                                                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Deep link (no key) | `https://maps.apple.com/look-around?coordinate={lat},{lng}&_mvs={base64}` — `_mvs` is required so Maps opens Look Around instead of the place/map card. We encode lat/lng/altitude≈50m like share links. |
+| MapKit JS          | Requires Apple Developer Program ($99/yr); 250k map views / 25k service calls per day                                                                                                                    |
+| Bulk listing       | None official; reverse-engineered tiles (e.g. streetlevel) conflict with Apple Maps Service terms (no scrape / derivative DB)                                                                            |
+| iD                 | Not present                                                                                                                                                                                              |
 
 **App UX:** enabling Look Around shows a right-panel CTA on map click that opens the deep link. Optional: set `VITE_APPLE_MAPKIT_TOKEN` to lazy-load MapKit JS and embed `LookAroundPreview` (falls back to the deep link on error / no imagery). Full map-layer coverage is **not** implemented — see [lookaround-coverage-spike.md](lookaround-coverage-spike.md) for TOS evaluation of reverse-engineered tiles.

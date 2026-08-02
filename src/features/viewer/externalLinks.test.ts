@@ -50,8 +50,10 @@ describe('providerLocationLink', () => {
   })
 
   it('builds an Apple Look Around link at the map center', () => {
-    expect(providerLocationLink('lookaround', lat, lng, zoom)).toBe(
-      'https://maps.apple.com/look-around?coordinate=52.52,13.405',
-    )
+    const url = providerLocationLink('lookaround', lat, lng, zoom)
+    const parsed = new URL(url)
+    expect(parsed.origin + parsed.pathname).toBe('https://maps.apple.com/look-around')
+    expect(parsed.searchParams.get('coordinate')).toBe('52.52,13.405')
+    expect(parsed.searchParams.get('_mvs')).toBeTruthy()
   })
 })

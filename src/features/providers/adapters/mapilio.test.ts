@@ -1,11 +1,19 @@
 import type { Feature } from 'geojson'
 import { describe, expect, it } from 'vitest'
 import {
+  mapilioAdapter,
   normalizeMapilioPointFeature,
   normalizeMapilioRoadFeature,
   parseMapilioCaptureTime,
   parseMapilioResolution,
 } from '@/features/providers/adapters/mapilio'
+
+describe('mapilioAdapter', () => {
+  it('is disabled in the browser until Mapilio fixes tile-server CORS', () => {
+    expect(mapilioAdapter.defaultEnabled).toBe(false)
+    expect(mapilioAdapter.browserUnavailableReason).toContain('CORS')
+  })
+})
 
 describe('parseMapilioCaptureTime', () => {
   it('parses Mapilio capture_time strings', () => {

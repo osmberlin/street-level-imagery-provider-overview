@@ -1,5 +1,10 @@
 import { z } from 'zod'
-import { DEFAULT_PROVIDER_IDS, PROVIDER_IDS, type ProviderId } from '@/features/providers/registry'
+import {
+  DEFAULT_PROVIDER_IDS,
+  isBrowserAvailableProvider,
+  PROVIDER_IDS,
+  type ProviderId,
+} from '@/features/providers/registry'
 
 const providerIdSchema = z.enum(PROVIDER_IDS)
 
@@ -54,7 +59,11 @@ export const DEFAULT_MAP = {
 
 export const appSearchSchema = z.object({
   map: mapSearchSchema.default(DEFAULT_MAP).catch(DEFAULT_MAP),
-  providers: z.array(providerIdSchema).default(DEFAULT_PROVIDER_IDS).catch(DEFAULT_PROVIDER_IDS),
+  providers: z
+    .array(providerIdSchema)
+    .default(DEFAULT_PROVIDER_IDS)
+    .catch(DEFAULT_PROVIDER_IDS)
+    .transform((providers) => providers.filter(isBrowserAvailableProvider)),
   style: z.enum(['photoType', 'age']).default('photoType').catch('photoType'),
   photoTypes: z
     .array(photoTypeSchema)

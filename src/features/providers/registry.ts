@@ -33,6 +33,7 @@ export type ProviderMeta = {
   minZoom: number
   sequencesMinZoom: number
   homepageUrl?: string
+  browserUnavailableReason?: string
 }
 
 const PROVIDER_HOMEPAGE_URLS: Partial<Record<ProviderId, string>> = {
@@ -73,10 +74,9 @@ export const PROVIDERS: ProviderMeta[] = PROVIDER_ADAPTERS.map((adapter) => ({
   minZoom: adapter.minZoom,
   sequencesMinZoom: adapter.sequencesMinZoom ?? adapter.minZoom,
   homepageUrl: PROVIDER_HOMEPAGE_URLS[adapter.id],
+  browserUnavailableReason: adapter.browserUnavailableReason,
 }))
 
-// Feature overlays (signs, map features) are so dense they bury the photo layers,
-// so only photo providers are enabled by default.
 export const DEFAULT_PROVIDER_IDS: ProviderId[] = PROVIDER_IDS.filter(
   (id) => adapterById[id].kind === 'photo' && adapterById[id].defaultEnabled !== false,
 )
@@ -85,6 +85,9 @@ export const isClickOnlyPhotoProvider = (providerId: ProviderId): boolean => {
   const adapter = adapterById[providerId]
   return adapter.kind === 'photo' && adapter.fetchPhotos == null
 }
+
+export const isBrowserAvailableProvider = (providerId: ProviderId): boolean =>
+  adapterById[providerId].browserUnavailableReason == null
 
 export const providerById = Object.fromEntries(
   PROVIDERS.map((provider) => [provider.id, provider]),

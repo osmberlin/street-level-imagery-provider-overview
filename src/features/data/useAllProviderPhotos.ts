@@ -2,7 +2,11 @@ import type { AppSearch } from '@/app/searchSchema'
 import { useProviderPhotos } from '@/features/data/useProviderData'
 import { photoMatchesFilters } from '@/features/filters/searchFilters'
 import type { Bbox, NormalizedPhoto } from '@/features/providers/model'
-import { PROVIDER_IDS, type ProviderId } from '@/features/providers/registry'
+import {
+  isBrowserAvailableProvider,
+  PROVIDER_IDS,
+  type ProviderId,
+} from '@/features/providers/registry'
 
 export type AllProviderPhotosResult = {
   photos: NormalizedPhoto[]
@@ -28,7 +32,12 @@ export const useAllProviderPhotos = (
 
   const queries = PROVIDER_IDS.map((providerId) => ({
     providerId,
-    query: useProviderPhotosMaybe(providerId, enabled.has(providerId), bbox, zoom),
+    query: useProviderPhotosMaybe(
+      providerId,
+      enabled.has(providerId) && isBrowserAvailableProvider(providerId),
+      bbox,
+      zoom,
+    ),
   }))
 
   const photos = queries.flatMap(({ query }) => {

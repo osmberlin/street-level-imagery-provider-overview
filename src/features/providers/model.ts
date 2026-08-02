@@ -61,6 +61,8 @@ export type ProviderAdapter = {
   sequencesMinZoom?: number
   /** When false, provider is omitted from the default enabled set. */
   defaultEnabled?: boolean
+  /** When set, map layers cannot load in the browser (e.g. upstream CORS). */
+  browserUnavailableReason?: string
   fetchPhotos?: (bbox: Bbox, zoom: number, signal: AbortSignal) => Promise<NormalizedPhoto[]>
   fetchSequences?: (bbox: Bbox, zoom: number, signal: AbortSignal) => Promise<NormalizedSequence[]>
   fetchMapFeatures?: (

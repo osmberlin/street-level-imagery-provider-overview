@@ -8,20 +8,14 @@ import {
   roundMapForUrl,
   serializeAppSearch,
 } from '@/app/searchSchema'
+import { DEFAULT_PROVIDER_IDS } from '@/features/providers/registry'
 
 describe('appSearchSchema', () => {
   it('applies defaults for an empty search object', () => {
     const parsed = parseAppSearch({})
 
     expect(parsed.map).toEqual(DEFAULT_MAP)
-    expect(parsed.providers).toEqual([
-      'mapillary',
-      'panoramax',
-      'kartaview',
-      'mapilio',
-      'streetside',
-      'vegbilder',
-    ])
+    expect(parsed.providers).toEqual([...DEFAULT_PROVIDER_IDS])
     expect(parsed.style).toBe('photoType')
     expect(parsed.photoTypes).toEqual([...DEFAULT_PHOTO_TYPES])
     expect(parsed.date).toBeUndefined()
@@ -105,6 +99,11 @@ describe('appSearchSchema', () => {
   it('accepts real calendar dates including leap days', () => {
     const parsed = parseAppSearch({ date: { from: '2024-02-29', to: '2024-12-31' } })
     expect(parsed.date).toEqual({ from: '2024-02-29', to: '2024-12-31' })
+  })
+
+  it('strips browser-unavailable providers from parsed search', () => {
+    const parsed = parseAppSearch({ providers: ['mapillary', 'mapilio'] })
+    expect(parsed.providers).toEqual(['mapillary'])
   })
 
   it('keeps an explicit empty providers array', () => {

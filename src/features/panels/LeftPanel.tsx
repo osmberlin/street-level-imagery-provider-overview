@@ -4,7 +4,10 @@ import type { AppSearch } from '@/app/searchSchema'
 import { DEFAULT_PHOTO_TYPES } from '@/app/searchSchema'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
 import { ProviderLegend } from '@/features/panels/ProviderLegend'
+import { getGoogleMapsApiKey } from '@/features/providers/adapters/google-streetview'
 import {
+  adapterById,
+  isBrowserAvailableProvider,
   isClickOnlyPhotoProvider,
   PROVIDERS,
   providerById,
@@ -46,10 +49,25 @@ export const LeftPanel = () => {
   const flatChecked = photoTypeSet.has('flat')
   const panoChecked = photoTypeSet.has('pano')
 
-  const toggleProvider = (providerId: ProviderId) => {
-    const next = activeProviders.has(providerId)
-      ? search.providers.filter((id) => id !== providerId)
-      : [...search.providers, providerId]
+  const googleMapsConfigured = getGoogleMapsApiKey() != null
+
+  const isProviderEnableBlocked = (providerId: ProviderId): boolean => {
+    if (!isBrowserAvailableProvider(providerId)) {
+      return true
+    }
+    return providerId === 'google-streetview' && !googleMapsConfigured
+  }
+
+  const setProviderEnabled = (providerId: ProviderId, enabled: boolean) => {
+    if (enabled && isProviderEnableBlocked(providerId)) {
+      return
+    }
+
+    const next = enabled
+      ? search.providers.includes(providerId)
+        ? search.providers
+        : [...search.providers, providerId]
+      : search.providers.filter((id) => id !== providerId)
 
     updateProviders(next)
   }
@@ -102,18 +120,41 @@ export const LeftPanel = () => {
             {PROVIDERS.map((provider) => {
               const checked = activeProviders.has(provider.id)
               const meta = providerById[provider.id]
+              const adapter = adapterById[provider.id]
               const clickOnly = isClickOnlyPhotoProvider(provider.id)
               const belowMinZoom = !clickOnly && currentZoom < meta.minZoom
+              const browserUnavailable = adapter.browserUnavailableReason != null
+              const gsvNeedsKey = provider.id === 'google-streetview' && !googleMapsConfigured
+              const enableBlocked = browserUnavailable || gsvNeedsKey
+              const checkboxDisabled = enableBlocked && !checked
               return (
                 <li key={provider.id}>
-                  <div className="flex items-center justify-between gap-1 rounded-lg border border-transparent hover:border-slate-200 hover:bg-slate-50">
-                    <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-2 py-2">
+                  <div
+                    className={twMerge(
+                      'flex items-center justify-between gap-1 rounded-lg border border-transparent hover:border-slate-200 hover:bg-slate-50',
+                      checkboxDisabled && 'opacity-60',
+                    )}
+                  >
+                    <label
+                      className={twMerge(
+                        'flex min-w-0 flex-1 items-center gap-3 px-2 py-2',
+                        checkboxDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
+                      )}
+                      title={
+                        gsvNeedsKey
+                          ? 'Set VITE_GOOGLE_MAPS_API_KEY in .env'
+                          : browserUnavailable
+                            ? adapter.browserUnavailableReason
+                            : undefined
+                      }
+                    >
                       <input
                         checked={checked}
-                        className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
+                        className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400 disabled:cursor-not-allowed"
+                        disabled={checkboxDisabled}
                         type="checkbox"
-                        onChange={() => {
-                          toggleProvider(provider.id)
+                        onChange={(event) => {
+                          setProviderEnabled(provider.id, event.target.checked)
                         }}
                       />
                       <span
@@ -123,7 +164,15 @@ export const LeftPanel = () => {
                       />
                       <span className="flex min-w-0 flex-1 flex-col">
                         <span className="text-sm font-medium text-slate-800">{provider.label}</span>
-                        {clickOnly ? (
+                        {gsvNeedsKey ? (
+                          <span className="text-xs text-slate-500">
+                            Set VITE_GOOGLE_MAPS_API_KEY
+                          </span>
+                        ) : browserUnavailable ? (
+                          <span className="text-xs text-slate-500">
+                            Unavailable in browser (CORS)
+                          </span>
+                        ) : clickOnly ? (
                           <span className="text-xs text-slate-500">Click map for link-out</span>
                         ) : belowMinZoom ? (
                           <span className="text-xs text-slate-500">
