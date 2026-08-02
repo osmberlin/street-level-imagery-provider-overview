@@ -1,5 +1,6 @@
 import type { Feature, LineString, MultiLineString } from 'geojson'
 import { fetchMvt, pointLngLat } from '@/features/providers/fetchMvt'
+import { mapilioWmtsTileUrl } from '@/features/providers/mapilioGeo'
 import type {
   Bbox,
   NormalizedPhoto,
@@ -17,9 +18,6 @@ import { tilesForBbox } from '@/features/providers/tileMath'
 const TILE_ZOOM = 14
 const POINTS_LAYER = 'mapilio:map_points'
 const ROADS_LAYER = 'mapilio:map_roads_line'
-
-const wmtsUrl = (layer: string, tile: TileCoord) =>
-  `https://geo.mapilio.com/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=${layer}&STYLE=&TILEMATRIX=EPSG:900913:${tile.z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL=${tile.x}&TILEROW=${tile.y}`
 
 export const parseMapilioCaptureTime = (value: unknown): number | null => {
   if (typeof value !== 'string' && typeof value !== 'number') {
@@ -106,7 +104,7 @@ const fetchMapilioTile = async (layer: string, tile: TileCoord, signal: AbortSig
   const key = getTileCacheKey(`mapilio:${cacheLayer}`, tile)
   return fetchTileCached(
     key,
-    (innerSignal) => fetchMvt(wmtsUrl(layer, tile), tile, innerSignal),
+    (innerSignal) => fetchMvt(mapilioWmtsTileUrl(layer, tile), tile, innerSignal),
     signal,
   )
 }

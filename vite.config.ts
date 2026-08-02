@@ -71,6 +71,54 @@ function panoramaxConstructableCssPlugin(): Plugin {
   }
 }
 
+const MAPILIO_GEO_ORIGIN = 'https://geo.mapilio.com'
+const MAPILIO_GEO_PATH_MARKER = '/mapilio-geo'
+
+/** Dev/preview proxy: geo.mapilio.com WMTS has no CORS headers for browser fetch. */
+function mapilioGeoProxyPlugin(): Plugin {
+  const proxyRequest = (
+    req: import('node:http').IncomingMessage,
+    res: import('node:http').ServerResponse,
+    next: () => void,
+  ) => {
+    const url = req.url ?? ''
+    const markerIndex = url.indexOf(MAPILIO_GEO_PATH_MARKER)
+    if (markerIndex === -1) {
+      next()
+      return
+    }
+
+    const targetPath = url.slice(markerIndex + MAPILIO_GEO_PATH_MARKER.length)
+    const targetUrl = `${MAPILIO_GEO_ORIGIN}${targetPath}`
+
+    fetch(targetUrl)
+      .then(async (response) => {
+        res.statusCode = response.status
+        response.headers.forEach((value, key) => {
+          if (key.toLowerCase() !== 'transfer-encoding') {
+            res.setHeader(key, value)
+          }
+        })
+        const body = Buffer.from(await response.arrayBuffer())
+        res.end(body)
+      })
+      .catch((error: unknown) => {
+        res.statusCode = 502
+        res.end(`Mapilio proxy error: ${String(error)}`)
+      })
+  }
+
+  return {
+    name: 'mapilio-geo-proxy',
+    configureServer(server) {
+      server.middlewares.use(proxyRequest)
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(proxyRequest)
+    },
+  }
+}
+
 export default defineConfig({
   base: '/street-level-imagery-provider-overview/',
   resolve: {
@@ -85,6 +133,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    mapilioGeoProxyPlugin(),
     panoramaxConstructableCssPlugin(),
     panoramaxPbfDefaultExportPlugin(),
     react({

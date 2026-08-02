@@ -10,6 +10,7 @@ import {
   providerById,
   type ProviderId,
 } from '@/features/providers/registry'
+import { providerLocationLink } from '@/features/viewer/externalLinks'
 
 const STYLE_OPTIONS: { value: AppSearch['style']; label: string }[] = [
   { value: 'photoType', label: 'Photo type' },
@@ -38,7 +39,7 @@ export const LeftPanel = () => {
     useAppSearchNavigation()
   const bbox = useMapViewportBbox()
   const activeProviders = new Set(search.providers)
-  const currentZoom = search.map.z
+  const { lat: mapLat, lon: mapLon, z: currentZoom } = search.map
   const enabledProviders = PROVIDERS.filter((provider) => activeProviders.has(provider.id))
 
   const photoTypeSet = new Set(search.photoTypes)
@@ -50,9 +51,6 @@ export const LeftPanel = () => {
       ? search.providers.filter((id) => id !== providerId)
       : [...search.providers, providerId]
 
-    if (next.length === 0) {
-      return
-    }
     updateProviders(next)
   }
 
@@ -134,17 +132,15 @@ export const LeftPanel = () => {
                         ) : null}
                       </span>
                     </label>
-                    {meta.homepageUrl ? (
-                      <a
-                        aria-label={`Open ${provider.label} website`}
-                        className="shrink-0 p-2 text-slate-400 hover:text-slate-600"
-                        href={meta.homepageUrl}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        <ExternalLinkIcon />
-                      </a>
-                    ) : null}
+                    <a
+                      aria-label={`Open ${provider.label} at map center`}
+                      className="shrink-0 p-2 text-slate-400 hover:text-slate-600"
+                      href={providerLocationLink(provider.id, mapLat, mapLon, currentZoom)}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      <ExternalLinkIcon />
+                    </a>
                   </div>
                 </li>
               )
