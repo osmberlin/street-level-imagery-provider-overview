@@ -4,7 +4,12 @@ import type { AppSearch } from '@/app/searchSchema'
 import { DEFAULT_PHOTO_TYPES } from '@/app/searchSchema'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
 import { ProviderLegend } from '@/features/panels/ProviderLegend'
-import { PROVIDERS, providerById, type ProviderId } from '@/features/providers/registry'
+import {
+  isClickOnlyPhotoProvider,
+  PROVIDERS,
+  providerById,
+  type ProviderId,
+} from '@/features/providers/registry'
 
 const STYLE_OPTIONS: { value: AppSearch['style']; label: string }[] = [
   { value: 'photoType', label: 'Photo type' },
@@ -99,7 +104,8 @@ export const LeftPanel = () => {
             {PROVIDERS.map((provider) => {
               const checked = activeProviders.has(provider.id)
               const meta = providerById[provider.id]
-              const belowMinZoom = currentZoom < meta.minZoom
+              const clickOnly = isClickOnlyPhotoProvider(provider.id)
+              const belowMinZoom = !clickOnly && currentZoom < meta.minZoom
               return (
                 <li key={provider.id}>
                   <div className="flex items-center justify-between gap-1 rounded-lg border border-transparent hover:border-slate-200 hover:bg-slate-50">
@@ -119,7 +125,9 @@ export const LeftPanel = () => {
                       />
                       <span className="flex min-w-0 flex-1 flex-col">
                         <span className="text-sm font-medium text-slate-800">{provider.label}</span>
-                        {belowMinZoom ? (
+                        {clickOnly ? (
+                          <span className="text-xs text-slate-500">Click map for link-out</span>
+                        ) : belowMinZoom ? (
                           <span className="text-xs text-slate-500">
                             Zoom in to see data (z{meta.minZoom}+)
                           </span>

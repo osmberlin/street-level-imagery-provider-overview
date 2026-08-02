@@ -9,6 +9,7 @@ import {
   findNearestPhoto,
   type PhotoSequenceGroup,
 } from '@/features/viewer/groupClickedPhotos'
+import { LookAroundLinkCard } from '@/features/viewer/LookAroundLinkCard'
 import { MapFeatureCard } from '@/features/viewer/MapFeatureCard'
 import { SequenceGroupCard } from '@/features/viewer/SequenceGroupCard'
 import { useClickedMapFeatures } from '@/features/viewer/useClickedMapFeatures'
@@ -30,13 +31,17 @@ export const RightPanel = () => {
 
   const isLoading = photosLoading || featuresLoading
   const isFetching = photosFetching || featuresFetching
+  const lookaroundEnabled = providers.includes('lookaround')
   const hasResults = groups.length > 0 || mapFeatures.length > 0
-  const showLoading = clicked != null && (isLoading || isFetching) && !hasResults
+  const showLookAroundCta = clicked != null && lookaroundEnabled
+  const showLoading =
+    clicked != null && (isLoading || isFetching) && !hasResults && !showLookAroundCta
 
   const gsvOnly = providers.length === 1 && providers[0] === 'google-streetview'
+  const lookaroundOnly = providers.length === 1 && providers[0] === 'lookaround'
 
   const emptyMessage = (() => {
-    if (hasResults || showLoading || !clicked) {
+    if (hasResults || showLoading || !clicked || showLookAroundCta) {
       return null
     }
     if (gsvStatus === 'none') {
@@ -47,6 +52,9 @@ export const RightPanel = () => {
     }
     if (gsvStatus === 'no-key' && gsvOnly) {
       return 'Set VITE_GOOGLE_MAPS_API_KEY to check Google Street View.'
+    }
+    if (lookaroundOnly) {
+      return null
     }
     return 'No photos or map features from enabled providers in this area yet. Try zooming in, enabling more providers, or adjusting filters.'
   })()
@@ -169,12 +177,16 @@ export const RightPanel = () => {
               Loading imagery…
             </p>
           </div>
-        ) : !hasResults ? (
+        ) : !hasResults && !showLookAroundCta ? (
           <div className="flex h-full items-center justify-center px-2 text-center">
             <p className="text-sm leading-relaxed text-slate-500">{emptyMessage}</p>
           </div>
         ) : (
           <div className="space-y-3">
+            {showLookAroundCta && clicked ? (
+              <LookAroundLinkCard lat={clicked.lat} lng={clicked.lng} />
+            ) : null}
+
             {mapFeatures.length > 0 ? (
               <section>
                 <h3 className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">

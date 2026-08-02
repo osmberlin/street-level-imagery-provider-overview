@@ -1,5 +1,6 @@
 import { googleStreetViewAdapter } from '@/features/providers/adapters/google-streetview'
 import { kartaviewAdapter } from '@/features/providers/adapters/kartaview'
+import { lookaroundAdapter } from '@/features/providers/adapters/lookaround'
 import { mapilioAdapter } from '@/features/providers/adapters/mapilio'
 import { mapillaryAdapter } from '@/features/providers/adapters/mapillary'
 import { mapillaryMapFeaturesAdapter } from '@/features/providers/adapters/mapillary-map-features'
@@ -17,6 +18,7 @@ export const PROVIDER_IDS = [
   'streetside',
   'vegbilder',
   'google-streetview',
+  'lookaround',
   'mapillary-signs',
   'mapillary-map-features',
 ] as const
@@ -41,6 +43,7 @@ const PROVIDER_HOMEPAGE_URLS: Partial<Record<ProviderId, string>> = {
   streetside: 'https://www.bing.com/maps',
   vegbilder: 'https://vegbilder.atlas.vegvesen.no',
   'google-streetview': 'https://www.google.com/maps',
+  lookaround: 'https://www.apple.com/maps/',
   'mapillary-signs': 'https://www.mapillary.com',
   'mapillary-map-features': 'https://www.mapillary.com',
 }
@@ -53,6 +56,7 @@ export const PROVIDER_ADAPTERS: ProviderAdapter[] = [
   streetsideAdapter,
   vegbilderAdapter,
   googleStreetViewAdapter,
+  lookaroundAdapter,
   mapillarySignsAdapter,
   mapillaryMapFeaturesAdapter,
 ]

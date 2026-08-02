@@ -1,3 +1,4 @@
+import { lookAroundDeepLink } from '@/features/providers/adapters/lookaround'
 import type { NormalizedMapFeature, NormalizedPhoto } from '@/features/providers/model'
 
 export const providerExternalLink = (photo: NormalizedPhoto): string => {
@@ -19,6 +20,8 @@ export const providerExternalLink = (photo: NormalizedPhoto): string => {
       return `https://www.bing.com/maps?cp=${lat}~${lng}&lvl=18&style=x`
     case 'google-streetview':
       return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`
+    case 'lookaround':
+      return lookAroundDeepLink(lat, lng)
     case 'vegbilder': {
       const year = photo.viewerYear ?? new Date(photo.capturedAt ?? Date.now()).getUTCFullYear()
       return `https://vegbilder.atlas.vegvesen.no/?year=${year}&lat=${lat}&lng=${lng}&view=image&imageId=${encodeURIComponent(photo.photoId)}`
