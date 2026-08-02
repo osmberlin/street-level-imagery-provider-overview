@@ -1,5 +1,5 @@
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
-import type { AppSearch } from '@/app/searchSchema'
+import { parseAppSearch, serializeAppSearch, type AppSearch } from '@/app/searchSchema'
 
 const rootRouteApi = getRouteApi('/')
 
@@ -20,7 +20,14 @@ export const useAppSearchNavigation = () => {
         const updates = typeof partial === 'function' ? partial(prev) : partial
         const next: Record<string, unknown> = { ...prev }
 
+        if ('providers' in updates) {
+          next.providers = updates.providers
+        }
+
         for (const [key, value] of Object.entries(updates)) {
+          if (key === 'providers') {
+            continue
+          }
           if (value === undefined) {
             delete next[key]
           } else {
@@ -40,7 +47,16 @@ export const useAppSearchNavigation = () => {
   }
 
   const updateProviders = (providers: AppSearch['providers']) => {
-    updateSearch({ providers }, { replace: false })
+    const next = parseAppSearch({ ...search, providers })
+    const serialized = serializeAppSearch(
+      providers.length === 0 ? { ...next, clicked: undefined, selected: undefined } : next,
+    )
+
+    void navigate({
+      search: serialized as AppSearch,
+      replace: false,
+      resetScroll: false,
+    })
   }
 
   const updateStyle = (style: AppSearch['style']) => {

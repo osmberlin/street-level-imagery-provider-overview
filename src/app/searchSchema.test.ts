@@ -106,4 +106,28 @@ describe('appSearchSchema', () => {
     const parsed = parseAppSearch({ date: { from: '2024-02-29', to: '2024-12-31' } })
     expect(parsed.date).toEqual({ from: '2024-02-29', to: '2024-12-31' })
   })
+
+  it('keeps an explicit empty providers array', () => {
+    const parsed = parseAppSearch({
+      map: DEFAULT_MAP,
+      providers: [],
+      style: 'photoType',
+    })
+    expect(parsed.providers).toEqual([])
+  })
+
+  it('serializes an empty providers array for the URL', () => {
+    const serialized = serializeAppSearch(
+      parseAppSearch({
+        map: DEFAULT_MAP,
+        providers: [],
+        style: 'photoType',
+      }),
+    )
+
+    expect(serialized.providers).toEqual([])
+    expect(
+      parseAppSearch(routerSearch.parse(routerSearch.stringify(serialized))).providers,
+    ).toEqual([])
+  })
 })
