@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+:root {
+  --left-panel-width: 320px;
+  --right-panel-width: 384px;
+}
+
 @layer base {
   html,
   body,

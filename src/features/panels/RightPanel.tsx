@@ -3,6 +3,7 @@ import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { isProviderId } from '@/app/searchSchema'
 import { useAllProviderMapFeaturesLoading } from '@/features/data/useAllProviderMapFeatures'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
+import { useResizableRightPanelWidth } from '@/features/panels/useResizableRightPanelWidth'
 import {
   collectNearbyStreetsidePhotos,
   findGroupBySelection,
@@ -16,6 +17,7 @@ import { useClickedMapFeatures } from '@/features/viewer/useClickedMapFeatures'
 import { useClickedPhotos } from '@/features/viewer/useClickedPhotos'
 
 export const RightPanel = () => {
+  const { ref, onResizeHandlePointerDown } = useResizableRightPanelWidth()
   const { map, search, updateSelected } = useAppSearchNavigation()
   const { clicked, selected, providers } = search
   const bbox = useMapViewportBbox()
@@ -150,7 +152,17 @@ export const RightPanel = () => {
   )
 
   return (
-    <aside className="flex h-full w-96 shrink-0 flex-col border-l border-slate-200 bg-white">
+    <aside
+      ref={ref}
+      className="group/panel relative flex h-full w-(--right-panel-width) max-w-[640px] shrink-0 flex-col border-l border-slate-200 bg-white"
+    >
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize right panel"
+        className="absolute top-0 bottom-0 left-0 z-30 w-2 cursor-col-resize touch-none bg-slate-400/70 opacity-0 transition-opacity select-none group-hover/panel:opacity-100 active:opacity-100"
+        onPointerDown={onResizeHandlePointerDown}
+      />
       <div className="border-b border-slate-200 px-5 py-5">
         <h2 className="text-sm font-semibold text-slate-900">Photo viewer</h2>
         <p className="mt-1 text-xs text-slate-500">

@@ -4,6 +4,7 @@ import type { AppSearch } from '@/app/searchSchema'
 import { DEFAULT_PHOTO_TYPES } from '@/app/searchSchema'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
 import { ProviderLegend } from '@/features/panels/ProviderLegend'
+import { useResizableLeftPanelWidth } from '@/features/panels/useResizableLeftPanelWidth'
 import { getGoogleMapsApiKey } from '@/features/providers/adapters/google-streetview'
 import {
   adapterById,
@@ -70,6 +71,7 @@ const PanelOpenIcon = () => (
 )
 
 export const LeftPanel = () => {
+  const { ref, onResizeHandlePointerDown } = useResizableLeftPanelWidth()
   const {
     map,
     search,
@@ -147,7 +149,17 @@ export const LeftPanel = () => {
   }
 
   return (
-    <aside className="flex h-full w-80 shrink-0 flex-col border-r border-slate-200 bg-white">
+    <aside
+      ref={ref}
+      className="group/panel relative flex h-full w-(--left-panel-width) max-w-[480px] shrink-0 flex-col border-r border-slate-200 bg-white"
+    >
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize left panel"
+        className="absolute top-0 right-0 bottom-0 z-30 w-2 cursor-col-resize touch-none bg-slate-400/70 opacity-0 transition-opacity select-none group-hover/panel:opacity-100 active:opacity-100"
+        onPointerDown={onResizeHandlePointerDown}
+      />
       <div className="border-b border-slate-200 px-5 py-5">
         <div className="flex items-start gap-3">
           <h1 className="min-w-0 flex-1 text-lg font-semibold tracking-tight text-slate-900">
