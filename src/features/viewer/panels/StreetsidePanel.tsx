@@ -1,8 +1,14 @@
-import type { PanoData, PanoDataProvider, Viewer } from '@photo-sphere-viewer/core'
-import type { VirtualTourNode, VirtualTourPlugin } from '@photo-sphere-viewer/virtual-tour-plugin'
+import { type PanoData, type PanoDataProvider, Viewer } from '@photo-sphere-viewer/core'
+import '@photo-sphere-viewer/core/index.css'
+import { CubemapTilesAdapter } from '@photo-sphere-viewer/cubemap-tiles-adapter'
+import {
+  events,
+  VirtualTourPlugin,
+  type VirtualTourNode,
+} from '@photo-sphere-viewer/virtual-tour-plugin'
 import { useEffect, useRef, useState } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
-import { useMainMapRef, getMainMapRef } from '@/features/map/useMainMapRef'
+import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
 import type { NormalizedPhoto } from '@/features/providers/model'
 import { haversineDistanceMeters } from '@/features/viewer/clickRadius'
 import { photoGroupSequenceId } from '@/features/viewer/groupClickedPhotos'
@@ -109,7 +115,7 @@ export const StreetsidePanel = ({ photo, groupPhotos }: StreetsidePanelProps) =>
   const [isLoading, setIsLoading] = useState(true)
   const { updateSelected } = useAppSearchNavigation()
   const actions = useViewerActions()
-  useMainMapRef()
+  const easeMainMapToPoint = useEaseMainMapToPoint()
   const initialPhotoIdRef = useRef(photo.photoId)
 
   useEffect(
@@ -132,178 +138,141 @@ export const StreetsidePanel = ({ photo, groupPhotos }: StreetsidePanelProps) =>
 
   useEffect(
     function mountStreetsideViewer() {
-      let cancelled = false
-
-      const setup = async () => {
-        const [{ Viewer }, { CubemapTilesAdapter }, { VirtualTourPlugin, events }] =
-          await Promise.all([
-            import('@photo-sphere-viewer/core'),
-            import('@photo-sphere-viewer/cubemap-tiles-adapter'),
-            import('@photo-sphere-viewer/virtual-tour-plugin'),
-            import('@photo-sphere-viewer/core/index.css'),
-          ])
-
-        if (cancelled) {
-          return
-        }
-
-        const container = containerRef.current
-        if (!container) {
-          return
-        }
-
-        const { nodes, photoById } = buildTourNodes(groupPhotosRef.current)
-        if (cancelled) {
-          return
-        }
-
-        photoByIdRef.current = photoById
-        builtNodeIdsRef.current = new Set(nodes.map((node) => node.id))
-
-        const startNodeId = nodes.some((node) => node.id === initialPhotoIdRef.current)
-          ? initialPhotoIdRef.current
-          : nodes[0]?.id
-
-        if (!startNodeId || nodes.length === 0) {
-          setIsLoading(false)
-          return
-        }
-
-        const viewer = new Viewer({
-          container,
-          adapter: CubemapTilesAdapter,
-          navbar: false,
-          plugins: [
-            VirtualTourPlugin.withConfig({
-              positionMode: 'gps',
-              renderMode: '3d',
-              nodes,
-              startNodeId,
-            }),
-          ],
-        })
-
-        const virtualTour = viewer.getPlugin<VirtualTourPlugin>(VirtualTourPlugin)
-        viewerRef.current = viewer
-        virtualTourRef.current = virtualTour
-        lastViewerPhotoIdRef.current = startNodeId
-        setIsLoading(false)
-
-        const easeMapToPhoto = (lng: number, lat: number) => {
-          const mapInstance = getMainMapRef().current?.getMap()
-          if (mapInstance && !mapInstance.getBounds().contains([lng, lat])) {
-            mapInstance.easeTo({ center: [lng, lat] })
-          }
-        }
-
-        const flushPov = () => {
-          bearingRafRef.current = null
-          if (pendingBearingRef.current != null) {
-            actions.setPov({ bearing: pendingBearingRef.current })
-            pendingBearingRef.current = null
-          }
-          if (pendingHfovRef.current != null) {
-            actions.setPov({ hfov: pendingHfovRef.current })
-            pendingHfovRef.current = null
-          }
-        }
-
-        const schedulePovUpdate = () => {
-          const heading = currentHeadingRef.current ?? 0
-          const position = viewer.getPosition()
-          pendingBearingRef.current = normalizeBearing(heading + radToDeg(position.yaw))
-          const vFov = viewer.dataHelper.zoomLevelToFov(viewer.getZoomLevel())
-          pendingHfovRef.current = viewer.dataHelper.vFovToHFov(vFov)
-
-          if (bearingRafRef.current == null) {
-            bearingRafRef.current = requestAnimationFrame(flushPov)
-          }
-        }
-
-        const onNodeChanged = (event: InstanceType<typeof events.NodeChangedEvent>) => {
-          const nodeId = event.node.id
-          lastViewerPhotoIdRef.current = nodeId
-
-          const nodePhoto =
-            photoByIdRef.current.get(nodeId) ??
-            (event.node.data?.photo as NormalizedPhoto | undefined) ??
-            photoRef.current
-
-          currentHeadingRef.current = nodePhoto.heading
-
-          updateSelected({
-            provider: nodePhoto.providerId,
-            sequenceId: photoGroupSequenceId(nodePhoto),
-            photoId: nodeId,
-          })
-
-          actions.setPov({ lngLat: nodePhoto.lngLat })
-          easeMapToPhoto(nodePhoto.lngLat[0], nodePhoto.lngLat[1])
-          schedulePovUpdate()
-        }
-
-        const onPositionUpdated = () => {
-          schedulePovUpdate()
-        }
-
-        const onZoomUpdated = () => {
-          schedulePovUpdate()
-        }
-
-        virtualTour.addEventListener(events.NodeChangedEvent.type, onNodeChanged)
-        viewer.addEventListener('position-updated', onPositionUpdated)
-        viewer.addEventListener('zoom-updated', onZoomUpdated)
-
-        const resizeObserver = new ResizeObserver(() => {
-          viewer.autoSize()
-        })
-        resizeObserver.observe(container)
-
-        readyRef.current = true
-
-        const safeSetCurrentNode = (nodeId: string) => {
-          if (!builtNodeIdsRef.current.has(nodeId)) {
-            return
-          }
-          void virtualTour.setCurrentNode(nodeId).catch(() => {})
-        }
-
-        const pendingNodeId = pendingNodeIdRef.current
-        if (pendingNodeId) {
-          pendingNodeIdRef.current = null
-          safeSetCurrentNode(pendingNodeId)
-        } else {
-          schedulePovUpdate()
-        }
-
-        return () => {
-          readyRef.current = false
-          if (bearingRafRef.current != null) {
-            cancelAnimationFrame(bearingRafRef.current)
-            bearingRafRef.current = null
-          }
-          resizeObserver.disconnect()
-          virtualTour.removeEventListener(events.NodeChangedEvent.type, onNodeChanged)
-          viewer.removeEventListener('position-updated', onPositionUpdated)
-          viewer.removeEventListener('zoom-updated', onZoomUpdated)
-          viewer.destroy()
-          viewerRef.current = null
-          virtualTourRef.current = null
-        }
+      const container = containerRef.current
+      if (!container) {
+        return
       }
 
-      let cleanup: (() => void) | undefined
+      const { nodes, photoById } = buildTourNodes(groupPhotosRef.current)
 
-      void setup().then((dispose) => {
-        cleanup = dispose
+      photoByIdRef.current = photoById
+      builtNodeIdsRef.current = new Set(nodes.map((node) => node.id))
+
+      const startNodeId = nodes.some((node) => node.id === initialPhotoIdRef.current)
+        ? initialPhotoIdRef.current
+        : nodes[0]?.id
+
+      if (!startNodeId || nodes.length === 0) {
+        setIsLoading(false)
+        return
+      }
+
+      const viewer = new Viewer({
+        container,
+        adapter: CubemapTilesAdapter,
+        navbar: false,
+        plugins: [
+          VirtualTourPlugin.withConfig({
+            positionMode: 'gps',
+            renderMode: '3d',
+            nodes,
+            startNodeId,
+          }),
+        ],
       })
 
+      const virtualTour = viewer.getPlugin<VirtualTourPlugin>(VirtualTourPlugin)
+      viewerRef.current = viewer
+      virtualTourRef.current = virtualTour
+      lastViewerPhotoIdRef.current = startNodeId
+      setIsLoading(false)
+
+      const flushPov = () => {
+        bearingRafRef.current = null
+        if (pendingBearingRef.current != null) {
+          actions.setPov({ bearing: pendingBearingRef.current })
+          pendingBearingRef.current = null
+        }
+        if (pendingHfovRef.current != null) {
+          actions.setPov({ hfov: pendingHfovRef.current })
+          pendingHfovRef.current = null
+        }
+      }
+
+      const schedulePovUpdate = () => {
+        const heading = currentHeadingRef.current ?? 0
+        const position = viewer.getPosition()
+        pendingBearingRef.current = normalizeBearing(heading + radToDeg(position.yaw))
+        const vFov = viewer.dataHelper.zoomLevelToFov(viewer.getZoomLevel())
+        pendingHfovRef.current = viewer.dataHelper.vFovToHFov(vFov)
+
+        if (bearingRafRef.current == null) {
+          bearingRafRef.current = requestAnimationFrame(flushPov)
+        }
+      }
+
+      const onNodeChanged = (event: InstanceType<typeof events.NodeChangedEvent>) => {
+        const nodeId = event.node.id
+        lastViewerPhotoIdRef.current = nodeId
+
+        const nodePhoto =
+          photoByIdRef.current.get(nodeId) ??
+          (event.node.data?.photo as NormalizedPhoto | undefined) ??
+          photoRef.current
+
+        currentHeadingRef.current = nodePhoto.heading
+
+        updateSelected({
+          provider: nodePhoto.providerId,
+          sequenceId: photoGroupSequenceId(nodePhoto),
+          photoId: nodeId,
+        })
+
+        actions.setPov({ lngLat: nodePhoto.lngLat })
+        easeMainMapToPoint(nodePhoto.lngLat[0], nodePhoto.lngLat[1])
+        schedulePovUpdate()
+      }
+
+      const onPositionUpdated = () => {
+        schedulePovUpdate()
+      }
+
+      const onZoomUpdated = () => {
+        schedulePovUpdate()
+      }
+
+      virtualTour.addEventListener(events.NodeChangedEvent.type, onNodeChanged)
+      viewer.addEventListener('position-updated', onPositionUpdated)
+      viewer.addEventListener('zoom-updated', onZoomUpdated)
+
+      const resizeObserver = new ResizeObserver(() => {
+        viewer.autoSize()
+      })
+      resizeObserver.observe(container)
+
+      readyRef.current = true
+
+      const safeSetCurrentNode = (nodeId: string) => {
+        if (!builtNodeIdsRef.current.has(nodeId)) {
+          return
+        }
+        void virtualTour.setCurrentNode(nodeId).catch(() => {})
+      }
+
+      const pendingNodeId = pendingNodeIdRef.current
+      if (pendingNodeId) {
+        pendingNodeIdRef.current = null
+        safeSetCurrentNode(pendingNodeId)
+      } else {
+        schedulePovUpdate()
+      }
+
       return () => {
-        cancelled = true
-        cleanup?.()
+        readyRef.current = false
+        if (bearingRafRef.current != null) {
+          cancelAnimationFrame(bearingRafRef.current)
+          bearingRafRef.current = null
+        }
+        resizeObserver.disconnect()
+        virtualTour.removeEventListener(events.NodeChangedEvent.type, onNodeChanged)
+        viewer.removeEventListener('position-updated', onPositionUpdated)
+        viewer.removeEventListener('zoom-updated', onZoomUpdated)
+        viewer.destroy()
+        viewerRef.current = null
+        virtualTourRef.current = null
       }
     },
-    [actions, updateSelected],
+    [actions, easeMainMapToPoint, updateSelected],
   )
 
   useEffect(

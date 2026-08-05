@@ -1,14 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import type { MapLayerMouseEvent, MapRef, ViewStateChangeEvent } from 'react-map-gl/maplibre'
-import { Map } from 'react-map-gl/maplibre'
+import type { MapLibreEvent } from 'maplibre-gl'
+import { useMemo, useState } from 'react'
+import type { MapLayerMouseEvent, ViewStateChangeEvent } from 'react-map-gl/maplibre'
+import { AttributionControl, Map } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
+import { roundPositionForURL } from '@/app/mapParam'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
-import { roundMapForUrl, type MapSearch } from '@/app/searchSchema'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
 import { MAIN_MAP_ID } from '@/features/map/constants'
+import { exposeMainMapForDebugging } from '@/features/map/exposeMainMapForDebugging'
+import { useMapActions } from '@/features/map/map-store'
 import { MapSelectionHighlight } from '@/features/map/MapSelectionHighlight'
+import { rememberWrittenMapViewport } from '@/features/map/mapViewportSync'
 import { ProviderLayers } from '@/features/map/ProviderLayers'
+import { SyncMapCameraFromUrl } from '@/features/map/SyncMapCameraFromUrl'
 import { ViewDirectionIndicator } from '@/features/map/ViewDirectionIndicator'
 import {
   featureLayerId,
@@ -25,42 +30,7 @@ export const MapRoot = () => {
   const { map, providers, style, photoTypes, date } = search
   const bbox = useMapViewportBbox()
   const [cursor, setCursor] = useState('grab')
-  const mapRef = useRef<MapRef>(null)
-  // Viewport this component last wrote to the URL, so external URL changes
-  // (back/forward, pasted links) can be told apart from our own move echoes.
-  const lastWrittenViewportRef = useRef<MapSearch | null>(null)
-
-  useEffect(
-    function syncCameraWithUrlViewport() {
-      const mapInstance = mapRef.current
-      if (!mapInstance) {
-        return
-      }
-
-      const lastWritten = lastWrittenViewportRef.current
-      if (
-        lastWritten &&
-        lastWritten.lat === map.lat &&
-        lastWritten.lon === map.lon &&
-        lastWritten.z === map.z
-      ) {
-        return
-      }
-
-      const center = mapInstance.getCenter()
-      const zoom = mapInstance.getZoom()
-      const alreadyThere =
-        Math.abs(center.lat - map.lat) < 1e-5 &&
-        Math.abs(center.lng - map.lon) < 1e-5 &&
-        Math.abs(zoom - map.z) < 0.01
-      if (alreadyThere) {
-        return
-      }
-
-      mapInstance.jumpTo({ center: [map.lon, map.lat], zoom: map.z })
-    },
-    [map.lat, map.lon, map.z],
-  )
+  const { markMapLoaded } = useMapActions()
 
   const interactiveLayerIds = useMemo(
     () => [
@@ -70,14 +40,16 @@ export const MapRoot = () => {
     [providers],
   )
 
+  const handleLoad = (event: MapLibreEvent) => {
+    markMapLoaded()
+    exposeMainMapForDebugging(event.target)
+  }
+
   const handleMoveEnd = (event: ViewStateChangeEvent) => {
     const { latitude, longitude, zoom } = event.viewState
-    const nextViewport = roundMapForUrl({
-      z: zoom,
-      lat: latitude,
-      lon: longitude,
-    })
-    lastWrittenViewportRef.current = nextViewport
+    const [lat, lng, roundedZoom] = roundPositionForURL(latitude, longitude, zoom)
+    const nextViewport = { zoom: roundedZoom, lat, lng }
+    rememberWrittenMapViewport(nextViewport)
     updateMapViewport(nextViewport)
   }
 
@@ -117,30 +89,34 @@ export const MapRoot = () => {
 
   return (
     <Map
-      ref={mapRef}
       id={MAIN_MAP_ID}
       initialViewState={{
-        longitude: map.lon,
+        longitude: map.lng,
         latitude: map.lat,
-        zoom: map.z,
+        zoom: map.zoom,
       }}
       mapStyle={MAP_STYLE}
       style={{ width: '100%', height: '100%' }}
       attributionControl={false}
+      RTLTextPlugin={false}
+      dragRotate={false}
       cursor={cursor}
       interactiveLayerIds={interactiveLayerIds}
       onClick={handleClick}
+      onLoad={handleLoad}
       onMoveEnd={handleMoveEnd}
       onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
     >
+      <AttributionControl compact position="bottom-left" />
+      <SyncMapCameraFromUrl />
       <ProviderLayers
         bbox={bbox}
         date={date}
         photoTypes={photoTypes}
         providerIds={providers}
         style={style}
-        zoom={map.z}
+        zoom={map.zoom}
       />
       <ViewDirectionIndicator />
       <MapSelectionHighlight />

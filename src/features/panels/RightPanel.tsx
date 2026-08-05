@@ -27,7 +27,7 @@ export const RightPanel = () => {
   } = useClickedPhotos()
   const mapFeatures = useClickedMapFeatures()
   const { isLoading: featuresLoading, isFetching: featuresFetching } =
-    useAllProviderMapFeaturesLoading(providers, bbox, map.z)
+    useAllProviderMapFeaturesLoading(providers, bbox, map.zoom)
 
   const isLoading = photosLoading || featuresLoading
   const isFetching = photosFetching || featuresFetching

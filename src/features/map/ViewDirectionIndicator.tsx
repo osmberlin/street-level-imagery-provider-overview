@@ -27,7 +27,7 @@ export const ViewDirectionIndicator = () => {
   const storeHfov = useViewerHfov()
   const storeLngLat = useViewerLngLat()
 
-  const { photos: allPhotos } = useAllProviderPhotos(providers, bbox, map.z, photoTypes, date)
+  const { photos: allPhotos } = useAllProviderPhotos(providers, bbox, map.zoom, photoTypes, date)
 
   const selectedPhoto = useMemo(() => {
     if (!selected) {
@@ -70,18 +70,20 @@ export const ViewDirectionIndicator = () => {
       return null
     }
 
-    return viewConeGeoJson(apex, bearing, fov, coneRadiusMeters(map.z))
-  }, [map.z, selectedPhoto, storeBearing, storeHfov, storeLngLat])
+    return viewConeGeoJson(apex, bearing, fov, coneRadiusMeters(map.zoom))
+  }, [map.zoom, selectedPhoto, storeBearing, storeHfov, storeLngLat])
 
   if (!selectedPhoto || !coneFeature) {
     return null
   }
 
   return (
-    <Source id={CONE_SOURCE_ID} type="geojson" data={coneFeature}>
+    <>
+      <Source id={CONE_SOURCE_ID} type="geojson" data={coneFeature} />
       <Layer
         id={CONE_FILL_LAYER_ID}
         type="fill"
+        source={CONE_SOURCE_ID}
         paint={{
           'fill-color': '#0f172a',
           'fill-opacity': 0.15,
@@ -90,12 +92,13 @@ export const ViewDirectionIndicator = () => {
       <Layer
         id={CONE_LINE_LAYER_ID}
         type="line"
+        source={CONE_SOURCE_ID}
         paint={{
           'line-color': '#0f172a',
           'line-width': 1.5,
           'line-opacity': 0.5,
         }}
       />
-    </Source>
+    </>
   )
 }

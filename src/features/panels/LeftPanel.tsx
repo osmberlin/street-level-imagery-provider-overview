@@ -42,7 +42,7 @@ export const LeftPanel = () => {
     useAppSearchNavigation()
   const bbox = useMapViewportBbox()
   const activeProviders = new Set(search.providers)
-  const { lat: mapLat, lon: mapLon, z: currentZoom } = search.map
+  const { lat: mapLat, lng: mapLng, zoom: currentZoom } = search.map
   const enabledProviders = PROVIDERS.filter((provider) => activeProviders.has(provider.id))
 
   const photoTypeSet = new Set(search.photoTypes)
@@ -184,7 +184,7 @@ export const LeftPanel = () => {
                     <a
                       aria-label={`Open ${provider.label} at map center`}
                       className="shrink-0 p-2 text-slate-400 hover:text-slate-600"
-                      href={providerLocationLink(provider.id, mapLat, mapLon, currentZoom)}
+                      href={providerLocationLink(provider.id, mapLat, mapLng, currentZoom)}
                       rel="noreferrer"
                       target="_blank"
                     >

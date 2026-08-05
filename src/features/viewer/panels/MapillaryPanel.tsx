@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react'
 import 'mapillary-js/dist/mapillary.css'
 
 import { useAppSearchNavigation } from '@/app/searchNavigation'
-import { useMainMapRef, getMainMapRef } from '@/features/map/useMainMapRef'
+import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
 import { MAPILLARY_ACCESS_TOKEN } from '@/features/providers/mapillaryShared'
 import type { NormalizedPhoto } from '@/features/providers/model'
 import { useViewerActions } from '@/features/viewer/useViewerStore'
@@ -28,7 +28,7 @@ export const MapillaryPanel = ({ photo }: MapillaryPanelProps) => {
   const pendingBearingRef = useRef<number | null>(null)
   const { updateSelected } = useAppSearchNavigation()
   const actions = useViewerActions()
-  useMainMapRef()
+  const easeMainMapToPoint = useEaseMainMapToPoint()
   const initialPhotoIdRef = useRef(photo.photoId)
 
   useEffect(
@@ -91,11 +91,7 @@ export const MapillaryPanel = ({ photo }: MapillaryPanelProps) => {
         }
 
         actions.setPov({ lngLat: [position.lng, position.lat] })
-
-        const mapInstance = getMainMapRef().current?.getMap()
-        if (mapInstance && !mapInstance.getBounds().contains([position.lng, position.lat])) {
-          mapInstance.easeTo({ center: [position.lng, position.lat] })
-        }
+        easeMainMapToPoint(position.lng, position.lat)
       }
 
       const flushBearing = () => {
@@ -141,7 +137,7 @@ export const MapillaryPanel = ({ photo }: MapillaryPanelProps) => {
         viewerRef.current = null
       }
     },
-    [actions, updateSelected],
+    [actions, easeMainMapToPoint, updateSelected],
   )
 
   useEffect(

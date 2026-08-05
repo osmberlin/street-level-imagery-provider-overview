@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { mapParamFallback, parseMapParam, serializeMapParam, type MapParam } from '@/app/mapParam'
 import {
   DEFAULT_PROVIDER_IDS,
   isBrowserAvailableProvider,
@@ -24,11 +25,32 @@ const isoDateSchema = z
     )
   }, 'Invalid calendar date')
 
-const mapSearchSchema = z.object({
-  z: z.coerce.number().min(0).max(22),
-  lat: z.coerce.number().min(-90).max(90),
-  lon: z.coerce.number().min(-180).max(180),
-})
+const coerceMapSearchParam = (raw: unknown): string | undefined => {
+  if (raw == null || raw === '') {
+    return undefined
+  }
+  if (typeof raw === 'string') {
+    return raw
+  }
+  if (typeof raw === 'object' && !Array.isArray(raw)) {
+    const obj = raw as Record<string, unknown>
+    const zoom = obj.zoom ?? obj.z
+    const lat = obj.lat
+    const lng = obj.lng ?? obj.lon
+    if (typeof zoom === 'number' && typeof lat === 'number' && typeof lng === 'number') {
+      return serializeMapParam({ zoom, lat, lng })
+    }
+  }
+  return undefined
+}
+
+const mapSearchSchema = z.preprocess(
+  coerceMapSearchParam,
+  z
+    .string()
+    .optional()
+    .transform((value) => parseMapParam(value ?? '') ?? mapParamFallback),
+)
 
 const clickedSchema = z.object({
   lng: z.coerce.number().min(-180).max(180),
@@ -51,14 +73,10 @@ const dateSearchSchema = z.object({
 
 export const DEFAULT_PHOTO_TYPES = ['flat', 'pano'] as const
 
-export const DEFAULT_MAP = {
-  z: 14,
-  lat: 52.52,
-  lon: 13.405,
-} as const
+export const DEFAULT_MAP = mapParamFallback
 
 export const appSearchSchema = z.object({
-  map: mapSearchSchema.default(DEFAULT_MAP).catch(DEFAULT_MAP),
+  map: mapSearchSchema.default(mapParamFallback).catch(mapParamFallback),
   providers: z
     .array(providerIdSchema)
     .default(DEFAULT_PROVIDER_IDS)
@@ -75,23 +93,7 @@ export const appSearchSchema = z.object({
 })
 
 export type AppSearch = z.infer<typeof appSearchSchema>
-export type MapSearch = z.infer<typeof mapSearchSchema>
-
-const roundNumber = (value: number, decimals: number) => {
-  const factor = 10 ** decimals
-  return Math.round(value * factor) / factor
-}
-
-const roundLatLngByZoom = (value: number, zoom: number) => {
-  const precision = zoom >= 17 ? 5 : zoom < 13 ? 3 : 4
-  return roundNumber(value, precision)
-}
-
-export const roundMapForUrl = (map: MapSearch): MapSearch => ({
-  z: roundNumber(map.z, 2),
-  lat: roundLatLngByZoom(map.lat, map.z),
-  lon: roundLatLngByZoom(map.lon, map.z),
-})
+export type { MapParam }
 
 export const parseAppSearch = (raw: unknown): AppSearch => appSearchSchema.parse(raw)
 
@@ -101,7 +103,7 @@ const isDefaultPhotoTypes = (photoTypes: AppSearch['photoTypes']) =>
 
 export const serializeAppSearch = (search: AppSearch): Record<string, unknown> => {
   const serialized: Record<string, unknown> = {
-    map: roundMapForUrl(search.map),
+    map: serializeMapParam(search.map),
     providers: search.providers,
     style: search.style,
   }

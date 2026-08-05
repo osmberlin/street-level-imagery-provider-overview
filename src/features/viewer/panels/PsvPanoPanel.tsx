@@ -1,8 +1,13 @@
-import type { PanoData, PanoDataProvider, Viewer } from '@photo-sphere-viewer/core'
-import type { VirtualTourNode, VirtualTourPlugin } from '@photo-sphere-viewer/virtual-tour-plugin'
+import { type PanoData, type PanoDataProvider, Viewer } from '@photo-sphere-viewer/core'
+import '@photo-sphere-viewer/core/index.css'
+import {
+  events,
+  VirtualTourPlugin,
+  type VirtualTourNode,
+} from '@photo-sphere-viewer/virtual-tour-plugin'
 import { useEffect, useRef, useState } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
-import { useMainMapRef, getMainMapRef } from '@/features/map/useMainMapRef'
+import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
 import type { NormalizedPhoto } from '@/features/providers/model'
 import { resolvePhotoPanoramaUrl } from '@/features/viewer/photoThumbnails'
 import { useViewerActions } from '@/features/viewer/useViewerStore'
@@ -110,7 +115,7 @@ export const PsvPanoPanel = ({ photo, groupPhotos }: PsvPanoPanelProps) => {
   const [isLoading, setIsLoading] = useState(true)
   const { updateSelected } = useAppSearchNavigation()
   const actions = useViewerActions()
-  useMainMapRef()
+  const easeMainMapToPoint = useEaseMainMapToPoint()
   const initialPhotoIdRef = useRef(photo.photoId)
 
   useEffect(
@@ -136,16 +141,6 @@ export const PsvPanoPanel = ({ photo, groupPhotos }: PsvPanoPanelProps) => {
       let cancelled = false
 
       const setup = async () => {
-        const [{ Viewer }, { VirtualTourPlugin, events }] = await Promise.all([
-          import('@photo-sphere-viewer/core'),
-          import('@photo-sphere-viewer/virtual-tour-plugin'),
-          import('@photo-sphere-viewer/core/index.css'),
-        ])
-
-        if (cancelled) {
-          return
-        }
-
         const container = containerRef.current
         if (!container) {
           return
@@ -186,13 +181,6 @@ export const PsvPanoPanel = ({ photo, groupPhotos }: PsvPanoPanelProps) => {
         virtualTourRef.current = virtualTour
         lastViewerPhotoIdRef.current = startNodeId
         setIsLoading(false)
-
-        const easeMapToPhoto = (lng: number, lat: number) => {
-          const mapInstance = getMainMapRef().current?.getMap()
-          if (mapInstance && !mapInstance.getBounds().contains([lng, lat])) {
-            mapInstance.easeTo({ center: [lng, lat] })
-          }
-        }
 
         const flushPov = () => {
           bearingRafRef.current = null
@@ -236,7 +224,7 @@ export const PsvPanoPanel = ({ photo, groupPhotos }: PsvPanoPanelProps) => {
           })
 
           actions.setPov({ lngLat: nodePhoto.lngLat })
-          easeMapToPhoto(nodePhoto.lngLat[0], nodePhoto.lngLat[1])
+          easeMainMapToPoint(nodePhoto.lngLat[0], nodePhoto.lngLat[1])
           schedulePovUpdate()
         }
 
@@ -301,7 +289,7 @@ export const PsvPanoPanel = ({ photo, groupPhotos }: PsvPanoPanelProps) => {
         cleanup?.()
       }
     },
-    [actions, updateSelected],
+    [actions, easeMainMapToPoint, updateSelected],
   )
 
   useEffect(

@@ -31,8 +31,8 @@ export const useClickedPhotos = (): ClickedPhotosResult => {
     photos: allPhotos,
     isLoading: bboxPhotosLoading,
     isFetching: bboxPhotosFetching,
-  } = useAllProviderPhotos(providers, bbox, map.z, photoTypes, date)
-  const radiusMeters = clickRadiusMeters(map.z)
+  } = useAllProviderPhotos(providers, bbox, map.zoom, photoTypes, date)
+  const radiusMeters = clickRadiusMeters(map.zoom)
 
   const gsvEnabled = providers.includes('google-streetview')
   const googleMapsApiKey = getGoogleMapsApiKey()

@@ -1,4 +1,5 @@
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
+import { serializeMapParam, type MapParam } from '@/app/mapParam'
 import { parseAppSearch, serializeAppSearch, type AppSearch } from '@/app/searchSchema'
 
 const rootRouteApi = getRouteApi('/')
@@ -7,43 +8,61 @@ type SearchUpdateOptions = {
   replace?: boolean
 }
 
+type AppSearchWrite = {
+  [Key in keyof AppSearch]?: Key extends 'map' ? MapParam | string : AppSearch[Key]
+}
+
+export const mergeAppSearchForNavigate = (
+  prev: AppSearch,
+  updates: Partial<AppSearchWrite>,
+): Record<string, unknown> => {
+  const next: Record<string, unknown> = { ...prev }
+
+  if ('providers' in updates) {
+    next.providers = updates.providers
+  }
+
+  for (const [key, value] of Object.entries(updates)) {
+    if (key === 'providers') {
+      continue
+    }
+    if (value === undefined) {
+      delete next[key]
+    } else if (key === 'map') {
+      next.map = typeof value === 'string' ? value : serializeMapParam(value as MapParam)
+    } else {
+      next[key] = value
+    }
+  }
+
+  const mapValue = next.map
+  if (mapValue != null && typeof mapValue !== 'string') {
+    next.map = serializeMapParam(mapValue as MapParam)
+  }
+
+  return next
+}
+
 export const useAppSearchNavigation = () => {
   const search = rootRouteApi.useSearch()
   const navigate = useNavigate({ from: '/' })
 
   const updateSearch = (
-    partial: Partial<AppSearch> | ((prev: AppSearch) => Partial<AppSearch>),
+    partial: Partial<AppSearchWrite> | ((prev: AppSearch) => Partial<AppSearchWrite>),
     options?: SearchUpdateOptions,
   ) => {
     void navigate({
       search: (prev) => {
         const updates = typeof partial === 'function' ? partial(prev) : partial
-        const next: Record<string, unknown> = { ...prev }
-
-        if ('providers' in updates) {
-          next.providers = updates.providers
-        }
-
-        for (const [key, value] of Object.entries(updates)) {
-          if (key === 'providers') {
-            continue
-          }
-          if (value === undefined) {
-            delete next[key]
-          } else {
-            next[key] = value
-          }
-        }
-
-        return next as AppSearch
+        return mergeAppSearchForNavigate(prev, updates) as AppSearch
       },
       replace: options?.replace ?? false,
       resetScroll: false,
     })
   }
 
-  const updateMapViewport = (map: AppSearch['map']) => {
-    updateSearch({ map }, { replace: true })
+  const updateMapViewport = (map: MapParam) => {
+    updateSearch({ map: serializeMapParam(map) }, { replace: true })
   }
 
   const updateProviders = (providers: AppSearch['providers']) => {

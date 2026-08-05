@@ -1,6 +1,8 @@
 /// <reference types="vitest/config" />
 
+import { realpathSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
@@ -9,6 +11,14 @@ import browserslistToEsbuild from 'browserslist-to-esbuild'
 import { defineConfig, type Plugin } from 'vite'
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
+// Bun often symlinks packages into ~/.bun/install/cache; Vite must serve those assets in dev.
+const bunInstallCache = path.join(os.homedir(), '.bun', 'install', 'cache')
+const allowedFsRoots = [rootDir, bunInstallCache]
+try {
+  allowedFsRoots.push(realpathSync(path.join(rootDir, 'node_modules')))
+} catch {
+  // node_modules may be absent during config-only checks
+}
 
 const PANORAMAX_VIEWER = `${path.sep}@panoramax${path.sep}web-viewer${path.sep}`
 const PANORAMAX_CSS_SUFFIX = '\0panoramax-constructable-css'
@@ -72,12 +82,15 @@ function panoramaxConstructableCssPlugin(): Plugin {
 export default defineConfig({
   base: '/street-level-imagery-provider-overview/',
   resolve: {
+    // Bun may resolve PSV deps from ~/.bun/install/cache; pin three to the project install.
+    dedupe: ['three'],
     alias: {
       '@': path.resolve(rootDir, 'src'),
       '@panoramax/web-viewer': path.resolve(
         rootDir,
         'node_modules/@panoramax/web-viewer/build/esm/index_photoviewer.js',
       ),
+      three: path.resolve(rootDir, 'node_modules/three'),
     },
   },
   plugins: [
@@ -92,7 +105,12 @@ export default defineConfig({
   ],
   optimizeDeps: {
     exclude: ['@panoramax/web-viewer'],
-    include: ['@panoramax/web-viewer > json5'],
+    include: ['three', '@panoramax/web-viewer > json5'],
+  },
+  server: {
+    fs: {
+      allow: allowedFsRoots,
+    },
   },
   build: {
     target: browserslistToEsbuild(),

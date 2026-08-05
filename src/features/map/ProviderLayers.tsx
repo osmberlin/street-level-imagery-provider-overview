@@ -1,4 +1,5 @@
 import type { ExpressionSpecification } from 'maplibre-gl'
+import { Fragment } from 'react'
 import { Layer, Source } from 'react-map-gl/maplibre'
 import type { AppSearch } from '@/app/searchSchema'
 import {
@@ -89,41 +90,50 @@ const PhotoProviderLayer = ({
       : emptyLineCollection()
 
   const photoFilter = buildPhotoLayerFilter(photoTypes, date)
+  const photoSrcId = photoSourceId(providerId)
 
   return (
     <>
       <Source
-        id={photoSourceId(providerId)}
+        key={photoSrcId}
+        id={photoSrcId}
         type="geojson"
         data={photoCollection}
         promoteId="photoId"
-      >
-        <Layer
-          id={photoLayerId(providerId)}
-          type="circle"
-          filter={photoFilter}
-          layout={{ 'circle-sort-key': PHOTO_SORT_KEY }}
-          paint={{
-            'circle-radius': CIRCLE_RADIUS,
-            'circle-color': styleDefinition.circleColorExpression,
-            'circle-stroke-width': 1,
-            'circle-stroke-color': '#ffffff',
-          }}
-        />
-      </Source>
+      />
+      <Layer
+        id={photoLayerId(providerId)}
+        type="circle"
+        source={photoSrcId}
+        filter={photoFilter}
+        layout={{ 'circle-sort-key': PHOTO_SORT_KEY }}
+        paint={{
+          'circle-radius': CIRCLE_RADIUS,
+          'circle-color': styleDefinition.circleColorExpression,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#ffffff',
+        }}
+      />
 
       {adapter.fetchSequences ? (
-        <Source id={sequenceSourceId(providerId)} type="geojson" data={sequenceCollection}>
+        <>
+          <Source
+            key={sequenceSourceId(providerId)}
+            id={sequenceSourceId(providerId)}
+            type="geojson"
+            data={sequenceCollection}
+          />
           <Layer
             id={sequenceLayerId(providerId)}
             type="line"
+            source={sequenceSourceId(providerId)}
             paint={{
               'line-color': adapter.color,
               'line-width': 2,
               'line-opacity': 0.35,
             }}
           />
-        </Source>
+        </>
       ) : null}
     </>
   )
@@ -138,17 +148,21 @@ const MapFeatureProviderLayer = ({ providerId, bbox, zoom, style, date }: Provid
     zoom >= adapter.minZoom ? mapFeaturesToFeatureCollection(features) : emptyPointCollection()
 
   const featureFilter = buildMapFeatureLayerFilter(date)
+  const featureSrcId = featureSourceId(providerId)
 
   return (
-    <Source
-      id={featureSourceId(providerId)}
-      type="geojson"
-      data={featureCollection}
-      promoteId="featureId"
-    >
+    <>
+      <Source
+        key={featureSrcId}
+        id={featureSrcId}
+        type="geojson"
+        data={featureCollection}
+        promoteId="featureId"
+      />
       <Layer
         id={featureLayerId(providerId)}
         type="circle"
+        source={featureSrcId}
         filter={featureFilter}
         layout={{ 'circle-sort-key': FEATURE_SORT_KEY }}
         paint={{
@@ -158,7 +172,7 @@ const MapFeatureProviderLayer = ({ providerId, bbox, zoom, style, date }: Provid
           'circle-stroke-color': '#ffffff',
         }}
       />
-    </Source>
+    </>
   )
 }
 
@@ -190,15 +204,16 @@ export const ProviderLayers = ({
 }: ProviderLayersProps) => (
   <>
     {providerIds.map((providerId) => (
-      <ProviderLayer
-        key={providerId}
-        bbox={bbox}
-        date={date}
-        photoTypes={photoTypes}
-        providerId={providerId}
-        style={style}
-        zoom={zoom}
-      />
+      <Fragment key={providerId}>
+        <ProviderLayer
+          bbox={bbox}
+          date={date}
+          photoTypes={photoTypes}
+          providerId={providerId}
+          style={style}
+          zoom={zoom}
+        />
+      </Fragment>
     ))}
   </>
 )

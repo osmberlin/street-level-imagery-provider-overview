@@ -1,6 +1,7 @@
+import '@panoramax/web-viewer'
 import { useEffect, useRef } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
-import { useMainMapRef, getMainMapRef } from '@/features/map/useMainMapRef'
+import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
 import type { NormalizedPhoto } from '@/features/providers/model'
 import type {
   PnxPhotoViewerElement,
@@ -36,9 +37,7 @@ export const PanoramaxPanel = ({ photo }: PanoramaxPanelProps) => {
   const pendingHfovRef = useRef<number | null>(null)
   const { updateSelected } = useAppSearchNavigation()
   const actions = useViewerActions()
-  useMainMapRef()
-  const initialPhotoIdRef = useRef(photo.photoId)
-  const initialSequenceIdRef = useRef(photo.sequenceId)
+  const easeMapToPhoto = useEaseMainMapToPoint()
 
   useEffect(
     function syncPhotoRef() {
@@ -58,145 +57,114 @@ export const PanoramaxPanel = ({ photo }: PanoramaxPanelProps) => {
 
   useEffect(
     function mountPanoramaxViewer() {
-      let cancelled = false
+      const viewer = viewerRef.current
+      const container = containerRef.current
+      if (!viewer || !container) {
+        return
+      }
 
-      const setup = async () => {
-        await import('@panoramax/web-viewer')
-        if (cancelled) {
-          return
+      lastViewerPhotoIdRef.current = photoRef.current.photoId
+
+      const flushBearing = () => {
+        bearingRafRef.current = null
+        if (pendingBearingRef.current != null) {
+          actions.setPov({ bearing: pendingBearingRef.current })
+          pendingBearingRef.current = null
         }
-
-        const viewer = viewerRef.current
-        const container = containerRef.current
-        if (!viewer || !container) {
-          return
-        }
-
-        viewer.endpoint = PANORAMAX_API_ENDPOINT
-        viewer['url-parameters'] = 'false'
-        viewer.picture = initialPhotoIdRef.current
-        viewer.sequence = initialSequenceIdRef.current ?? null
-        lastViewerPhotoIdRef.current = initialPhotoIdRef.current
-
-        const easeMapToPhoto = (lon: number, lat: number) => {
-          const mapInstance = getMainMapRef().current?.getMap()
-          if (mapInstance && !mapInstance.getBounds().contains([lon, lat])) {
-            mapInstance.easeTo({ center: [lon, lat] })
-          }
-        }
-
-        const flushBearing = () => {
-          bearingRafRef.current = null
-          if (pendingBearingRef.current != null) {
-            actions.setPov({ bearing: pendingBearingRef.current })
-            pendingBearingRef.current = null
-          }
-          if (pendingHfovRef.current != null) {
-            actions.setPov({ hfov: pendingHfovRef.current })
-            pendingHfovRef.current = null
-          }
-        }
-
-        const onSelect = (event: Event) => {
-          const { seqId, picId } = (event as CustomEvent<PnxSelectEventDetail>).detail
-          if (!picId) {
-            return
-          }
-
-          lastViewerPhotoIdRef.current = picId
-
-          const currentPhoto = photoRef.current
-          const sequenceId =
-            seqId ??
-            (picId === currentPhoto.photoId && currentPhoto.sequenceId
-              ? currentPhoto.sequenceId
-              : `photo:${picId}`)
-
-          updateSelected({
-            provider: 'panoramax',
-            sequenceId,
-            photoId: picId,
-          })
-        }
-
-        const onPictureLoaded = (event: Event) => {
-          const detail = (event as CustomEvent<PnxPictureLoadedEventDetail>).detail
-          if (detail.lon == null || detail.lat == null) {
-            return
-          }
-
-          actions.setPov({ lngLat: [detail.lon, detail.lat] })
-
-          if (detail.x != null) {
-            actions.setPov({ bearing: normalizeBearing(detail.x) })
-          }
-
-          const psv = viewer.psv
-          if (psv && detail.z != null) {
-            actions.setPov({ hfov: psv.dataHelper.zoomLevelToFov(detail.z) })
-          }
-
-          easeMapToPhoto(detail.lon, detail.lat)
-        }
-
-        const onViewRotated = (event: Event) => {
-          const detail = (event as CustomEvent<PnxViewRotatedEventDetail>).detail
-          pendingBearingRef.current = normalizeBearing(detail.x)
-
-          const psv = viewer.psv
-          if (psv && detail.z != null) {
-            pendingHfovRef.current = psv.dataHelper.zoomLevelToFov(detail.z)
-          }
-
-          if (bearingRafRef.current == null) {
-            bearingRafRef.current = requestAnimationFrame(flushBearing)
-          }
-        }
-
-        viewer.addEventListener('select', onSelect)
-        viewer.addEventListener('psv:picture-loaded', onPictureLoaded)
-        viewer.addEventListener('psv:view-rotated', onViewRotated)
-
-        const resizeObserver = new ResizeObserver(() => {
-          viewer.psv?.resize()
-        })
-        resizeObserver.observe(container)
-
-        readyRef.current = true
-
-        const pending = pendingSelectRef.current
-        if (pending) {
-          pendingSelectRef.current = null
-          if (typeof viewer.select === 'function') {
-            viewer.select(pending.sequenceId ?? null, pending.photoId)
-          }
-        }
-
-        return () => {
-          readyRef.current = false
-          if (bearingRafRef.current != null) {
-            cancelAnimationFrame(bearingRafRef.current)
-            bearingRafRef.current = null
-          }
-          resizeObserver.disconnect()
-          viewer.removeEventListener('select', onSelect)
-          viewer.removeEventListener('psv:picture-loaded', onPictureLoaded)
-          viewer.removeEventListener('psv:view-rotated', onViewRotated)
+        if (pendingHfovRef.current != null) {
+          actions.setPov({ hfov: pendingHfovRef.current })
+          pendingHfovRef.current = null
         }
       }
 
-      let cleanup: (() => void) | undefined
+      const onSelect = (event: Event) => {
+        const { seqId, picId } = (event as CustomEvent<PnxSelectEventDetail>).detail
+        if (!picId) {
+          return
+        }
 
-      void setup().then((dispose) => {
-        cleanup = dispose
+        lastViewerPhotoIdRef.current = picId
+
+        const currentPhoto = photoRef.current
+        const sequenceId =
+          seqId ??
+          (picId === currentPhoto.photoId && currentPhoto.sequenceId
+            ? currentPhoto.sequenceId
+            : `photo:${picId}`)
+
+        updateSelected({
+          provider: 'panoramax',
+          sequenceId,
+          photoId: picId,
+        })
+      }
+
+      const onPictureLoaded = (event: Event) => {
+        const detail = (event as CustomEvent<PnxPictureLoadedEventDetail>).detail
+        if (detail.lon == null || detail.lat == null) {
+          return
+        }
+
+        actions.setPov({ lngLat: [detail.lon, detail.lat] })
+
+        if (detail.x != null) {
+          actions.setPov({ bearing: normalizeBearing(detail.x) })
+        }
+
+        const psv = viewer.psv
+        if (psv && detail.z != null) {
+          actions.setPov({ hfov: psv.dataHelper.zoomLevelToFov(detail.z) })
+        }
+
+        easeMapToPhoto(detail.lon, detail.lat)
+      }
+
+      const onViewRotated = (event: Event) => {
+        const detail = (event as CustomEvent<PnxViewRotatedEventDetail>).detail
+        pendingBearingRef.current = normalizeBearing(detail.x)
+
+        const psv = viewer.psv
+        if (psv && detail.z != null) {
+          pendingHfovRef.current = psv.dataHelper.zoomLevelToFov(detail.z)
+        }
+
+        if (bearingRafRef.current == null) {
+          bearingRafRef.current = requestAnimationFrame(flushBearing)
+        }
+      }
+
+      viewer.addEventListener('select', onSelect)
+      viewer.addEventListener('psv:picture-loaded', onPictureLoaded)
+      viewer.addEventListener('psv:view-rotated', onViewRotated)
+
+      const resizeObserver = new ResizeObserver(() => {
+        viewer.psv?.resize()
       })
+      resizeObserver.observe(container)
+
+      readyRef.current = true
+
+      const pending = pendingSelectRef.current
+      if (pending) {
+        pendingSelectRef.current = null
+        if (typeof viewer.select === 'function') {
+          viewer.select(pending.sequenceId ?? null, pending.photoId)
+        }
+      }
 
       return () => {
-        cancelled = true
-        cleanup?.()
+        readyRef.current = false
+        if (bearingRafRef.current != null) {
+          cancelAnimationFrame(bearingRafRef.current)
+          bearingRafRef.current = null
+        }
+        resizeObserver.disconnect()
+        viewer.removeEventListener('select', onSelect)
+        viewer.removeEventListener('psv:picture-loaded', onPictureLoaded)
+        viewer.removeEventListener('psv:view-rotated', onViewRotated)
       }
     },
-    [actions, updateSelected],
+    [actions, easeMapToPhoto, updateSelected],
   )
 
   useEffect(
@@ -228,7 +196,14 @@ export const PanoramaxPanel = ({ photo }: PanoramaxPanelProps) => {
       className="min-h-48 overflow-hidden rounded-lg border border-slate-200 bg-slate-900"
       style={{ aspectRatio: '4 / 3' }}
     >
-      <pnx-photo-viewer ref={viewerRef} className="block h-full w-full" />
+      <pnx-photo-viewer
+        ref={viewerRef}
+        className="block h-full w-full"
+        endpoint={PANORAMAX_API_ENDPOINT}
+        url-parameters="false"
+        picture={photo.photoId}
+        sequence={photo.sequenceId ?? undefined}
+      />
     </div>
   )
 }

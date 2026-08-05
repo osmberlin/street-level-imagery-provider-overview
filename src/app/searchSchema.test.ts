@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { serializeMapParam } from '@/app/mapParam'
 import { routerSearch } from '@/app/routerSearch'
 import {
   DEFAULT_MAP,
   DEFAULT_PHOTO_TYPES,
   appSearchSchema,
   parseAppSearch,
-  roundMapForUrl,
   serializeAppSearch,
 } from '@/app/searchSchema'
 import { DEFAULT_PROVIDER_IDS } from '@/features/providers/registry'
@@ -25,7 +25,7 @@ describe('appSearchSchema', () => {
 
   it('round-trips through serialize and router search stringify/parse', () => {
     const input = appSearchSchema.parse({
-      map: { z: 15.678, lat: 52.520008, lon: 13.404954 },
+      map: '15.678/52.520008/13.404954',
       providers: ['mapillary', 'panoramax', 'mapillary-signs'],
       style: 'age',
       photoTypes: ['pano'],
@@ -42,13 +42,31 @@ describe('appSearchSchema', () => {
     const stringified = routerSearch.stringify(serialized)
     const reparsed = parseAppSearch(routerSearch.parse(stringified))
 
-    expect(reparsed.map).toEqual(roundMapForUrl(input.map))
+    expect(reparsed.map).toEqual({ zoom: 15.7, lat: 52.52, lng: 13.405 })
     expect(reparsed.providers).toEqual(input.providers)
     expect(reparsed.style).toBe('age')
     expect(reparsed.photoTypes).toEqual(['pano'])
     expect(reparsed.date).toEqual(input.date)
     expect(reparsed.clicked).toEqual(input.clicked)
     expect(reparsed.selected).toEqual(input.selected)
+    expect(stringified).toContain('map=15.7/52.52/13.405')
+    expect(stringified).not.toContain('%2F')
+  })
+
+  it('parses legacy JSON map objects with z/lat/lon', () => {
+    const parsed = parseAppSearch({
+      map: { z: 15.678, lat: 52.520008, lon: 13.404954 },
+    })
+
+    expect(parsed.map).toEqual({ zoom: 15.7, lat: 52.52, lng: 13.405 })
+  })
+
+  it('parses legacy JSON map objects with zoom/lat/lng', () => {
+    const parsed = parseAppSearch({
+      map: { zoom: 14, lat: 52.52, lng: 13.405 },
+    })
+
+    expect(parsed.map).toEqual(DEFAULT_MAP)
   })
 
   it('omits default photoTypes from serialized search', () => {
@@ -61,12 +79,15 @@ describe('appSearchSchema', () => {
     expect(serialized.photoTypes).toBeUndefined()
   })
 
-  it('rounds map coordinates for stable URLs', () => {
-    const rounded = roundMapForUrl({ z: 14.567, lat: 52.520008123, lon: 13.404954321 })
+  it('serializes map as a zoom/lat/lng string', () => {
+    const serialized = serializeAppSearch(
+      parseAppSearch({
+        map: '14.567/52.520008123/13.404954321',
+      }),
+    )
 
-    expect(rounded.z).toBe(14.57)
-    expect(rounded.lat).toBe(52.52)
-    expect(rounded.lon).toBe(13.405)
+    expect(serialized.map).toBe('14.6/52.52/13.405')
+    expect(serializeMapParam(DEFAULT_MAP)).toBe('14/52.52/13.405')
   })
 
   it('recovers invalid style values to the default', () => {

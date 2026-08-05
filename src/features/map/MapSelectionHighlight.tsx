@@ -24,7 +24,7 @@ export const MapSelectionHighlight = () => {
   const bbox = useMapViewportBbox()
   const { clicked, selected, providers, map, photoTypes, date } = search
 
-  const { photos: allPhotos } = useAllProviderPhotos(providers, bbox, map.z, photoTypes, date)
+  const { photos: allPhotos } = useAllProviderPhotos(providers, bbox, map.zoom, photoTypes, date)
   const gsvEnabled = providers.includes('google-streetview')
   const streetViewQuery = useGoogleStreetViewClickPhoto(clicked, gsvEnabled)
 
@@ -60,7 +60,7 @@ export const MapSelectionHighlight = () => {
   const { data: sequences = [] } = useProviderSequences(
     selectedProviderId ?? 'mapillary',
     selectedProviderId ? bbox : null,
-    map.z,
+    map.zoom,
   )
 
   const highlightCollection = useMemo(() => {
@@ -90,10 +90,12 @@ export const MapSelectionHighlight = () => {
   return (
     <>
       {selectedPhoto ? (
-        <Source id={HIGHLIGHT_SOURCE_ID} type="geojson" data={highlightCollection}>
+        <>
+          <Source id={HIGHLIGHT_SOURCE_ID} type="geojson" data={highlightCollection} />
           <Layer
             id={HIGHLIGHT_LAYER_ID}
             type="circle"
+            source={HIGHLIGHT_SOURCE_ID}
             paint={{
               'circle-radius': 10,
               'circle-color': '#ffffff',
@@ -101,21 +103,27 @@ export const MapSelectionHighlight = () => {
               'circle-stroke-color': '#0f172a',
             }}
           />
-        </Source>
+        </>
       ) : null}
 
       {sequenceHighlightCollection.features.length > 0 ? (
-        <Source id={SEQUENCE_HIGHLIGHT_SOURCE_ID} type="geojson" data={sequenceHighlightCollection}>
+        <>
+          <Source
+            id={SEQUENCE_HIGHLIGHT_SOURCE_ID}
+            type="geojson"
+            data={sequenceHighlightCollection}
+          />
           <Layer
             id={SEQUENCE_HIGHLIGHT_LAYER_ID}
             type="line"
+            source={SEQUENCE_HIGHLIGHT_SOURCE_ID}
             paint={{
               'line-color': '#0f172a',
               'line-width': 4,
               'line-opacity': 0.75,
             }}
           />
-        </Source>
+        </>
       ) : null}
     </>
   )

@@ -14,8 +14,8 @@ export const useClickedMapFeatures = (): ClickedMapFeature[] => {
   const bbox = useMapViewportBbox()
   const { clicked, providers, map, date } = search
 
-  const allFeatures = useAllProviderMapFeatures(providers, bbox, map.z, date)
-  const radiusMeters = clickRadiusMeters(map.z)
+  const allFeatures = useAllProviderMapFeatures(providers, bbox, map.zoom, date)
+  const radiusMeters = clickRadiusMeters(map.zoom)
 
   return useMemo(() => {
     if (!clicked) {
