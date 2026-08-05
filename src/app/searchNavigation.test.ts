@@ -9,6 +9,7 @@ const baseSearch: AppSearch = {
   providers: [...DEFAULT_PROVIDER_IDS],
   style: 'photoType',
   photoTypes: ['flat', 'pano'],
+  leftPanel: 'open',
 }
 
 describe('mergeAppSearchForNavigate', () => {

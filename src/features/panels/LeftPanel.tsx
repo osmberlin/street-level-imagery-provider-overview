@@ -37,13 +37,53 @@ const ExternalLinkIcon = () => (
   </svg>
 )
 
+const CloseIcon = () => (
+  <svg
+    aria-hidden
+    className="size-4"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={1.75}
+    viewBox="0 0 24 24"
+  >
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+)
+
+const PanelOpenIcon = () => (
+  <svg
+    aria-hidden
+    className="size-4"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={1.75}
+    viewBox="0 0 24 24"
+  >
+    <rect height="14" rx="2" width="18" x="3" y="5" />
+    <path d="M9 5v14" />
+  </svg>
+)
+
 export const LeftPanel = () => {
-  const { map, search, updateProviders, updateStyle, updatePhotoTypes, updateDate } =
-    useAppSearchNavigation()
+  const {
+    map,
+    search,
+    updateProviders,
+    updateStyle,
+    updatePhotoTypes,
+    updateDate,
+    updateLeftPanel,
+  } = useAppSearchNavigation()
   const bbox = useMapViewportBbox()
   const activeProviders = new Set(search.providers)
   const { lat: mapLat, lng: mapLng, zoom: currentZoom } = map
   const enabledProviders = PROVIDERS.filter((provider) => activeProviders.has(provider.id))
+  const isOpen = search.leftPanel !== 'closed'
 
   const photoTypeSet = new Set(search.photoTypes)
   const flatChecked = photoTypeSet.has('flat')
@@ -91,12 +131,39 @@ export const LeftPanel = () => {
     updatePhotoTypes(resolved)
   }
 
+  if (!isOpen) {
+    return (
+      <button
+        aria-label="Show navigation"
+        className="absolute top-3 left-3 z-10 flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900"
+        type="button"
+        onClick={() => {
+          updateLeftPanel('open')
+        }}
+      >
+        <PanelOpenIcon />
+      </button>
+    )
+  }
+
   return (
     <aside className="flex h-full w-80 shrink-0 flex-col border-r border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-5 py-5">
-        <h1 className="text-lg font-semibold tracking-tight text-slate-900">
-          Street-Level Imagery Provider Overview
-        </h1>
+        <div className="flex items-start gap-3">
+          <h1 className="min-w-0 flex-1 text-lg font-semibold tracking-tight text-slate-900">
+            Street-Level Imagery Provider Overview
+          </h1>
+          <button
+            aria-label="Hide navigation"
+            className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            type="button"
+            onClick={() => {
+              updateLeftPanel('closed')
+            }}
+          >
+            <CloseIcon />
+          </button>
+        </div>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           Explore and compare street-level imagery from multiple open and commercial providers on
           one map. Toggle providers and switch visualization styles to see coverage at a glance.{' '}

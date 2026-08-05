@@ -68,6 +68,8 @@ export const DEFAULT_PHOTO_TYPES = ['flat', 'pano'] as const
 
 export const DEFAULT_MAP = mapParamFallback
 
+export const LEFT_PANEL_DEFAULT = 'open' as const
+
 export const appSearchSchema = z.object({
   map: mapSearchSchema,
   providers: z
@@ -80,6 +82,7 @@ export const appSearchSchema = z.object({
     .array(photoTypeSchema)
     .default([...DEFAULT_PHOTO_TYPES])
     .catch([...DEFAULT_PHOTO_TYPES]),
+  leftPanel: z.enum(['open', 'closed']).default(LEFT_PANEL_DEFAULT).catch(LEFT_PANEL_DEFAULT),
   date: dateSearchSchema.optional().catch(undefined),
   clicked: clickedSchema.optional().catch(undefined),
   selected: selectedSchema.optional().catch(undefined),
@@ -106,6 +109,10 @@ export const serializeAppSearch = (search: AppSearch): Record<string, unknown> =
 
   if (!isDefaultPhotoTypes(search.photoTypes)) {
     serialized.photoTypes = search.photoTypes
+  }
+
+  if (search.leftPanel !== LEFT_PANEL_DEFAULT) {
+    serialized.leftPanel = search.leftPanel
   }
 
   if (search.date?.from || search.date?.to) {

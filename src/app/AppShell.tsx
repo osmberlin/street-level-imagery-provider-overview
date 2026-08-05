@@ -12,7 +12,7 @@ type AppShellProps = {
 export const AppShell = ({ children }: AppShellProps) => {
   return (
     <MapProvider>
-      <div className="flex h-full min-h-0 w-full overflow-hidden">
+      <div className="relative flex h-full min-h-0 w-full overflow-hidden">
         <LeftPanel />
         <main className="relative min-h-0 min-w-0 flex-1">
           <MapRoot />

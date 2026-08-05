@@ -108,6 +108,10 @@ export const useAppSearchNavigation = () => {
     updateSearch({ selected }, { replace: true })
   }
 
+  const updateLeftPanel = (leftPanel: AppSearch['leftPanel']) => {
+    updateSearch({ leftPanel }, { replace: true })
+  }
+
   return {
     search,
     map,
@@ -119,5 +123,6 @@ export const useAppSearchNavigation = () => {
     updateDate,
     updateClicked,
     updateSelected,
+    updateLeftPanel,
   }
 }
