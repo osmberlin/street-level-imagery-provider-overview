@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import type { MapRef } from 'react-map-gl/maplibre'
 import { useMap } from 'react-map-gl/maplibre'
 import { MAIN_MAP_ID } from '@/features/map/constants'
@@ -11,19 +11,8 @@ export const useStableMainMapRefs = () => {
   const mainMapRef = useRef<MapRef | undefined>(undefined)
   const mapLoadedRef = useRef(false)
 
-  useEffect(
-    function syncMainMapRef() {
-      mainMapRef.current = mainMap
-    },
-    [mainMap],
-  )
-
-  useEffect(
-    function syncMapLoadedRef() {
-      mapLoadedRef.current = mapLoaded
-    },
-    [mapLoaded],
-  )
+  mainMapRef.current = mainMap
+  mapLoadedRef.current = mapLoaded
 
   return { mainMap, mapLoaded, mainMapRef, mapLoadedRef }
 }
@@ -31,13 +20,10 @@ export const useStableMainMapRefs = () => {
 export const useEaseMainMapToPoint = () => {
   const { mainMapRef, mapLoadedRef } = useStableMainMapRefs()
 
-  return useCallback(
-    (lng: number, lat: number) => {
-      const mapInstance = mainMapRef.current?.getMap()
-      if (mapInstance && mapLoadedRef.current && !mapInstance.getBounds().contains([lng, lat])) {
-        mapInstance.easeTo({ center: [lng, lat] })
-      }
-    },
-    [mainMapRef, mapLoadedRef],
-  )
+  return (lng: number, lat: number) => {
+    const mapInstance = mainMapRef.current?.getMap()
+    if (mapInstance && mapLoadedRef.current && !mapInstance.getBounds().contains([lng, lat])) {
+      mapInstance.easeTo({ center: [lng, lat] })
+    }
+  }
 }

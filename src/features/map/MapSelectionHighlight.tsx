@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Layer, Source } from 'react-map-gl/maplibre'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { isProviderId } from '@/app/searchSchema'
@@ -11,6 +10,7 @@ import {
 import { useAllProviderPhotos } from '@/features/data/useAllProviderPhotos'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
 import { useProviderSequences } from '@/features/data/useProviderData'
+import type { NormalizedPhoto } from '@/features/providers/model'
 import { photoGroupSequenceId } from '@/features/viewer/groupClickedPhotos'
 import { useGoogleStreetViewClickPhoto } from '@/features/viewer/useGoogleStreetViewClickPhoto'
 
@@ -28,10 +28,8 @@ export const MapSelectionHighlight = () => {
   const gsvEnabled = providers.includes('google-streetview')
   const streetViewQuery = useGoogleStreetViewClickPhoto(clicked, gsvEnabled)
 
-  const selectedPhoto = useMemo(() => {
-    if (!selected) {
-      return null
-    }
+  let selectedPhoto: NormalizedPhoto | null = null
+  if (selected) {
     const fromAllPhotos = allPhotos.find(
       (photo) =>
         photo.providerId === selected.provider &&
@@ -39,21 +37,19 @@ export const MapSelectionHighlight = () => {
         photoGroupSequenceId(photo) === (selected.sequenceId ?? `photo:${selected.photoId}`),
     )
     if (fromAllPhotos) {
-      return fromAllPhotos
+      selectedPhoto = fromAllPhotos
+    } else {
+      const gsvPhoto = streetViewQuery.data
+      if (
+        selected.provider === 'google-streetview' &&
+        gsvPhoto &&
+        gsvPhoto.photoId === selected.photoId &&
+        photoGroupSequenceId(gsvPhoto) === (selected.sequenceId ?? `photo:${selected.photoId}`)
+      ) {
+        selectedPhoto = gsvPhoto
+      }
     }
-
-    const gsvPhoto = streetViewQuery.data
-    if (
-      selected.provider === 'google-streetview' &&
-      gsvPhoto &&
-      gsvPhoto.photoId === selected.photoId &&
-      photoGroupSequenceId(gsvPhoto) === (selected.sequenceId ?? `photo:${selected.photoId}`)
-    ) {
-      return gsvPhoto
-    }
-
-    return null
-  }, [allPhotos, selected, streetViewQuery.data])
+  }
 
   const selectedProviderId = selected && isProviderId(selected.provider) ? selected.provider : null
 
@@ -63,25 +59,20 @@ export const MapSelectionHighlight = () => {
     map.zoom,
   )
 
-  const highlightCollection = useMemo(() => {
-    if (!selectedPhoto) {
-      return emptyPointCollection()
-    }
-    return photosToFeatureCollection([selectedPhoto])
-  }, [selectedPhoto])
+  const highlightCollection = selectedPhoto
+    ? photosToFeatureCollection([selectedPhoto])
+    : emptyPointCollection()
 
-  const sequenceHighlightCollection = useMemo(() => {
-    if (!selected || !selectedProviderId) {
-      return emptyLineCollection()
-    }
-
-    const matching = sequences.filter(
-      (sequence) =>
-        sequence.providerId === selectedProviderId && sequence.sequenceId === selected.sequenceId,
-    )
-
-    return sequencesToFeatureCollection(matching)
-  }, [selected, selectedProviderId, sequences])
+  const sequenceHighlightCollection =
+    selected && selectedProviderId
+      ? sequencesToFeatureCollection(
+          sequences.filter(
+            (sequence) =>
+              sequence.providerId === selectedProviderId &&
+              sequence.sequenceId === selected.sequenceId,
+          ),
+        )
+      : emptyLineCollection()
 
   if (!selectedPhoto && sequenceHighlightCollection.features.length === 0) {
     return null

@@ -1,7 +1,7 @@
 import type { MapLibreEvent } from 'maplibre-gl'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import type { MapLayerMouseEvent, ViewStateChangeEvent } from 'react-map-gl/maplibre'
-import { AttributionControl, Map } from 'react-map-gl/maplibre'
+import { AttributionControl, Map, NavigationControl } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { roundPositionForURL } from '@/app/mapParam'
@@ -32,13 +32,10 @@ export const MapRoot = () => {
   const [cursor, setCursor] = useState('grab')
   const { markMapLoaded } = useMapActions()
 
-  const interactiveLayerIds = useMemo(
-    () => [
-      ...providers.map((providerId) => photoLayerId(providerId)),
-      ...providers.map((providerId) => featureLayerId(providerId)),
-    ],
-    [providers],
-  )
+  const interactiveLayerIds = [
+    ...providers.map((providerId) => photoLayerId(providerId)),
+    ...providers.map((providerId) => featureLayerId(providerId)),
+  ]
 
   const handleLoad = (event: MapLibreEvent) => {
     markMapLoaded()
@@ -53,10 +50,7 @@ export const MapRoot = () => {
     updateMapViewport(nextViewport)
   }
 
-  const hasClickOnlyProvider = useMemo(
-    () => providers.some((providerId) => isClickOnlyPhotoProvider(providerId)),
-    [providers],
-  )
+  const hasClickOnlyProvider = providers.some((providerId) => isClickOnlyPhotoProvider(providerId))
 
   const handleClick = (event: MapLayerMouseEvent) => {
     const features = event.features ?? []
@@ -99,7 +93,6 @@ export const MapRoot = () => {
       style={{ width: '100%', height: '100%' }}
       attributionControl={false}
       RTLTextPlugin={false}
-      dragRotate={false}
       cursor={cursor}
       interactiveLayerIds={interactiveLayerIds}
       onClick={handleClick}
@@ -109,6 +102,7 @@ export const MapRoot = () => {
       onMouseMove={handleMouseMove}
     >
       <AttributionControl compact position="bottom-left" />
+      <NavigationControl position="top-right" showCompass visualizePitch />
       <SyncMapCameraFromUrl />
       <ProviderLayers
         bbox={bbox}

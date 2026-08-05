@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Layer, Source } from 'react-map-gl/maplibre'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useAllProviderPhotos } from '@/features/data/useAllProviderPhotos'
@@ -29,25 +28,17 @@ export const ViewDirectionIndicator = () => {
 
   const { photos: allPhotos } = useAllProviderPhotos(providers, bbox, map.zoom, photoTypes, date)
 
-  const selectedPhoto = useMemo(() => {
-    if (!selected) {
-      return null
-    }
-    return (
-      allPhotos.find(
+  const selectedPhoto = selected
+    ? (allPhotos.find(
         (photo) =>
           photo.providerId === selected.provider &&
           photo.photoId === selected.photoId &&
           (photo.sequenceId ?? `photo:${photo.photoId}`) === selected.sequenceId,
-      ) ?? null
-    )
-  }, [allPhotos, selected])
+      ) ?? null)
+    : null
 
-  const coneFeature = useMemo(() => {
-    if (!selectedPhoto) {
-      return null
-    }
-
+  let coneFeature: ReturnType<typeof viewConeGeoJson> | null = null
+  if (selectedPhoto) {
     const apex = storeLngLat ?? selectedPhoto.lngLat
     const isPano = selectedPhoto.isPano === true
     const hasLiveBearing = isPano && INTERACTIVE_PANO_PROVIDERS.has(selectedPhoto.providerId)
@@ -66,12 +57,10 @@ export const ViewDirectionIndicator = () => {
       fov = 30
     }
 
-    if (bearing == null) {
-      return null
+    if (bearing != null) {
+      coneFeature = viewConeGeoJson(apex, bearing, fov, coneRadiusMeters(map.zoom))
     }
-
-    return viewConeGeoJson(apex, bearing, fov, coneRadiusMeters(map.zoom))
-  }, [map.zoom, selectedPhoto, storeBearing, storeHfov, storeLngLat])
+  }
 
   if (!selectedPhoto || !coneFeature) {
     return null

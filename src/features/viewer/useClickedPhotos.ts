@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useAllProviderPhotos } from '@/features/data/useAllProviderPhotos'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
@@ -39,53 +38,34 @@ export const useClickedPhotos = (): ClickedPhotosResult => {
 
   const streetViewQuery = useGoogleStreetViewClickPhoto(clicked, gsvEnabled)
 
-  const groups = useMemo(() => {
-    if (!clicked) {
-      return []
-    }
-
+  let groups: PhotoSequenceGroup[] = []
+  if (clicked) {
     const nearby = allPhotos.filter(
       (photo) => distanceToPhoto(photo, clicked.lng, clicked.lat) <= radiusMeters,
     )
-
     const gsvPhoto = streetViewQuery.data
     const photos =
       gsvPhoto && photoMatchesFilters(gsvPhoto, photoTypes, date) ? [...nearby, gsvPhoto] : nearby
-    return groupClickedPhotos(photos, clicked.lng, clicked.lat)
-  }, [allPhotos, clicked, date, photoTypes, radiusMeters, streetViewQuery.data])
+    groups = groupClickedPhotos(photos, clicked.lng, clicked.lat)
+  }
 
   const gsvPending =
     gsvEnabled && clicked != null && googleMapsApiKey != null && streetViewQuery.isPending
 
-  const gsvStatus = useMemo((): GsvStatus => {
-    if (!gsvEnabled || clicked == null) {
-      return 'idle'
-    }
+  let gsvStatus: GsvStatus = 'idle'
+  if (gsvEnabled && clicked != null) {
     if (googleMapsApiKey == null) {
-      return 'no-key'
+      gsvStatus = 'no-key'
+    } else if (streetViewQuery.isPending) {
+      gsvStatus = 'loading'
+    } else if (streetViewQuery.isError) {
+      gsvStatus = 'error'
+    } else if (streetViewQuery.data) {
+      gsvStatus = 'ok'
+    } else if (streetViewQuery.isFetched) {
+      gsvStatus = 'none'
     }
-    if (streetViewQuery.isPending) {
-      return 'loading'
-    }
-    if (streetViewQuery.isError) {
-      return 'error'
-    }
-    if (streetViewQuery.data) {
-      return 'ok'
-    }
-    if (streetViewQuery.isFetched) {
-      return 'none'
-    }
-    return 'idle'
-  }, [
-    clicked,
-    googleMapsApiKey,
-    gsvEnabled,
-    streetViewQuery.data,
-    streetViewQuery.isError,
-    streetViewQuery.isFetched,
-    streetViewQuery.isPending,
-  ])
+  }
 
   return {
     groups,

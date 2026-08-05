@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import type { AppSearch } from '@/app/searchSchema'
 import { useProviderMapFeatures, useProviderPhotos } from '@/features/data/useProviderData'
 import { mapFeatureMatchesDateRange, photoMatchesFilters } from '@/features/filters/searchFilters'
@@ -38,22 +37,14 @@ export const ProviderLegend = ({
     ? getMapFeatureStyleDefinition(style)
     : getStyleDefinition(style)
 
-  const filteredPhotos = useMemo(
-    () => photos.filter((photo) => photoMatchesFilters(photo, photoTypes, date)),
-    [photos, photoTypes, date],
+  const filteredPhotos = photos.filter((photo) => photoMatchesFilters(photo, photoTypes, date))
+  const filteredMapFeatures = mapFeatures.filter((feature) =>
+    mapFeatureMatchesDateRange(feature, date),
   )
 
-  const filteredMapFeatures = useMemo(
-    () => mapFeatures.filter((feature) => mapFeatureMatchesDateRange(feature, date)),
-    [mapFeatures, date],
-  )
-
-  const counts = useMemo(() => {
-    if (isMapFeature) {
-      return countMapFeaturesByCategory(filteredMapFeatures, style)
-    }
-    return countPhotosByCategory(filteredPhotos, style)
-  }, [filteredMapFeatures, filteredPhotos, isMapFeature, style])
+  const counts = isMapFeature
+    ? countMapFeaturesByCategory(filteredMapFeatures, style)
+    : countPhotosByCategory(filteredPhotos, style)
 
   const total = totalPhotoCount(counts)
   const belowMinZoom = zoom < meta.minZoom

@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useAllProviderMapFeatures } from '@/features/data/useAllProviderMapFeatures'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
@@ -17,27 +16,25 @@ export const useClickedMapFeatures = (): ClickedMapFeature[] => {
   const allFeatures = useAllProviderMapFeatures(providers, bbox, map.zoom, date)
   const radiusMeters = clickRadiusMeters(map.zoom)
 
-  return useMemo(() => {
-    if (!clicked) {
-      return []
-    }
+  if (!clicked) {
+    return []
+  }
 
-    return allFeatures
-      .map((feature) => ({
-        ...feature,
-        distanceMeters: haversineDistanceMeters(
-          clicked.lng,
-          clicked.lat,
-          feature.lngLat[0],
-          feature.lngLat[1],
-        ),
-      }))
-      .filter((feature) => feature.distanceMeters <= radiusMeters)
-      .sort((left, right) => {
-        if (left.distanceMeters !== right.distanceMeters) {
-          return left.distanceMeters - right.distanceMeters
-        }
-        return left.featureId.localeCompare(right.featureId)
-      })
-  }, [allFeatures, clicked, radiusMeters])
+  return allFeatures
+    .map((feature) => ({
+      ...feature,
+      distanceMeters: haversineDistanceMeters(
+        clicked.lng,
+        clicked.lat,
+        feature.lngLat[0],
+        feature.lngLat[1],
+      ),
+    }))
+    .filter((feature) => feature.distanceMeters <= radiusMeters)
+    .sort((left, right) => {
+      if (left.distanceMeters !== right.distanceMeters) {
+        return left.distanceMeters - right.distanceMeters
+      }
+      return left.featureId.localeCompare(right.featureId)
+    })
 }
