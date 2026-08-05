@@ -1,7 +1,7 @@
-import type { NormalizedPhoto } from '@/features/providers/model'
-import { providerById } from '@/features/providers/registry'
 import { PhotoMetadata } from '@/features/viewer/PhotoMetadata'
-import { usePhotoThumbnail } from '@/features/viewer/photoThumbnails'
+import { usePhotoThumbnail } from '@/street-imagery-react/hooks/usePhotoThumbnails'
+import type { NormalizedPhoto } from '@/street-imagery/providers/model'
+import { providerById } from '@/street-imagery/providers/registry'
 
 type PhotoViewerProps = {
   photo: NormalizedPhoto

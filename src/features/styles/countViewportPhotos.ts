@@ -1,4 +1,3 @@
-import type { NormalizedPhoto } from '@/features/providers/model'
 import { APP_START_NOW } from '@/features/styles/ageBuckets'
 import {
   categoryIdForPhoto,
@@ -7,6 +6,7 @@ import {
   type StyleMode,
 } from '@/features/styles/styleDefinitions'
 import { getMapFeatureStyleDefinition } from '@/features/styles/styleDefinitions'
+import type { NormalizedPhoto } from '@/street-imagery/providers/model'
 
 export type CategoryCounts = Record<StyleCategoryId, number>
 

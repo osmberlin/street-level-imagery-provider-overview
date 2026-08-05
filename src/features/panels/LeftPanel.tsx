@@ -2,10 +2,11 @@ import { twMerge } from 'tailwind-merge'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import type { AppSearch } from '@/app/searchSchema'
 import { DEFAULT_PHOTO_TYPES } from '@/app/searchSchema'
-import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
+import { MAIN_MAP_ID } from '@/features/map/constants'
 import { ProviderLegend } from '@/features/panels/ProviderLegend'
 import { useResizableLeftPanelWidth } from '@/features/panels/useResizableLeftPanelWidth'
-import { getGoogleMapsApiKey } from '@/features/providers/adapters/google-streetview'
+import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
+import { getGoogleMapsApiKey } from '@/street-imagery/providers/adapters/google-streetview'
 import {
   adapterById,
   isBrowserAvailableProvider,
@@ -13,8 +14,8 @@ import {
   PROVIDERS,
   providerById,
   type ProviderId,
-} from '@/features/providers/registry'
-import { providerLocationLink } from '@/features/viewer/externalLinks'
+} from '@/street-imagery/providers/registry'
+import { providerLocationLink } from '@/street-imagery/viewer/externalLinks'
 
 const STYLE_OPTIONS: { value: AppSearch['style']; label: string }[] = [
   { value: 'photoType', label: 'Photo type' },
@@ -81,7 +82,7 @@ export const LeftPanel = () => {
     updateDate,
     updateLeftPanel,
   } = useAppSearchNavigation()
-  const bbox = useMapViewportBbox()
+  const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
   const activeProviders = new Set(search.providers)
   const { lat: mapLat, lng: mapLng, zoom: currentZoom } = map
   const enabledProviders = PROVIDERS.filter((provider) => activeProviders.has(provider.id))

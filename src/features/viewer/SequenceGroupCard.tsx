@@ -1,10 +1,10 @@
 import { twMerge } from 'tailwind-merge'
 import type { AppSearch } from '@/app/searchSchema'
-import type { NormalizedPhoto } from '@/features/providers/model'
-import { providerById } from '@/features/providers/registry'
-import type { PhotoSequenceGroup } from '@/features/viewer/groupClickedPhotos'
-import { findPhotoIndexInGroup } from '@/features/viewer/groupClickedPhotos'
 import { ViewerPanelSwitch } from '@/features/viewer/panels/ViewerPanelSwitch'
+import type { NormalizedPhoto } from '@/street-imagery/providers/model'
+import { providerById } from '@/street-imagery/providers/registry'
+import type { PhotoSequenceGroup } from '@/street-imagery/viewer/groupClickedPhotos'
+import { findPhotoIndexInGroup } from '@/street-imagery/viewer/groupClickedPhotos'
 
 type SequenceGroupCardProps = {
   group: PhotoSequenceGroup

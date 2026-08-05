@@ -8,9 +8,9 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
-import type { NormalizedPhoto } from '@/features/providers/model'
-import { resolvePhotoPanoramaUrl } from '@/features/viewer/photoThumbnails'
-import { useViewerActions } from '@/features/viewer/useViewerStore'
+import { useViewerActions } from '@/street-imagery-react/useViewerStore'
+import type { NormalizedPhoto } from '@/street-imagery/providers/model'
+import { resolvePhotoPanoramaUrl } from '@/street-imagery/viewer/photoThumbnails'
 
 const normalizeBearing = (degrees: number) => ((degrees % 360) + 360) % 360
 

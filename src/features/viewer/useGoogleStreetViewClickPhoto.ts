@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   fetchStreetViewMetadata,
   getGoogleMapsApiKey,
-} from '@/features/providers/adapters/google-streetview'
+} from '@/street-imagery/providers/adapters/google-streetview'
 
 export type ClickedPoint = { lng: number; lat: number }
 

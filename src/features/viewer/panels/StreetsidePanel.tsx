@@ -9,11 +9,11 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
-import type { NormalizedPhoto } from '@/features/providers/model'
-import { haversineDistanceMeters } from '@/features/viewer/clickRadius'
-import { photoGroupSequenceId } from '@/features/viewer/groupClickedPhotos'
 import { buildStreetsidePanoramaConfig } from '@/features/viewer/streetsideCubemap'
-import { useViewerActions } from '@/features/viewer/useViewerStore'
+import { useViewerActions } from '@/street-imagery-react/useViewerStore'
+import type { NormalizedPhoto } from '@/street-imagery/providers/model'
+import { haversineDistanceMeters } from '@/street-imagery/viewer/clickRadius'
+import { photoGroupSequenceId } from '@/street-imagery/viewer/groupClickedPhotos'
 
 const normalizeBearing = (degrees: number) => ((degrees % 360) + 360) % 360
 

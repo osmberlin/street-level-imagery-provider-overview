@@ -11,7 +11,7 @@ import {
   isBrowserAvailableProvider,
   PROVIDER_IDS,
   type ProviderId,
-} from '@/features/providers/registry'
+} from '@/street-imagery/providers/registry'
 
 const providerIdSchema = z.enum(PROVIDER_IDS)
 

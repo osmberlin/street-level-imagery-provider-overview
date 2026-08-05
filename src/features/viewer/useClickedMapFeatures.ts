@@ -1,8 +1,9 @@
 import { useAppSearchNavigation } from '@/app/searchNavigation'
-import { useAllProviderMapFeatures } from '@/features/data/useAllProviderMapFeatures'
-import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
-import type { NormalizedMapFeature } from '@/features/providers/model'
-import { haversineDistanceMeters, clickRadiusMeters } from '@/features/viewer/clickRadius'
+import { MAIN_MAP_ID } from '@/features/map/constants'
+import { useAllProviderMapFeatures } from '@/street-imagery-react/hooks/useAllProviderMapFeatures'
+import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
+import type { NormalizedMapFeature } from '@/street-imagery/providers/model'
+import { haversineDistanceMeters, clickRadiusMeters } from '@/street-imagery/viewer/clickRadius'
 
 export type ClickedMapFeature = NormalizedMapFeature & {
   distanceMeters: number
@@ -10,7 +11,7 @@ export type ClickedMapFeature = NormalizedMapFeature & {
 
 export const useClickedMapFeatures = (): ClickedMapFeature[] => {
   const { map, search } = useAppSearchNavigation()
-  const bbox = useMapViewportBbox()
+  const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
   const { clicked, providers, date } = search
 
   const allFeatures = useAllProviderMapFeatures(providers, bbox, map.zoom, date)

@@ -9,7 +9,7 @@ import {
   parseAppSearch,
   serializeAppSearch,
 } from '@/app/searchSchema'
-import { DEFAULT_PROVIDER_IDS } from '@/features/providers/registry'
+import { DEFAULT_PROVIDER_IDS } from '@/street-imagery/providers/registry'
 
 describe('appSearchSchema', () => {
   it('applies defaults for an empty search object', () => {

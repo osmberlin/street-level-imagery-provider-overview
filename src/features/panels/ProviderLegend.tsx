@@ -1,14 +1,20 @@
 import type { AppSearch } from '@/app/searchSchema'
-import { useProviderMapFeatures, useProviderPhotos } from '@/features/data/useProviderData'
-import { mapFeatureMatchesDateRange, photoMatchesFilters } from '@/features/filters/searchFilters'
-import type { Bbox } from '@/features/providers/model'
-import { adapterById, providerById, type ProviderId } from '@/features/providers/registry'
 import { countMapFeaturesByCategory } from '@/features/styles/countViewportMapFeatures'
 import { countPhotosByCategory, totalPhotoCount } from '@/features/styles/countViewportPhotos'
 import {
   getMapFeatureStyleDefinition,
   getStyleDefinition,
 } from '@/features/styles/styleDefinitions'
+import {
+  useProviderMapFeatures,
+  useProviderPhotos,
+} from '@/street-imagery-react/hooks/useProviderData'
+import {
+  mapFeatureMatchesDateRange,
+  photoMatchesFilters,
+} from '@/street-imagery/filters/searchFilters'
+import type { Bbox } from '@/street-imagery/providers/model'
+import { adapterById, providerById, type ProviderId } from '@/street-imagery/providers/registry'
 
 type ProviderLegendProps = {
   providerId: ProviderId

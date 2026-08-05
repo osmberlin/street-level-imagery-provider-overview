@@ -1,7 +1,7 @@
 import { twMerge } from 'tailwind-merge'
-import type { NormalizedPhoto } from '@/features/providers/model'
-import { providerById } from '@/features/providers/registry'
-import { providerExternalLink } from '@/features/viewer/externalLinks'
+import type { NormalizedPhoto } from '@/street-imagery/providers/model'
+import { providerById } from '@/street-imagery/providers/registry'
+import { providerExternalLink } from '@/street-imagery/viewer/externalLinks'
 
 type PhotoMetadataProps = {
   photo: NormalizedPhoto

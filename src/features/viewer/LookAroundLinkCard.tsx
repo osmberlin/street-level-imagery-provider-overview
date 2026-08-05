@@ -1,5 +1,5 @@
-import { lookAroundDeepLink } from '@/features/providers/adapters/lookaround'
 import { hasAppleMapKitToken, LookAroundEmbed } from '@/features/viewer/LookAroundEmbed'
+import { lookAroundDeepLink } from '@/street-imagery/providers/adapters/lookaround'
 
 type LookAroundLinkCardProps = {
   lat: number

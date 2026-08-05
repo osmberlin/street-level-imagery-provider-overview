@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { NormalizedPhoto } from '@/features/providers/model'
 import { ageBucketId } from '@/features/styles/ageBuckets'
 import { countPhotosByCategory } from '@/features/styles/countViewportPhotos'
 import { photoTypeCategoryId } from '@/features/styles/styleDefinitions'
+import type { NormalizedPhoto } from '@/street-imagery/providers/model'
 
 const FIXED_NOW = Date.UTC(2026, 6, 8, 12, 0, 0)
 

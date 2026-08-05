@@ -1,7 +1,7 @@
-import type { NormalizedMapFeature } from '@/features/providers/model'
-import { providerById } from '@/features/providers/registry'
-import { mapFeatureExternalLink } from '@/features/viewer/externalLinks'
 import { formatFeatureDate, humanizeFeatureValue } from '@/features/viewer/mapFeatureDisplay'
+import type { NormalizedMapFeature } from '@/street-imagery/providers/model'
+import { providerById } from '@/street-imagery/providers/registry'
+import { mapFeatureExternalLink } from '@/street-imagery/viewer/externalLinks'
 
 type MapFeatureCardProps = {
   feature: NormalizedMapFeature

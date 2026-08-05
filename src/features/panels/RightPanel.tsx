@@ -1,26 +1,27 @@
 import { useEffect, useRef } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { isProviderId } from '@/app/searchSchema'
-import { useAllProviderMapFeaturesLoading } from '@/features/data/useAllProviderMapFeatures'
-import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
+import { MAIN_MAP_ID } from '@/features/map/constants'
 import { useResizableRightPanelWidth } from '@/features/panels/useResizableRightPanelWidth'
-import {
-  collectNearbyStreetsidePhotos,
-  findGroupBySelection,
-  findNearestPhoto,
-  type PhotoSequenceGroup,
-} from '@/features/viewer/groupClickedPhotos'
 import { LookAroundLinkCard } from '@/features/viewer/LookAroundLinkCard'
 import { MapFeatureCard } from '@/features/viewer/MapFeatureCard'
 import { SequenceGroupCard } from '@/features/viewer/SequenceGroupCard'
 import { useClickedMapFeatures } from '@/features/viewer/useClickedMapFeatures'
 import { useClickedPhotos } from '@/features/viewer/useClickedPhotos'
+import { useAllProviderMapFeaturesLoading } from '@/street-imagery-react/hooks/useAllProviderMapFeatures'
+import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
+import {
+  collectNearbyStreetsidePhotos,
+  findGroupBySelection,
+  findNearestPhoto,
+  type PhotoSequenceGroup,
+} from '@/street-imagery/viewer/groupClickedPhotos'
 
 export const RightPanel = () => {
   const { ref, onResizeHandlePointerDown } = useResizableRightPanelWidth()
   const { map, search, updateSelected } = useAppSearchNavigation()
   const { clicked, selected, providers } = search
-  const bbox = useMapViewportBbox()
+  const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
   const {
     groups,
     isLoading: photosLoading,

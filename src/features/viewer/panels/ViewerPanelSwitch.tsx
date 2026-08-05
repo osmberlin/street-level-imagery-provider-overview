@@ -1,21 +1,12 @@
 import { lazy, Suspense, useEffect } from 'react'
-import type { NormalizedPhoto } from '@/features/providers/model'
-import type { ProviderId } from '@/features/providers/registry'
+import { useAppSearchNavigation } from '@/app/searchNavigation'
+import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
 import { PhotoMetadata } from '@/features/viewer/PhotoMetadata'
 import { PhotoViewer } from '@/features/viewer/PhotoViewer'
-import { useViewerActions } from '@/features/viewer/useViewerStore'
-
-const MapillaryPanel = lazy(() =>
-  import('@/features/viewer/panels/MapillaryPanel').then((module) => ({
-    default: module.MapillaryPanel,
-  })),
-)
-
-const PanoramaxPanel = lazy(() =>
-  import('@/features/viewer/panels/PanoramaxPanel').then((module) => ({
-    default: module.PanoramaxPanel,
-  })),
-)
+import { StreetLevelImageryViewer } from '@/street-imagery-react/StreetLevelImageryViewer'
+import { useViewerActions } from '@/street-imagery-react/useViewerStore'
+import type { NormalizedPhoto } from '@/street-imagery/providers/model'
+import type { ProviderId } from '@/street-imagery/providers/registry'
 
 const PsvPanoPanel = lazy(() =>
   import('@/features/viewer/panels/PsvPanoPanel').then((module) => ({
@@ -50,6 +41,8 @@ const ViewerPanelPlaceholder = () => (
 
 export const ViewerPanelSwitch = ({ photo, groupPhotos }: ViewerPanelSwitchProps) => {
   const actions = useViewerActions()
+  const { updateSelected } = useAppSearchNavigation()
+  const easeMainMapToPoint = useEaseMainMapToPoint()
 
   useEffect(
     function resetViewerStoreOnProviderChange() {
@@ -58,23 +51,15 @@ export const ViewerPanelSwitch = ({ photo, groupPhotos }: ViewerPanelSwitchProps
     [actions, photo.providerId],
   )
 
-  if (photo.providerId === 'mapillary') {
+  if (photo.providerId === 'mapillary' || photo.providerId === 'panoramax') {
     return (
       <div className="space-y-3">
-        <Suspense fallback={<ViewerPanelPlaceholder />}>
-          <MapillaryPanel photo={photo} groupPhotos={groupPhotos} />
-        </Suspense>
-        <PhotoMetadata photo={photo} />
-      </div>
-    )
-  }
-
-  if (photo.providerId === 'panoramax') {
-    return (
-      <div className="space-y-3">
-        <Suspense fallback={<ViewerPanelPlaceholder />}>
-          <PanoramaxPanel photo={photo} groupPhotos={groupPhotos} />
-        </Suspense>
+        <StreetLevelImageryViewer
+          groupPhotos={groupPhotos}
+          onEaseMapToPoint={easeMainMapToPoint}
+          onPhotoSelected={updateSelected}
+          photo={photo}
+        />
         <PhotoMetadata photo={photo} />
       </div>
     )

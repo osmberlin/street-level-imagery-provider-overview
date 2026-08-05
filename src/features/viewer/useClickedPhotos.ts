@@ -1,15 +1,16 @@
 import { useAppSearchNavigation } from '@/app/searchNavigation'
-import { useAllProviderPhotos } from '@/features/data/useAllProviderPhotos'
-import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
-import { photoMatchesFilters } from '@/features/filters/searchFilters'
-import { getGoogleMapsApiKey } from '@/features/providers/adapters/google-streetview'
-import { clickRadiusMeters } from '@/features/viewer/clickRadius'
+import { MAIN_MAP_ID } from '@/features/map/constants'
+import { useGoogleStreetViewClickPhoto } from '@/features/viewer/useGoogleStreetViewClickPhoto'
+import { useAllProviderPhotos } from '@/street-imagery-react/hooks/useAllProviderPhotos'
+import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
+import { photoMatchesFilters } from '@/street-imagery/filters/searchFilters'
+import { getGoogleMapsApiKey } from '@/street-imagery/providers/adapters/google-streetview'
+import { clickRadiusMeters } from '@/street-imagery/viewer/clickRadius'
 import {
   distanceToPhoto,
   groupClickedPhotos,
   type PhotoSequenceGroup,
-} from '@/features/viewer/groupClickedPhotos'
-import { useGoogleStreetViewClickPhoto } from '@/features/viewer/useGoogleStreetViewClickPhoto'
+} from '@/street-imagery/viewer/groupClickedPhotos'
 
 export type GsvStatus = 'idle' | 'loading' | 'ok' | 'none' | 'no-key' | 'error'
 
@@ -23,7 +24,7 @@ export type ClickedPhotosResult = {
 
 export const useClickedPhotos = (): ClickedPhotosResult => {
   const { map, search } = useAppSearchNavigation()
-  const bbox = useMapViewportBbox()
+  const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
   const { clicked, providers, photoTypes, date } = search
 
   const {

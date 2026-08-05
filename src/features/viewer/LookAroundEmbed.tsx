@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { lookAroundDeepLink } from '@/features/providers/adapters/lookaround'
 import { getAppleMapKitToken, loadMapKitJs } from '@/features/viewer/mapkitLoader'
+import { lookAroundDeepLink } from '@/street-imagery/providers/adapters/lookaround'
 
 type LookAroundEmbedProps = {
   lat: number
