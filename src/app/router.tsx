@@ -1,38 +1,33 @@
-import { createRootRoute, createRoute, createRouter, redirect } from '@tanstack/react-router'
-import { AppShell } from '@/app/AppShell'
+import { QueryClient } from '@tanstack/react-query'
+import { createRouter } from '@tanstack/react-router'
 import { routerSearch } from '@/app/routerSearch'
-import { appSearchSchema } from '@/app/searchSchema'
+import { routeTree } from '@/routeTree.gen'
 
 const BASE_PATH = '/street-level-imagery-provider-overview'
 
-const rootRoute = createRootRoute({
-  validateSearch: appSearchSchema,
-  beforeLoad: ({ location }) => {
-    const { pathname, searchStr, hash } = location
-    if (pathname.length <= 1 || !pathname.endsWith('/')) return
-    const stripped = pathname.replace(/\/+$/, '') || '/'
-    throw redirect({
-      href: `${stripped}${searchStr}${hash ? `#${hash}` : ''}`,
-      replace: true,
-    })
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+    },
   },
-  component: AppShell,
 })
 
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-})
+export const getRouter = () => {
+  const router = createRouter({
+    routeTree,
+    context: { queryClient },
+    basepath: BASE_PATH,
+    trailingSlash: 'never',
+    parseSearch: routerSearch.parse,
+    stringifySearch: routerSearch.stringify,
+    defaultPreload: 'intent',
+    defaultPreloadStaleTime: 0,
+  })
+  return router
+}
 
-const routeTree = rootRoute.addChildren([indexRoute])
-
-export const router = createRouter({
-  routeTree,
-  basepath: BASE_PATH,
-  trailingSlash: 'never',
-  parseSearch: routerSearch.parse,
-  stringifySearch: routerSearch.stringify,
-})
+export const router = getRouter()
 
 declare module '@tanstack/react-router' {
   interface Register {

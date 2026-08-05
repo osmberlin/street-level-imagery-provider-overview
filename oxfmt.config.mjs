@@ -27,6 +27,7 @@ export default defineConfig({
     '.cursor/**',
     'dist/**',
     'playwright-report/**',
+    'src/routeTree.gen.ts',
     'test-results/**',
   ],
 })

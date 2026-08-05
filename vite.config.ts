@@ -6,6 +6,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
+import { devtools } from '@tanstack/devtools-vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
 import browserslistToEsbuild from 'browserslist-to-esbuild'
 import { defineConfig, type Plugin } from 'vite'
@@ -94,8 +96,21 @@ export default defineConfig({
     },
   },
   plugins: [
+    // Must be first — strips TanStackDevtools from production builds.
+    devtools({
+      injectSource: {
+        enabled: true,
+        ignore: {
+          components: ['Source', 'Layer'],
+        },
+      },
+    }),
     panoramaxConstructableCssPlugin(),
     panoramaxPbfDefaultExportPlugin(),
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: false,
+    }),
     react({
       babel: {
         plugins: [['babel-plugin-react-compiler', {}]],

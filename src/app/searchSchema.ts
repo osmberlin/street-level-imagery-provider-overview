@@ -25,32 +25,11 @@ const isoDateSchema = z
     )
   }, 'Invalid calendar date')
 
-const coerceMapSearchParam = (raw: unknown): string | undefined => {
-  if (raw == null || raw === '') {
-    return undefined
-  }
-  if (typeof raw === 'string') {
-    return raw
-  }
-  if (typeof raw === 'object' && !Array.isArray(raw)) {
-    const obj = raw as Record<string, unknown>
-    const zoom = obj.zoom ?? obj.z
-    const lat = obj.lat
-    const lng = obj.lng ?? obj.lon
-    if (typeof zoom === 'number' && typeof lat === 'number' && typeof lng === 'number') {
-      return serializeMapParam({ zoom, lat, lng })
-    }
-  }
-  return undefined
-}
-
-const mapSearchSchema = z.preprocess(
-  coerceMapSearchParam,
-  z
-    .string()
-    .optional()
-    .transform((value) => parseMapParam(value ?? '') ?? mapParamFallback),
-)
+const mapSearchSchema = z
+  .string()
+  .optional()
+  .transform((value) => parseMapParam(value ?? '') ?? mapParamFallback)
+  .catch(mapParamFallback)
 
 const clickedSchema = z.object({
   lng: z.coerce.number().min(-180).max(180),
@@ -76,7 +55,7 @@ export const DEFAULT_PHOTO_TYPES = ['flat', 'pano'] as const
 export const DEFAULT_MAP = mapParamFallback
 
 export const appSearchSchema = z.object({
-  map: mapSearchSchema.default(mapParamFallback).catch(mapParamFallback),
+  map: mapSearchSchema,
   providers: z
     .array(providerIdSchema)
     .default(DEFAULT_PROVIDER_IDS)

@@ -27,8 +27,9 @@ describe('mapParam', () => {
     expect(stringified).not.toContain('%2F')
   })
 
-  it('rejects legacy @lat,lng,z shapes', () => {
+  it('rejects invalid map strings', () => {
     expect(parseMapParam('@52.8,13.6,12.5z')).toBeNull()
+    expect(parseMapParam('not-a-viewport')).toBeNull()
   })
 
   it('rounds zoom to one decimal and lat/lng by zoom band', () => {

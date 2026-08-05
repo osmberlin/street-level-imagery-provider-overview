@@ -53,19 +53,8 @@ describe('appSearchSchema', () => {
     expect(stringified).not.toContain('%2F')
   })
 
-  it('parses legacy JSON map objects with z/lat/lon', () => {
-    const parsed = parseAppSearch({
-      map: { z: 15.678, lat: 52.520008, lon: 13.404954 },
-    })
-
-    expect(parsed.map).toEqual({ zoom: 15.7, lat: 52.52, lng: 13.405 })
-  })
-
-  it('parses legacy JSON map objects with zoom/lat/lng', () => {
-    const parsed = parseAppSearch({
-      map: { zoom: 14, lat: 52.52, lng: 13.405 },
-    })
-
+  it('falls back to the default map for invalid map values', () => {
+    const parsed = parseAppSearch({ map: 'not-a-viewport' })
     expect(parsed.map).toEqual(DEFAULT_MAP)
   })
 
@@ -129,7 +118,6 @@ describe('appSearchSchema', () => {
 
   it('keeps an explicit empty providers array', () => {
     const parsed = parseAppSearch({
-      map: DEFAULT_MAP,
       providers: [],
       style: 'photoType',
     })
@@ -139,7 +127,6 @@ describe('appSearchSchema', () => {
   it('serializes an empty providers array for the URL', () => {
     const serialized = serializeAppSearch(
       parseAppSearch({
-        map: DEFAULT_MAP,
         providers: [],
         style: 'photoType',
       }),

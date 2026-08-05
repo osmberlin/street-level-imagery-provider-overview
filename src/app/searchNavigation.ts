@@ -8,14 +8,18 @@ type SearchUpdateOptions = {
   replace?: boolean
 }
 
+/** Partial updates may pass map as MapParam; navigate always writes a string. */
 type AppSearchWrite = {
   [Key in keyof AppSearch]?: Key extends 'map' ? MapParam | string : AppSearch[Key]
 }
 
+/** Search payload for `navigate({ search })` — map is the URL string. */
+type AppSearchUrl = Omit<AppSearch, 'map'> & { map: string }
+
 export const mergeAppSearchForNavigate = (
   prev: AppSearch,
   updates: Partial<AppSearchWrite>,
-): Record<string, unknown> => {
+): AppSearchUrl => {
   const next: Record<string, unknown> = { ...prev }
 
   if ('providers' in updates) {
@@ -40,7 +44,7 @@ export const mergeAppSearchForNavigate = (
     next.map = serializeMapParam(mapValue as MapParam)
   }
 
-  return next
+  return next as AppSearchUrl
 }
 
 export const useAppSearchNavigation = () => {
@@ -54,7 +58,7 @@ export const useAppSearchNavigation = () => {
     void navigate({
       search: (prev) => {
         const updates = typeof partial === 'function' ? partial(prev) : partial
-        return mergeAppSearchForNavigate(prev, updates) as AppSearch
+        return mergeAppSearchForNavigate(prev, updates)
       },
       replace: options?.replace ?? false,
       resetScroll: false,
@@ -66,13 +70,16 @@ export const useAppSearchNavigation = () => {
   }
 
   const updateProviders = (providers: AppSearch['providers']) => {
-    const next = parseAppSearch({ ...search, providers })
+    const next = parseAppSearch({
+      ...serializeAppSearch(search),
+      providers,
+    })
     const serialized = serializeAppSearch(
       providers.length === 0 ? { ...next, clicked: undefined, selected: undefined } : next,
     )
 
     void navigate({
-      search: serialized as AppSearch,
+      search: serialized as AppSearchUrl,
       replace: false,
       resetScroll: false,
     })
