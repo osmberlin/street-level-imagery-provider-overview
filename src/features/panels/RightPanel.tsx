@@ -17,10 +17,43 @@ import {
   type PhotoSequenceGroup,
 } from '@/street-imagery/viewer/groupClickedPhotos'
 
+const CloseIcon = () => (
+  <svg
+    aria-hidden
+    className="size-4"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={1.75}
+    viewBox="0 0 24 24"
+  >
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+)
+
+const PanelOpenIcon = () => (
+  <svg
+    aria-hidden
+    className="size-4"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={1.75}
+    viewBox="0 0 24 24"
+  >
+    <rect height="14" rx="2" width="18" x="3" y="5" />
+    <path d="M15 5v14" />
+  </svg>
+)
+
 export const RightPanel = () => {
   const { ref, onResizeHandlePointerDown } = useResizableRightPanelWidth()
-  const { map, search, updateSelected } = useAppSearchNavigation()
+  const { map, search, updateSelected, updateRightPanel } = useAppSearchNavigation()
   const { clicked, selected, providers } = search
+  const isOpen = search.rightPanel !== 'closed'
   const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
   const {
     groups,
@@ -120,7 +153,7 @@ export const RightPanel = () => {
   useEffect(
     function autoSelectSinglePhotoGroup() {
       // Wait for all providers so a fast provider's lone group is not selected prematurely.
-      if (isLoading || isFetching) {
+      if (!isOpen || isLoading || isFetching) {
         return
       }
       if (!clicked || selected != null || mapFeatures.length > 0 || groups.length !== 1) {
@@ -149,8 +182,23 @@ export const RightPanel = () => {
         photoId: nearest.photoId,
       })
     },
-    [clicked, groups, isFetching, isLoading, mapFeatures.length, selected, updateSelected],
+    [clicked, groups, isFetching, isLoading, isOpen, mapFeatures.length, selected, updateSelected],
   )
+
+  if (!isOpen) {
+    return (
+      <button
+        aria-label="Show photo viewer"
+        className="absolute top-3 right-3 z-10 flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900"
+        type="button"
+        onClick={() => {
+          updateRightPanel('open')
+        }}
+      >
+        <PanelOpenIcon />
+      </button>
+    )
+  }
 
   return (
     <aside
@@ -165,12 +213,26 @@ export const RightPanel = () => {
         onPointerDown={onResizeHandlePointerDown}
       />
       <div className="border-b border-slate-200 px-5 py-5">
-        <h2 className="text-sm font-semibold text-slate-900">Photo viewer</h2>
-        <p className="mt-1 text-xs text-slate-500">
-          {clicked
-            ? `${resultCount} result${resultCount === 1 ? '' : 's'} near your click`
-            : 'Click the map to explore imagery here.'}
-        </p>
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm font-semibold text-slate-900">Photo viewer</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              {clicked
+                ? `${resultCount} result${resultCount === 1 ? '' : 's'} near your click`
+                : 'Click the map to explore imagery here.'}
+            </p>
+          </div>
+          <button
+            aria-label="Hide photo viewer"
+            className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            type="button"
+            onClick={() => {
+              updateRightPanel('closed')
+            }}
+          >
+            <CloseIcon />
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">

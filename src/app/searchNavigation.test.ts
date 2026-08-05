@@ -10,6 +10,7 @@ const baseSearch: AppSearch = {
   style: 'photoType',
   photoTypes: ['flat', 'pano'],
   leftPanel: 'open',
+  rightPanel: 'open',
 }
 
 describe('mergeAppSearchForNavigate', () => {

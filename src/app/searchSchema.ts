@@ -72,6 +72,7 @@ export const DEFAULT_PHOTO_TYPES = ['flat', 'pano'] as const
 export const DEFAULT_MAP = mapParamFallback
 
 export const LEFT_PANEL_DEFAULT = 'open' as const
+export const RIGHT_PANEL_DEFAULT = 'open' as const
 
 export const appSearchSchema = z.object({
   map: mapSearchSchema,
@@ -86,6 +87,7 @@ export const appSearchSchema = z.object({
     .default([...DEFAULT_PHOTO_TYPES])
     .catch([...DEFAULT_PHOTO_TYPES]),
   leftPanel: z.enum(['open', 'closed']).default(LEFT_PANEL_DEFAULT).catch(LEFT_PANEL_DEFAULT),
+  rightPanel: z.enum(['open', 'closed']).default(RIGHT_PANEL_DEFAULT).catch(RIGHT_PANEL_DEFAULT),
   date: dateSearchSchema.optional().catch(undefined),
   clicked: clickedSchema.optional().catch(undefined),
   selected: selectedSchema.optional().catch(undefined),
@@ -116,6 +118,10 @@ export const serializeAppSearch = (search: AppSearch): Record<string, unknown> =
 
   if (search.leftPanel !== LEFT_PANEL_DEFAULT) {
     serialized.leftPanel = search.leftPanel
+  }
+
+  if (search.rightPanel !== RIGHT_PANEL_DEFAULT) {
+    serialized.rightPanel = search.rightPanel
   }
 
   if (search.date?.from || search.date?.to) {

@@ -21,6 +21,7 @@ describe('appSearchSchema', () => {
     expect(parsed.style).toBe('photoType')
     expect(parsed.photoTypes).toEqual([...DEFAULT_PHOTO_TYPES])
     expect(parsed.leftPanel).toBe('open')
+    expect(parsed.rightPanel).toBe('open')
     expect(parsed.date).toBeUndefined()
     expect(parsed.clicked).toBeUndefined()
     expect(parsed.selected).toBeUndefined()
@@ -33,6 +34,15 @@ describe('appSearchSchema', () => {
 
     const open = parseAppSearch({})
     expect(serializeAppSearch(open).leftPanel).toBeUndefined()
+  })
+
+  it('accepts rightPanel=closed and omits the open default from serialized search', () => {
+    const closed = parseAppSearch({ rightPanel: 'closed' })
+    expect(closed.rightPanel).toBe('closed')
+    expect(serializeAppSearch(closed).rightPanel).toBe('closed')
+
+    const open = parseAppSearch({})
+    expect(serializeAppSearch(open).rightPanel).toBeUndefined()
   })
 
   it('keeps map as a slash string in validated search', () => {
