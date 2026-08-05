@@ -1,4 +1,3 @@
-import { googleStreetViewAdapter } from '@/street-imagery/providers/adapters/google-streetview'
 import { kartaviewAdapter } from '@/street-imagery/providers/adapters/kartaview'
 import { lookaroundAdapter } from '@/street-imagery/providers/adapters/lookaround'
 import { mapilioAdapter } from '@/street-imagery/providers/adapters/mapilio'
@@ -7,6 +6,7 @@ import { mapillaryMapFeaturesAdapter } from '@/street-imagery/providers/adapters
 import { mapillarySignsAdapter } from '@/street-imagery/providers/adapters/mapillary-signs'
 import { panoramaxAdapter } from '@/street-imagery/providers/adapters/panoramax'
 import { streetsideAdapter } from '@/street-imagery/providers/adapters/streetside'
+import { streetViewAdapter } from '@/street-imagery/providers/adapters/streetview'
 import { vegbilderAdapter } from '@/street-imagery/providers/adapters/vegbilder'
 import type { ProviderAdapter, ProviderId, ProviderKind } from '@/street-imagery/providers/model'
 import { PROVIDER_IDS } from '@/street-imagery/providers/model'
@@ -29,7 +29,7 @@ const PROVIDER_HOMEPAGE_URLS: Partial<Record<ProviderId, string>> = {
   mapilio: 'https://mapilio.com',
   streetside: 'https://www.bing.com/maps',
   vegbilder: 'https://vegbilder.atlas.vegvesen.no',
-  'google-streetview': 'https://www.google.com/maps',
+  streetview: 'https://www.google.com/maps',
   lookaround: 'https://www.apple.com/maps/',
   'mapillary-signs': 'https://www.mapillary.com',
   'mapillary-map-features': 'https://www.mapillary.com',
@@ -42,7 +42,7 @@ export const PROVIDER_ADAPTERS: ProviderAdapter[] = [
   mapilioAdapter,
   streetsideAdapter,
   vegbilderAdapter,
-  googleStreetViewAdapter,
+  streetViewAdapter,
   lookaroundAdapter,
   mapillarySignsAdapter,
   mapillaryMapFeaturesAdapter,

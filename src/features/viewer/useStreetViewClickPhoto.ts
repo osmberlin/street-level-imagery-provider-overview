@@ -2,30 +2,30 @@ import { useQuery } from '@tanstack/react-query'
 import {
   fetchStreetViewMetadata,
   getGoogleMapsApiKey,
-} from '@/street-imagery/providers/adapters/google-streetview'
+} from '@/street-imagery/providers/adapters/streetview'
 
 export type ClickedPoint = { lng: number; lat: number }
 
 export const streetViewMetadataQueryKey = (lng: number, lat: number) =>
-  ['google-streetview-metadata', lng, lat] as const
+  ['streetview-metadata', lng, lat] as const
 
-export const useGoogleStreetViewClickPhoto = (
+export const useStreetViewClickPhoto = (
   clicked: ClickedPoint | null | undefined,
-  gsvEnabled: boolean,
+  streetViewEnabled: boolean,
 ) => {
   const googleMapsApiKey = getGoogleMapsApiKey()
 
   return useQuery({
     queryKey: clicked
       ? streetViewMetadataQueryKey(clicked.lng, clicked.lat)
-      : ['google-streetview-metadata', 'none'],
+      : ['streetview-metadata', 'none'],
     queryFn: ({ signal }) => {
       if (!clicked) {
         return null
       }
       return fetchStreetViewMetadata(clicked.lat, clicked.lng, signal)
     },
-    enabled: gsvEnabled && clicked != null && googleMapsApiKey != null,
+    enabled: streetViewEnabled && clicked != null && googleMapsApiKey != null,
     staleTime: 5 * 60 * 1000,
   })
 }

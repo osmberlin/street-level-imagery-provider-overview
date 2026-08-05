@@ -11,7 +11,7 @@ export const PhotoStaticPreview = ({ photo }: PhotoViewerProps) => {
   const { data: thumbnailUrl, isLoading, isError } = usePhotoThumbnail(photo)
   const provider = providerById[photo.providerId]
   const showMetadataOnly =
-    (photo.providerId === 'streetside' || photo.providerId === 'google-streetview') &&
+    (photo.providerId === 'streetside' || photo.providerId === 'streetview') &&
     !thumbnailUrl &&
     !isLoading
 
@@ -32,7 +32,7 @@ export const PhotoStaticPreview = ({ photo }: PhotoViewerProps) => {
           <span>{isError ? 'Preview unavailable' : 'No preview for this provider'}</span>
           {showMetadataOnly ? (
             <span className="text-xs text-slate-400">
-              {photo.providerId === 'google-streetview'
+              {photo.providerId === 'streetview'
                 ? 'Google Street View imagery cannot be shown in-app — open Google Maps for the full panorama.'
                 : 'Streetside cubemap tiles need provider stitching — open Bing Maps for the full panorama.'}
             </span>

@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   fetchStreetViewMetadata,
   normalizeStreetViewMetadata,
-  parseGoogleStreetViewDate,
+  parseStreetViewDate,
   type StreetViewMetadataResponse,
-} from '@/street-imagery/providers/adapters/google-streetview'
+} from '@/street-imagery/providers/adapters/streetview'
 
 const okFixture: StreetViewMetadataResponse = {
   status: 'OK',
@@ -13,14 +13,14 @@ const okFixture: StreetViewMetadataResponse = {
   location: { lat: 37.421755, lng: -122.0838 },
 }
 
-describe('parseGoogleStreetViewDate', () => {
+describe('parseStreetViewDate', () => {
   it('parses YYYY-MM dates as the first day of the month', () => {
-    expect(parseGoogleStreetViewDate('2021-08')).toBe(Date.parse('2021-08-01'))
+    expect(parseStreetViewDate('2021-08')).toBe(Date.parse('2021-08-01'))
   })
 
   it('returns null for invalid values', () => {
-    expect(parseGoogleStreetViewDate('')).toBeNull()
-    expect(parseGoogleStreetViewDate(undefined)).toBeNull()
+    expect(parseStreetViewDate('')).toBeNull()
+    expect(parseStreetViewDate(undefined)).toBeNull()
   })
 })
 
@@ -81,7 +81,7 @@ describe('fetchStreetViewMetadata', () => {
     await expect(
       fetchStreetViewMetadata(37.4, -122.1, new AbortController().signal),
     ).resolves.toEqual({
-      providerId: 'google-streetview',
+      providerId: 'streetview',
       photoId: 'pano-abc123',
       sequenceId: null,
       capturedAt: Date.parse('2021-08-01'),

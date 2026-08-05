@@ -23,7 +23,7 @@ export const providerExternalLink = (photo: NormalizedPhoto): string => {
       return `https://mapilio.com/app?lat=${lat}&lng=${lng}&zoom=17&pId=${encodeURIComponent(photo.photoId)}`
     case 'streetside':
       return `https://www.bing.com/maps?cp=${lat}~${lng}&lvl=18&style=x`
-    case 'google-streetview':
+    case 'streetview':
       return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`
     case 'lookaround':
       return lookAroundDeepLink(lat, lng)
@@ -63,7 +63,7 @@ export const providerLocationLink = (
       return `https://mapilio.com/app?lat=${lat}&lng=${lng}&zoom=17`
     case 'streetside':
       return `https://www.bing.com/maps?cp=${lat}~${lng}&lvl=18&style=x`
-    case 'google-streetview':
+    case 'streetview':
       return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`
     case 'lookaround':
       return lookAroundDeepLink(lat, lng)

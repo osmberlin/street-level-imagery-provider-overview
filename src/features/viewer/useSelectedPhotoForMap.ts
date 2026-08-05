@@ -1,7 +1,7 @@
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { isProviderId } from '@/app/searchSchema'
 import { MAIN_MAP_ID } from '@/features/map/constants'
-import { useGoogleStreetViewClickPhoto } from '@/features/viewer/useGoogleStreetViewClickPhoto'
+import { useStreetViewClickPhoto } from '@/features/viewer/useStreetViewClickPhoto'
 import { useAllProviderPhotos } from '@/street-imagery-react/hooks/useAllProviderPhotos'
 import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
 import {
@@ -26,8 +26,8 @@ export const useSelectedPhotoForMap = (): {
   const { selected, providers, photoTypes, date } = search
 
   const { photos: allPhotos } = useAllProviderPhotos(providers, bbox, map.zoom, photoTypes, date)
-  const gsvEnabled = providers.includes('google-streetview')
-  const streetViewQuery = useGoogleStreetViewClickPhoto(search.clicked, gsvEnabled)
+  const streetViewEnabled = providers.includes('streetview')
+  const streetViewQuery = useStreetViewClickPhoto(search.clicked, streetViewEnabled)
 
   let selectedPhoto: NormalizedPhoto | null = null
   if (selected) {
@@ -40,14 +40,15 @@ export const useSelectedPhotoForMap = (): {
     if (fromAllPhotos) {
       selectedPhoto = fromAllPhotos
     } else {
-      const gsvPhoto = streetViewQuery.data
+      const streetViewPhoto = streetViewQuery.data
       if (
-        selected.provider === 'google-streetview' &&
-        gsvPhoto &&
-        gsvPhoto.photoId === selected.photoId &&
-        photoGroupSequenceId(gsvPhoto) === (selected.sequenceId ?? `photo:${selected.photoId}`)
+        selected.provider === 'streetview' &&
+        streetViewPhoto &&
+        streetViewPhoto.photoId === selected.photoId &&
+        photoGroupSequenceId(streetViewPhoto) ===
+          (selected.sequenceId ?? `photo:${selected.photoId}`)
       ) {
-        selectedPhoto = gsvPhoto
+        selectedPhoto = streetViewPhoto
       }
     }
   }

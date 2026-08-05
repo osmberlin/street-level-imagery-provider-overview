@@ -7,7 +7,7 @@ export const PROVIDER_IDS = [
   'mapilio',
   'streetside',
   'vegbilder',
-  'google-streetview',
+  'streetview',
   'lookaround',
   'mapillary-signs',
   'mapillary-map-features',

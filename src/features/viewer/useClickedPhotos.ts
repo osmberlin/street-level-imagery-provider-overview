@@ -1,10 +1,10 @@
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { MAIN_MAP_ID } from '@/features/map/constants'
-import { useGoogleStreetViewClickPhoto } from '@/features/viewer/useGoogleStreetViewClickPhoto'
+import { useStreetViewClickPhoto } from '@/features/viewer/useStreetViewClickPhoto'
 import { useAllProviderPhotos } from '@/street-imagery-react/hooks/useAllProviderPhotos'
 import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
 import { photoMatchesFilters } from '@/street-imagery/filters/searchFilters'
-import { getGoogleMapsApiKey } from '@/street-imagery/providers/adapters/google-streetview'
+import { getGoogleMapsApiKey } from '@/street-imagery/providers/adapters/streetview'
 import { clickRadiusMeters } from '@/street-imagery/viewer/clickRadius'
 import {
   distanceToPhoto,
@@ -34,27 +34,29 @@ export const useClickedPhotos = (): ClickedPhotosResult => {
   } = useAllProviderPhotos(providers, bbox, map.zoom, photoTypes, date)
   const radiusMeters = clickRadiusMeters(map.zoom)
 
-  const gsvEnabled = providers.includes('google-streetview')
+  const streetViewEnabled = providers.includes('streetview')
   const googleMapsApiKey = getGoogleMapsApiKey()
 
-  const streetViewQuery = useGoogleStreetViewClickPhoto(clicked, gsvEnabled)
+  const streetViewQuery = useStreetViewClickPhoto(clicked, streetViewEnabled)
 
   let groups: PhotoSequenceGroup[] = []
   if (clicked) {
     const nearby = allPhotos.filter(
       (photo) => distanceToPhoto(photo, clicked.lng, clicked.lat) <= radiusMeters,
     )
-    const gsvPhoto = streetViewQuery.data
+    const streetViewPhoto = streetViewQuery.data
     const photos =
-      gsvPhoto && photoMatchesFilters(gsvPhoto, photoTypes, date) ? [...nearby, gsvPhoto] : nearby
+      streetViewPhoto && photoMatchesFilters(streetViewPhoto, photoTypes, date)
+        ? [...nearby, streetViewPhoto]
+        : nearby
     groups = groupClickedPhotos(photos, clicked.lng, clicked.lat)
   }
 
-  const gsvPending =
-    gsvEnabled && clicked != null && googleMapsApiKey != null && streetViewQuery.isPending
+  const streetViewPending =
+    streetViewEnabled && clicked != null && googleMapsApiKey != null && streetViewQuery.isPending
 
   let gsvStatus: GsvStatus = 'idle'
-  if (gsvEnabled && clicked != null) {
+  if (streetViewEnabled && clicked != null) {
     if (googleMapsApiKey == null) {
       gsvStatus = 'no-key'
     } else if (streetViewQuery.isPending) {
@@ -71,7 +73,7 @@ export const useClickedPhotos = (): ClickedPhotosResult => {
   return {
     groups,
     radiusMeters,
-    isLoading: bboxPhotosLoading || gsvPending,
+    isLoading: bboxPhotosLoading || streetViewPending,
     isFetching: bboxPhotosFetching || streetViewQuery.isFetching,
     gsvStatus,
   }

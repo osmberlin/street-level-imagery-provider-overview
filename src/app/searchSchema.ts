@@ -13,7 +13,10 @@ import {
   type ProviderId,
 } from '@/street-imagery/providers/registry'
 
-const providerIdSchema = z.enum(PROVIDER_IDS)
+const normalizeLegacyProviderId = (raw: unknown): unknown =>
+  raw === 'google-streetview' ? 'streetview' : raw
+
+const providerIdSchema = z.preprocess(normalizeLegacyProviderId, z.enum(PROVIDER_IDS))
 
 const isoDateSchema = z
   .string()

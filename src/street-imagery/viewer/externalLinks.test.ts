@@ -11,8 +11,8 @@ beforeAll(() => {
   )
 })
 
-const googleStreetViewPhoto: NormalizedPhoto = {
-  providerId: 'google-streetview',
+const streetViewPhoto: NormalizedPhoto = {
+  providerId: 'streetview',
   photoId: 'pano-abc123',
   sequenceId: null,
   capturedAt: Date.parse('2021-08-01'),
@@ -23,7 +23,7 @@ const googleStreetViewPhoto: NormalizedPhoto = {
 
 describe('providerExternalLink', () => {
   it('builds a Google Maps panorama deep link from the photo viewpoint', () => {
-    expect(providerExternalLink(googleStreetViewPhoto)).toBe(
+    expect(providerExternalLink(streetViewPhoto)).toBe(
       'https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.421755,-122.0838',
     )
   })
@@ -35,7 +35,7 @@ describe('providerLocationLink', () => {
   const zoom = 16
 
   it('builds a Google Street View panorama link at the map center', () => {
-    expect(providerLocationLink('google-streetview', lat, lng, zoom)).toBe(
+    expect(providerLocationLink('streetview', lat, lng, zoom)).toBe(
       'https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=52.52,13.405',
     )
   })

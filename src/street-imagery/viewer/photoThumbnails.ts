@@ -99,7 +99,7 @@ export const fetchMapilioFullUrl = async (
 }
 
 export const resolvePhotoFullUrl = async (photo: NormalizedPhoto): Promise<string | null> => {
-  if (photo.providerId === 'google-streetview' || photo.providerId === 'lookaround') {
+  if (photo.providerId === 'streetview' || photo.providerId === 'lookaround') {
     return null
   }
 
@@ -145,7 +145,7 @@ export const resolvePhotoPanoramaUrl = async (photo: NormalizedPhoto): Promise<s
 }
 
 export const resolvePhotoThumbnailUrl = async (photo: NormalizedPhoto): Promise<string | null> => {
-  if (photo.providerId === 'google-streetview' || photo.providerId === 'lookaround') {
+  if (photo.providerId === 'streetview' || photo.providerId === 'lookaround') {
     return null
   }
 

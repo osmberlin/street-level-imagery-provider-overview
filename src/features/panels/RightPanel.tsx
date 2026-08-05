@@ -40,7 +40,7 @@ export const RightPanel = () => {
   const showLoading =
     clicked != null && (isLoading || isFetching) && !hasResults && !showLookAroundCta
 
-  const gsvOnly = providers.length === 1 && providers[0] === 'google-streetview'
+  const streetViewOnly = providers.length === 1 && providers[0] === 'streetview'
   const lookaroundOnly = providers.length === 1 && providers[0] === 'lookaround'
 
   const emptyMessage = (() => {
@@ -53,7 +53,7 @@ export const RightPanel = () => {
     if (gsvStatus === 'error') {
       return 'Could not load Google Street View. Check your API key and network.'
     }
-    if (gsvStatus === 'no-key' && gsvOnly) {
+    if (gsvStatus === 'no-key' && streetViewOnly) {
       return 'Set VITE_GOOGLE_MAPS_API_KEY to check Google Street View.'
     }
     if (lookaroundOnly) {

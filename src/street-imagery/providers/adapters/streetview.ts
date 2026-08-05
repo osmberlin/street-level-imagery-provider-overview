@@ -18,7 +18,7 @@ export const getGoogleMapsApiKey = (): string | undefined => {
   return typeof key === 'string' && key.length > 0 ? key : undefined
 }
 
-export const parseGoogleStreetViewDate = (value: unknown): number | null => {
+export const parseStreetViewDate = (value: unknown): number | null => {
   if (typeof value !== 'string' || value.length === 0) {
     return null
   }
@@ -44,7 +44,7 @@ export const normalizeStreetViewMetadata = (
   return {
     photoId,
     sequenceId: null,
-    capturedAt: parseGoogleStreetViewDate(data.date),
+    capturedAt: parseStreetViewDate(data.date),
     isPano: true,
     heading: null,
     lngLat: [lng, lat],
@@ -83,11 +83,11 @@ export const fetchStreetViewMetadata = async (
     throw new Error('Google Street View metadata: unexpected empty OK response')
   }
 
-  return { providerId: 'google-streetview', ...normalized }
+  return { providerId: 'streetview', ...normalized }
 }
 
-export const googleStreetViewAdapter: ProviderAdapter = {
-  id: 'google-streetview',
+export const streetViewAdapter: ProviderAdapter = {
+  id: 'streetview',
   kind: 'photo',
   label: 'Google Street View',
   color: '#EA4335',

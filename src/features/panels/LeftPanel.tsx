@@ -6,7 +6,7 @@ import { MAIN_MAP_ID } from '@/features/map/constants'
 import { ProviderLegend } from '@/features/panels/ProviderLegend'
 import { useResizableLeftPanelWidth } from '@/features/panels/useResizableLeftPanelWidth'
 import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
-import { getGoogleMapsApiKey } from '@/street-imagery/providers/adapters/google-streetview'
+import { getGoogleMapsApiKey } from '@/street-imagery/providers/adapters/streetview'
 import {
   adapterById,
   isBrowserAvailableProvider,
@@ -98,7 +98,7 @@ export const LeftPanel = () => {
     if (!isBrowserAvailableProvider(providerId)) {
       return true
     }
-    return providerId === 'google-streetview' && !googleMapsConfigured
+    return providerId === 'streetview' && !googleMapsConfigured
   }
 
   const setProviderEnabled = (providerId: ProviderId, enabled: boolean) => {
@@ -204,8 +204,8 @@ export const LeftPanel = () => {
               const clickOnly = isClickOnlyPhotoProvider(provider.id)
               const belowMinZoom = !clickOnly && currentZoom < meta.minZoom
               const browserUnavailable = adapter.browserUnavailableReason != null
-              const gsvNeedsKey = provider.id === 'google-streetview' && !googleMapsConfigured
-              const enableBlocked = browserUnavailable || gsvNeedsKey
+              const streetViewNeedsKey = provider.id === 'streetview' && !googleMapsConfigured
+              const enableBlocked = browserUnavailable || streetViewNeedsKey
               const checkboxDisabled = enableBlocked && !checked
               return (
                 <li key={provider.id}>
@@ -221,7 +221,7 @@ export const LeftPanel = () => {
                         checkboxDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
                       )}
                       title={
-                        gsvNeedsKey
+                        streetViewNeedsKey
                           ? 'Set VITE_GOOGLE_MAPS_API_KEY in .env'
                           : browserUnavailable
                             ? adapter.browserUnavailableReason
@@ -244,7 +244,7 @@ export const LeftPanel = () => {
                       />
                       <span className="flex min-w-0 flex-1 flex-col">
                         <span className="text-sm font-medium text-slate-800">{provider.label}</span>
-                        {gsvNeedsKey ? (
+                        {streetViewNeedsKey ? (
                           <span className="text-xs text-slate-500">
                             Set VITE_GOOGLE_MAPS_API_KEY
                           </span>

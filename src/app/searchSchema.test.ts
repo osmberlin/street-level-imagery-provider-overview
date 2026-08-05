@@ -170,6 +170,34 @@ describe('appSearchSchema', () => {
     ).toEqual([])
   })
 
+  it('maps legacy google-streetview provider id to streetview', () => {
+    const parsed = parseAppSearch({ providers: ['google-streetview'] })
+    expect(parsed.providers).toEqual(['streetview'])
+
+    const serialized = serializeAppSearch(parsed)
+    expect(serialized.providers).toEqual(['streetview'])
+  })
+
+  it('maps legacy google-streetview in selected provider to streetview', () => {
+    const parsed = parseAppSearch({
+      providers: ['streetview'],
+      selected: {
+        provider: 'google-streetview',
+        photoId: 'pano-abc123',
+      },
+    })
+    expect(parsed.selected).toEqual({
+      provider: 'streetview',
+      photoId: 'pano-abc123',
+    })
+
+    const serialized = serializeAppSearch(parsed)
+    expect(serialized.selected).toEqual({
+      provider: 'streetview',
+      photoId: 'pano-abc123',
+    })
+  })
+
   it('keeps arrays and map readable after routerSearch.stringify', () => {
     const stringified = routerSearch.stringify(
       serializeAppSearch(
