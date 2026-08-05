@@ -5,6 +5,7 @@ import {
   DEFAULT_MAP,
   DEFAULT_PHOTO_TYPES,
   appSearchSchema,
+  getMapParamFromSearch,
   parseAppSearch,
   serializeAppSearch,
 } from '@/app/searchSchema'
@@ -14,13 +15,21 @@ describe('appSearchSchema', () => {
   it('applies defaults for an empty search object', () => {
     const parsed = parseAppSearch({})
 
-    expect(parsed.map).toEqual(DEFAULT_MAP)
+    expect(parsed.map).toBe(serializeMapParam(DEFAULT_MAP))
+    expect(getMapParamFromSearch(parsed)).toEqual(DEFAULT_MAP)
     expect(parsed.providers).toEqual([...DEFAULT_PROVIDER_IDS])
     expect(parsed.style).toBe('photoType')
     expect(parsed.photoTypes).toEqual([...DEFAULT_PHOTO_TYPES])
     expect(parsed.date).toBeUndefined()
     expect(parsed.clicked).toBeUndefined()
     expect(parsed.selected).toBeUndefined()
+  })
+
+  it('keeps map as a slash string in validated search', () => {
+    const parsed = parseAppSearch({ map: '15.678/52.520008/13.404954' })
+
+    expect(parsed.map).toBe('15.7/52.52/13.405')
+    expect(typeof parsed.map).toBe('string')
   })
 
   it('round-trips through serialize and router search stringify/parse', () => {
@@ -42,7 +51,8 @@ describe('appSearchSchema', () => {
     const stringified = routerSearch.stringify(serialized)
     const reparsed = parseAppSearch(routerSearch.parse(stringified))
 
-    expect(reparsed.map).toEqual({ zoom: 15.7, lat: 52.52, lng: 13.405 })
+    expect(reparsed.map).toBe('15.7/52.52/13.405')
+    expect(getMapParamFromSearch(reparsed)).toEqual({ zoom: 15.7, lat: 52.52, lng: 13.405 })
     expect(reparsed.providers).toEqual(input.providers)
     expect(reparsed.style).toBe('age')
     expect(reparsed.photoTypes).toEqual(['pano'])
@@ -51,11 +61,23 @@ describe('appSearchSchema', () => {
     expect(reparsed.selected).toEqual(input.selected)
     expect(stringified).toContain('map=15.7/52.52/13.405')
     expect(stringified).not.toContain('%2F')
+    expect(stringified).not.toContain('{"zoom"')
+  })
+
+  it('accepts legacy JSON map objects and rewrites to slash form', () => {
+    const parsed = parseAppSearch({
+      map: { zoom: 17.9, lat: 52.50968, lng: 13.4156 },
+    })
+
+    expect(parsed.map).toBe('17.9/52.50968/13.4156')
+    expect(routerSearch.stringify(serializeAppSearch(parsed))).toContain(
+      'map=17.9/52.50968/13.4156',
+    )
   })
 
   it('falls back to the default map for invalid map values', () => {
     const parsed = parseAppSearch({ map: 'not-a-viewport' })
-    expect(parsed.map).toEqual(DEFAULT_MAP)
+    expect(parsed.map).toBe(serializeMapParam(DEFAULT_MAP))
   })
 
   it('omits default photoTypes from serialized search', () => {
@@ -136,5 +158,23 @@ describe('appSearchSchema', () => {
     expect(
       parseAppSearch(routerSearch.parse(routerSearch.stringify(serialized))).providers,
     ).toEqual([])
+  })
+
+  it('keeps arrays and map readable after routerSearch.stringify', () => {
+    const stringified = routerSearch.stringify(
+      serializeAppSearch(
+        parseAppSearch({
+          map: '17.9/52.50968/13.4156',
+          providers: ['panoramax', 'kartaview', 'streetside', 'vegbilder'],
+          style: 'photoType',
+          photoTypes: ['flat', 'pano'],
+        }),
+      ),
+    )
+
+    expect(stringified).toContain('map=17.9/52.50968/13.4156')
+    expect(stringified).toContain('providers=["panoramax","kartaview","streetside","vegbilder"]')
+    expect(stringified).not.toContain('%22')
+    expect(stringified).not.toContain('%7B')
   })
 })

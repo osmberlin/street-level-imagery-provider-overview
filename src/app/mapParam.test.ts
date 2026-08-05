@@ -4,6 +4,7 @@ import {
   parseMapParam,
   roundPositionForURL,
   serializeMapParam,
+  coerceMapParam,
 } from '@/app/mapParam'
 import { routerSearch } from '@/app/routerSearch'
 
@@ -15,6 +16,38 @@ describe('mapParam', () => {
       zoom: 15.7,
       lat: 52.52,
       lng: 13.405,
+    })
+  })
+
+  it('parses and serializes bearing and pitch', () => {
+    expect(parseMapParam('13/48.1/9.2/45/60')).toEqual({
+      zoom: 13,
+      lat: 48.1,
+      lng: 9.2,
+      bearing: 45,
+      pitch: 60,
+    })
+    expect(serializeMapParam({ zoom: 13, lat: 48.1, lng: 9.2, bearing: 45, pitch: 60 })).toBe(
+      '13/48.1/9.2/45/60',
+    )
+    expect(serializeMapParam({ zoom: 13, lat: 48.1, lng: 9.2, bearing: 0, pitch: 0 })).toBe(
+      '13/48.1/9.2/0/0',
+    )
+    expect(serializeMapParam({ zoom: 13, lat: 48.1, lng: 9.2, bearing: 45 })).toBe('13/48.1/9.2')
+  })
+
+  it('coerces legacy JSON map objects from dirty share URLs', () => {
+    expect(coerceMapParam({ zoom: 17.9, lat: 52.50968, lng: 13.4156 })).toEqual({
+      zoom: 17.9,
+      lat: 52.50968,
+      lng: 13.4156,
+    })
+    expect(coerceMapParam({ zoom: 13, lat: 48.1, lng: 9.2, bearing: 45, pitch: 60 })).toEqual({
+      zoom: 13,
+      lat: 48.1,
+      lng: 9.2,
+      bearing: 45,
+      pitch: 60,
     })
   })
 

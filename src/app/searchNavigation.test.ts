@@ -1,17 +1,18 @@
 import { describe, expect, it } from 'vitest'
+import { serializeMapParam } from '@/app/mapParam'
 import { mergeAppSearchForNavigate } from '@/app/searchNavigation'
 import { DEFAULT_MAP, type AppSearch } from '@/app/searchSchema'
 import { DEFAULT_PROVIDER_IDS } from '@/features/providers/registry'
 
 const baseSearch: AppSearch = {
-  map: DEFAULT_MAP,
+  map: serializeMapParam(DEFAULT_MAP),
   providers: [...DEFAULT_PROVIDER_IDS],
   style: 'photoType',
   photoTypes: ['flat', 'pano'],
 }
 
 describe('mergeAppSearchForNavigate', () => {
-  it('serializes map from prev when partial update does not touch map', () => {
+  it('keeps map as a slash string when partial update does not touch map', () => {
     const merged = mergeAppSearchForNavigate(baseSearch, {
       clicked: { lng: 13.4, lat: 52.5 },
     })
@@ -36,5 +37,13 @@ describe('mergeAppSearchForNavigate', () => {
     })
 
     expect(merged.map).toBe('15.7/52.52/13.405')
+  })
+
+  it('serializes bearing and pitch when present', () => {
+    const merged = mergeAppSearchForNavigate(baseSearch, {
+      map: { zoom: 17, lat: 52.5, lng: 13.4, bearing: 45, pitch: 30 },
+    })
+
+    expect(merged.map).toBe('17/52.5/13.4/45/30')
   })
 })

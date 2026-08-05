@@ -38,11 +38,11 @@ const ExternalLinkIcon = () => (
 )
 
 export const LeftPanel = () => {
-  const { search, updateProviders, updateStyle, updatePhotoTypes, updateDate } =
+  const { map, search, updateProviders, updateStyle, updatePhotoTypes, updateDate } =
     useAppSearchNavigation()
   const bbox = useMapViewportBbox()
   const activeProviders = new Set(search.providers)
-  const { lat: mapLat, lng: mapLng, zoom: currentZoom } = search.map
+  const { lat: mapLat, lng: mapLng, zoom: currentZoom } = map
   const enabledProviders = PROVIDERS.filter((provider) => activeProviders.has(provider.id))
 
   const photoTypeSet = new Set(search.photoTypes)

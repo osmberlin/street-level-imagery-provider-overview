@@ -16,8 +16,8 @@ import { useClickedMapFeatures } from '@/features/viewer/useClickedMapFeatures'
 import { useClickedPhotos } from '@/features/viewer/useClickedPhotos'
 
 export const RightPanel = () => {
-  const { search, updateSelected } = useAppSearchNavigation()
-  const { clicked, selected, providers, map } = search
+  const { map, search, updateSelected } = useAppSearchNavigation()
+  const { clicked, selected, providers } = search
   const bbox = useMapViewportBbox()
   const {
     groups,

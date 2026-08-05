@@ -4,7 +4,7 @@ import type { MapLayerMouseEvent, ViewStateChangeEvent } from 'react-map-gl/mapl
 import { AttributionControl, Map, NavigationControl } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
-import { roundPositionForURL } from '@/app/mapParam'
+import { roundPositionForURL, type MapParam } from '@/app/mapParam'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useMapViewportBbox } from '@/features/data/useMapViewportBbox'
 import { MAIN_MAP_ID } from '@/features/map/constants'
@@ -23,11 +23,13 @@ import {
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 
+const isNearZeroAngle = (value: number) => Math.abs(value) < 0.05
+
 export { MAIN_MAP_ID } from '@/features/map/constants'
 
 export const MapRoot = () => {
-  const { search, updateMapViewport, updateSearch } = useAppSearchNavigation()
-  const { map, providers, style, photoTypes, date } = search
+  const { map, search, updateMapViewport, updateSearch } = useAppSearchNavigation()
+  const { providers, style, photoTypes, date } = search
   const bbox = useMapViewportBbox()
   const [cursor, setCursor] = useState('grab')
   const { markMapLoaded } = useMapActions()
@@ -43,9 +45,14 @@ export const MapRoot = () => {
   }
 
   const handleMoveEnd = (event: ViewStateChangeEvent) => {
-    const { latitude, longitude, zoom } = event.viewState
+    const { latitude, longitude, zoom, bearing, pitch } = event.viewState
     const [lat, lng, roundedZoom] = roundPositionForURL(latitude, longitude, zoom)
-    const nextViewport = { zoom: roundedZoom, lat, lng }
+    const nextViewport: MapParam = { zoom: roundedZoom, lat, lng }
+    // Persist rotate/pitch when the user has tilted the camera; omit for flat 2D URLs.
+    if (!isNearZeroAngle(bearing) || !isNearZeroAngle(pitch)) {
+      nextViewport.bearing = bearing
+      nextViewport.pitch = pitch
+    }
     rememberWrittenMapViewport(nextViewport)
     updateMapViewport(nextViewport)
   }
@@ -88,6 +95,8 @@ export const MapRoot = () => {
         longitude: map.lng,
         latitude: map.lat,
         zoom: map.zoom,
+        bearing: map.bearing ?? 0,
+        pitch: map.pitch ?? 0,
       }}
       mapStyle={MAP_STYLE}
       style={{ width: '100%', height: '100%' }}

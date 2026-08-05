@@ -20,9 +20,9 @@ const SEQUENCE_HIGHLIGHT_SOURCE_ID = 'sequence-highlight'
 const SEQUENCE_HIGHLIGHT_LAYER_ID = 'sequence-highlight-layer'
 
 export const MapSelectionHighlight = () => {
-  const { search } = useAppSearchNavigation()
+  const { map, search } = useAppSearchNavigation()
   const bbox = useMapViewportBbox()
-  const { clicked, selected, providers, map, photoTypes, date } = search
+  const { clicked, selected, providers, photoTypes, date } = search
 
   const { photos: allPhotos } = useAllProviderPhotos(providers, bbox, map.zoom, photoTypes, date)
   const gsvEnabled = providers.includes('google-streetview')

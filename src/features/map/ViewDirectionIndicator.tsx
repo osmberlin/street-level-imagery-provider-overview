@@ -19,9 +19,9 @@ const INTERACTIVE_PANO_PROVIDERS = new Set([
 ])
 
 export const ViewDirectionIndicator = () => {
-  const { search } = useAppSearchNavigation()
+  const { map, search } = useAppSearchNavigation()
   const bbox = useMapViewportBbox()
-  const { selected, providers, map, photoTypes, date } = search
+  const { selected, providers, photoTypes, date } = search
   const storeBearing = useViewerBearing()
   const storeHfov = useViewerHfov()
   const storeLngLat = useViewerLngLat()

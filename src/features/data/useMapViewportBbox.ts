@@ -5,10 +5,9 @@ import { useMapLoaded } from '@/features/map/map-store'
 import type { Bbox } from '@/features/providers/model'
 
 export const useMapViewportBbox = (): Bbox | null => {
-  const { search } = useAppSearchNavigation()
+  const { map } = useAppSearchNavigation()
   const { [MAIN_MAP_ID]: mapRef } = useMap()
   const mapLoaded = useMapLoaded()
-  const { map } = search
 
   if (!mapRef || !mapLoaded) {
     return null

@@ -1,5 +1,11 @@
 import { z } from 'zod'
-import { mapParamFallback, parseMapParam, serializeMapParam, type MapParam } from '@/app/mapParam'
+import {
+  coerceMapParam,
+  defaultMapSearchValue,
+  mapParamFallback,
+  serializeMapParam,
+  type MapParam,
+} from '@/app/mapParam'
 import {
   DEFAULT_PROVIDER_IDS,
   isBrowserAvailableProvider,
@@ -25,11 +31,19 @@ const isoDateSchema = z
     )
   }, 'Invalid calendar date')
 
-const mapSearchSchema = z
-  .string()
-  .optional()
-  .transform((value) => parseMapParam(value ?? '') ?? mapParamFallback)
-  .catch(mapParamFallback)
+/**
+ * Keep `map` as a slash string in validated search (tilda-geo).
+ * Parsed objects would be JSON-stringified by the router and produce dirty URLs.
+ */
+const normalizeMapSearchParam = (raw: unknown, defaultValue: string) => {
+  const parsed = coerceMapParam(raw)
+  return parsed ? serializeMapParam(parsed) : defaultValue
+}
+
+const mapSearchSchema = z.preprocess(
+  (raw) => normalizeMapSearchParam(raw, defaultMapSearchValue),
+  z.string().default(defaultMapSearchValue).catch(defaultMapSearchValue),
+)
 
 const clickedSchema = z.object({
   lng: z.coerce.number().min(-180).max(180),
@@ -76,13 +90,16 @@ export type { MapParam }
 
 export const parseAppSearch = (raw: unknown): AppSearch => appSearchSchema.parse(raw)
 
+export const getMapParamFromSearch = (search: Pick<AppSearch, 'map'>): MapParam =>
+  coerceMapParam(search.map) ?? mapParamFallback
+
 const isDefaultPhotoTypes = (photoTypes: AppSearch['photoTypes']) =>
   photoTypes.length === DEFAULT_PHOTO_TYPES.length &&
   DEFAULT_PHOTO_TYPES.every((type) => photoTypes.includes(type))
 
 export const serializeAppSearch = (search: AppSearch): Record<string, unknown> => {
   const serialized: Record<string, unknown> = {
-    map: serializeMapParam(search.map),
+    map: typeof search.map === 'string' ? search.map : serializeMapParam(search.map),
     providers: search.providers,
     style: search.style,
   }

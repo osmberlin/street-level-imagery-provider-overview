@@ -9,9 +9,9 @@ export type ClickedMapFeature = NormalizedMapFeature & {
 }
 
 export const useClickedMapFeatures = (): ClickedMapFeature[] => {
-  const { search } = useAppSearchNavigation()
+  const { map, search } = useAppSearchNavigation()
   const bbox = useMapViewportBbox()
-  const { clicked, providers, map, date } = search
+  const { clicked, providers, date } = search
 
   const allFeatures = useAllProviderMapFeatures(providers, bbox, map.zoom, date)
   const radiusMeters = clickRadiusMeters(map.zoom)

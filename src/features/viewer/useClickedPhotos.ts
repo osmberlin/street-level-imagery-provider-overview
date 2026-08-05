@@ -22,9 +22,9 @@ export type ClickedPhotosResult = {
 }
 
 export const useClickedPhotos = (): ClickedPhotosResult => {
-  const { search } = useAppSearchNavigation()
+  const { map, search } = useAppSearchNavigation()
   const bbox = useMapViewportBbox()
-  const { clicked, providers, map, photoTypes, date } = search
+  const { clicked, providers, photoTypes, date } = search
 
   const {
     photos: allPhotos,

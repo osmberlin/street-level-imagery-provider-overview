@@ -1,6 +1,11 @@
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import { serializeMapParam, type MapParam } from '@/app/mapParam'
-import { parseAppSearch, serializeAppSearch, type AppSearch } from '@/app/searchSchema'
+import {
+  getMapParamFromSearch,
+  parseAppSearch,
+  serializeAppSearch,
+  type AppSearch,
+} from '@/app/searchSchema'
 
 const rootRouteApi = getRouteApi('/')
 
@@ -8,18 +13,15 @@ type SearchUpdateOptions = {
   replace?: boolean
 }
 
-/** Partial updates may pass map as MapParam; navigate always writes a string. */
+/** Partial updates may pass map as MapParam; navigate always writes the slash string. */
 type AppSearchWrite = {
   [Key in keyof AppSearch]?: Key extends 'map' ? MapParam | string : AppSearch[Key]
 }
 
-/** Search payload for `navigate({ search })` — map is the URL string. */
-type AppSearchUrl = Omit<AppSearch, 'map'> & { map: string }
-
 export const mergeAppSearchForNavigate = (
   prev: AppSearch,
   updates: Partial<AppSearchWrite>,
-): AppSearchUrl => {
+): AppSearch => {
   const next: Record<string, unknown> = { ...prev }
 
   if ('providers' in updates) {
@@ -44,11 +46,12 @@ export const mergeAppSearchForNavigate = (
     next.map = serializeMapParam(mapValue as MapParam)
   }
 
-  return next as AppSearchUrl
+  return next as AppSearch
 }
 
 export const useAppSearchNavigation = () => {
   const search = rootRouteApi.useSearch()
+  const map = getMapParamFromSearch(search)
   const navigate = useNavigate({ from: '/' })
 
   const updateSearch = (
@@ -65,8 +68,8 @@ export const useAppSearchNavigation = () => {
     })
   }
 
-  const updateMapViewport = (map: MapParam) => {
-    updateSearch({ map: serializeMapParam(map) }, { replace: true })
+  const updateMapViewport = (viewport: MapParam) => {
+    updateSearch({ map: serializeMapParam(viewport) }, { replace: true })
   }
 
   const updateProviders = (providers: AppSearch['providers']) => {
@@ -79,7 +82,7 @@ export const useAppSearchNavigation = () => {
     )
 
     void navigate({
-      search: serialized as AppSearchUrl,
+      search: serialized as AppSearch,
       replace: false,
       resetScroll: false,
     })
@@ -107,6 +110,7 @@ export const useAppSearchNavigation = () => {
 
   return {
     search,
+    map,
     updateSearch,
     updateMapViewport,
     updateProviders,
