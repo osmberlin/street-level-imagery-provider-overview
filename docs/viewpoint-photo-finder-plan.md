@@ -86,10 +86,19 @@ point we show both "into the segment" and "out of it" as the transcript asks.
 
 ## 3. Finding photos (Mapillary first)
 
-**Query:** Mapillary Graph API `GET /images?bbox=…&fields=id,computed_compass_angle,compass_angle,captured_at,computed_geometry,is_pano,sequence&start_captured_at=<now−N years>&limit=…`
-around each viewpoint (radius ~30–50 m). Alternative: reuse the existing MVT tile path (`fetchMvt` +
-`tileCache`, z14 `image` layer has `compass_angle`, `captured_at`, `is_pano`) — cheaper, cached, no
-per-click API calls. **Proposal: reuse tiles**, fall back to Graph API only for details.
+**API check (2026-09-25, Mapillary API docs):** there is **no "images looking in direction X" /
+"images that see this point" filter**. What exists:
+
+- **Image radius search** (new, April 2026): `GET /images?lat=…&lng=…&radius=≤50&limit=≤100&fields=id,captured_at,computed_compass_angle,is_pano,computed_geometry`.
+  Its "best" ranking uses proximity + recency + **prefers 360°**, which is the opposite of our
+  preference, so we request `limit=100` and rank ourselves. Test whether `start_captured_at` works together with `lat/lng`.
+- `bbox` search (< 0.01° square), `start_captured_at` / `end_captured_at`, `is_pano`.
+- The closest thing to "images that see this": **map features** have an `images` field listing the
+  images a detected object was derived from. Only works for detected objects (signs etc.), not for any point.
+- Vector tiles (z14 `image` layer) have `compass_angle`, `captured_at`, `is_pano`.
+
+**Proposal:** radius search per viewpoint (one call per viewpoint, ≤100 images, exact data) with the
+tile data as fallback / for the Knotenpunkte "has photos" coloring. Direction matching is always our code.
 
 **Filter:** `captured_at >= now − maxAgeYears` (Knotenpunkte: 2 years; default configurable).
 
@@ -156,8 +165,10 @@ provider-agnostic; we ship Mapillary first.
 3. APIs & Services → Credentials → **Create API key**.
 4. Restrict the key: application restriction **HTTP referrers** (`http://127.0.0.1:*/*`, prod
    domains) and API restriction to only the APIs above. Set quotas/budget alerts.
-5. Put it in `.env.local` as `VITE_GOOGLE_MAPS_API_KEY` (already read by the `streetview` adapter).
-   It is a browser key, so it is public by design — restrictions are the protection.
+5. **Decision:** no `.env`. The key ships in the JS bundle anyway, so the **host app defines it as a
+   const** (e.g. `src/config.ts`) and passes it to the package (`StreetImageryConfig.googleMapsApiKey`).
+   The package never reads `import.meta.env`; the adapter's `getGoogleMapsApiKey()` env lookup gets removed.
+   Restrictions (HTTP referrer + API allow-list + quotas) are the protection.
 
 (Verify current pricing/free tier at implementation time; Google changed it in 2025 to per-SKU monthly
 free caps. Metadata requests are free.)
@@ -186,6 +197,8 @@ free, no key, clearly OK; (b) embed and accept the risk for internal-only tools;
 
 ## Phases
 
+Scope decided 2026-09-25: **round 1 = this repo + the street-imagery packages only.** Knotenpunkte = later round (planned). tilda-geo = not planned, reference only.
+
 0. **MapLibre latest everywhere** (decided 2026-09-25): bump `maplibre-gl` to the latest 6.x in this app, `street-space-editor` (all packages + app) and set the `street-imagery-react` peer range to `^6` only (drop `^5`); align knotenpunkte/tilda-geo to the same latest version. Fix breaking changes, run `bun run check` in each repo.
 1. **Core viewpoints + finder** (package core, tests only). Composer-sized once spec is agreed.
 2. **Map layer + floating viewer (Mapillary)** in this app, replaces right-sidebar viewer for photos.
@@ -203,7 +216,7 @@ free, no key, clearly OK; (b) embed and accept the risk for internal-only tools;
 3. **Clickable lines:**
    - this app: new overlay of road/foot/bike ways from the basemap vector tiles (OpenFreeMap
      `openmaptiles` source, `transportation` layer), thin blue lines on top, clickable, hover highlight.
-   - tilda-geo: its own TILDA lines (via its existing `interactiveLayerIds` / inspector click flow).
+   - tilda-geo: **out of scope (much later)**; reference only: its own TILDA lines (via its existing `interactiveLayerIds` / inspector click flow).
    - knotenpunkte: no line click, only the predefined viewpoints.
 4. **Line viewpoints:** start, end, click point only. No viewport clipping.
 5. **Ranking:** direction matters, so **prefer newest flat photos over older panos**, unless the
