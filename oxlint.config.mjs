@@ -1,5 +1,4 @@
 import { defineConfig } from 'oxlint'
-import reactHooksJs from 'oxlint-config-react-hooks-js/configs/recommended-latest.json' with { type: 'json' }
 
 export default defineConfig({
   plugins: ['eslint', 'typescript', 'unicorn', 'oxc', 'react'],
@@ -15,6 +14,16 @@ export default defineConfig({
   ],
   rules: {
     'typescript/switch-exhaustiveness-check': 'error',
+    'react/unsupported-syntax': 'error',
+    'eslint/no-unused-vars': [
+      'warn',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      },
+    ],
   },
   overrides: [
     {
@@ -30,14 +39,6 @@ export default defineConfig({
       rules: {
         'typescript/no-non-null-assertion': 'off',
         'react/rules-of-hooks': 'off',
-      },
-    },
-    {
-      files: ['**/*.tsx'],
-      jsPlugins: [{ name: 'react-hooks-js', specifier: 'eslint-plugin-react-hooks' }],
-      rules: {
-        ...reactHooksJs.rules,
-        'react/react-compiler': 'error',
       },
     },
   ],

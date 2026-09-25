@@ -1,3 +1,5 @@
+# @see tech-stack/references/bun-install.md
+
 [install]
 minimumReleaseAge = 432000
 minimumReleaseAgeExcludes = [
@@ -6,3 +8,6 @@ minimumReleaseAgeExcludes = [
   "@osm-editor-kit/street-imagery",
   "@osm-editor-kit/street-imagery-react",
 ]
+
+linker = "isolated"
+globalStore = true
