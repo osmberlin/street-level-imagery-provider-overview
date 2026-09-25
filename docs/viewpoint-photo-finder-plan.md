@@ -197,7 +197,7 @@ free, no key, clearly OK; (b) embed and accept the risk for internal-only tools;
 
 ## Phases
 
-Scope decided 2026-09-25: **round 1 = this repo + the street-imagery packages only.** Knotenpunkte = later round (planned). tilda-geo = not planned, reference only.
+Scope decided 2026-09-25: **round 1 = this repo + the street-imagery packages only, Mapillary only.** Street View = next pass, once Mapillary is clean. Knotenpunkte = later round (planned). tilda-geo = not planned, reference only.
 
 0. **MapLibre latest everywhere** (decided 2026-09-25): bump `maplibre-gl` to the latest 6.x in this app, `street-space-editor` (all packages + app) and set the `street-imagery-react` peer range to `^6` only (drop `^5`); align knotenpunkte/tilda-geo to the same latest version. Fix breaking changes, run `bun run check` in each repo.
 1. **Core viewpoints + finder** (package core, tests only). Composer-sized once spec is agreed.
