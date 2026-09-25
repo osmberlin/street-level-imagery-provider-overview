@@ -1,5 +1,5 @@
+import { lookAroundDeepLink } from '@osm-editor-kit/street-imagery'
 import { hasAppleMapKitToken, LookAroundEmbed } from '@/features/viewer/LookAroundEmbed'
-import { lookAroundDeepLink } from '@/street-imagery/providers/adapters/lookaround'
 
 type LookAroundLinkCardProps = {
   lat: number

@@ -1,3 +1,7 @@
+import { mapFeatureMatchesDateRange, photoMatchesFilters } from '@osm-editor-kit/street-imagery'
+import type { Bbox } from '@osm-editor-kit/street-imagery'
+import { adapterById, providerById, type ProviderId } from '@osm-editor-kit/street-imagery'
+import { useProviderMapFeatures, useProviderPhotos } from '@osm-editor-kit/street-imagery-react'
 import type { AppSearch } from '@/app/searchSchema'
 import { countMapFeaturesByCategory } from '@/features/styles/countViewportMapFeatures'
 import { countPhotosByCategory, totalPhotoCount } from '@/features/styles/countViewportPhotos'
@@ -5,16 +9,6 @@ import {
   getMapFeatureStyleDefinition,
   getStyleDefinition,
 } from '@/features/styles/styleDefinitions'
-import {
-  useProviderMapFeatures,
-  useProviderPhotos,
-} from '@/street-imagery-react/hooks/useProviderData'
-import {
-  mapFeatureMatchesDateRange,
-  photoMatchesFilters,
-} from '@/street-imagery/filters/searchFilters'
-import type { Bbox } from '@/street-imagery/providers/model'
-import { adapterById, providerById, type ProviderId } from '@/street-imagery/providers/registry'
 
 type ProviderLegendProps = {
   providerId: ProviderId

@@ -1,7 +1,7 @@
+import type { NormalizedMapFeature } from '@osm-editor-kit/street-imagery'
+import { providerById } from '@osm-editor-kit/street-imagery'
+import { mapFeatureExternalLink } from '@osm-editor-kit/street-imagery'
 import { formatFeatureDate, humanizeFeatureValue } from '@/features/viewer/mapFeatureDisplay'
-import type { NormalizedMapFeature } from '@/street-imagery/providers/model'
-import { providerById } from '@/street-imagery/providers/registry'
-import { mapFeatureExternalLink } from '@/street-imagery/viewer/externalLinks'
 
 type MapFeatureCardProps = {
   feature: NormalizedMapFeature

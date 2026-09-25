@@ -1,3 +1,11 @@
+import {
+  collectNearbyStreetsidePhotos,
+  findGroupBySelection,
+  findNearestPhoto,
+  type PhotoSequenceGroup,
+} from '@osm-editor-kit/street-imagery'
+import { useAllProviderMapFeaturesLoading } from '@osm-editor-kit/street-imagery-react'
+import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import { useEffect, useRef } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { isProviderId } from '@/app/searchSchema'
@@ -8,14 +16,6 @@ import { MapFeatureCard } from '@/features/viewer/MapFeatureCard'
 import { SequenceGroupCard } from '@/features/viewer/SequenceGroupCard'
 import { useClickedMapFeatures } from '@/features/viewer/useClickedMapFeatures'
 import { useClickedPhotos } from '@/features/viewer/useClickedPhotos'
-import { useAllProviderMapFeaturesLoading } from '@/street-imagery-react/hooks/useAllProviderMapFeatures'
-import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
-import {
-  collectNearbyStreetsidePhotos,
-  findGroupBySelection,
-  findNearestPhoto,
-  type PhotoSequenceGroup,
-} from '@/street-imagery/viewer/groupClickedPhotos'
 
 const CloseIcon = () => (
   <svg

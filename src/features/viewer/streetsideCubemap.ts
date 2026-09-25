@@ -1,6 +1,6 @@
+import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
 import type { Cubemap } from '@photo-sphere-viewer/cubemap-adapter'
 import type { CubemapMultiTilesPanorama } from '@photo-sphere-viewer/cubemap-tiles-adapter'
-import type { NormalizedPhoto } from '@/street-imagery/providers/model'
 
 const CUBEMAP_FACES: Array<keyof Cubemap> = ['left', 'front', 'right', 'back', 'top', 'bottom']
 

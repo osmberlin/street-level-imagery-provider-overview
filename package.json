@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@mapbox/vector-tile": "^3.0.0",
+    "@osm-editor-kit/street-imagery": "0.1.0-alpha.0",
+    "@osm-editor-kit/street-imagery-react": "0.1.0-alpha.0",
     "@panoramax/web-viewer": "^5",
     "@photo-sphere-viewer/core": "^5",
     "@photo-sphere-viewer/cubemap-adapter": "^5",
@@ -73,5 +75,8 @@
     "not dead",
     "not op_mini all",
     "not kaios > 0"
+  ],
+  "trustedDependencies": [
+    "eslint-plugin-compat"
   ]
 }

@@ -1,11 +1,15 @@
+import { isClickOnlyPhotoProvider } from '@osm-editor-kit/street-imagery'
+import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
+import { streetImageryInteractiveLayerIds } from '@osm-editor-kit/street-imagery-react'
+import { StreetLevelImagerySourcesAndLayers } from '@osm-editor-kit/street-imagery-react'
 import type { MapLibreEvent } from 'maplibre-gl'
 import { useState } from 'react'
+import 'maplibre-gl/dist/maplibre-gl.css'
+
 import type { MapLayerMouseEvent, ViewStateChangeEvent } from 'react-map-gl/maplibre'
 import { AttributionControl, Map, NavigationControl } from 'react-map-gl/maplibre'
 import { roundPositionForURL, type MapParam } from '@/app/mapParam'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
-import 'maplibre-gl/dist/maplibre-gl.css'
-
 import { MAIN_MAP_ID } from '@/features/map/constants'
 import { exposeMainMapForDebugging } from '@/features/map/exposeMainMapForDebugging'
 import { useMapActions } from '@/features/map/map-store'
@@ -16,10 +20,6 @@ import {
   getStyleDefinition,
 } from '@/features/styles/styleDefinitions'
 import { useSelectedPhotoForMap } from '@/features/viewer/useSelectedPhotoForMap'
-import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
-import { streetImageryInteractiveLayerIds } from '@/street-imagery-react/streetImageryClick'
-import { StreetLevelImagerySourcesAndLayers } from '@/street-imagery-react/StreetLevelImagerySourcesAndLayers'
-import { isClickOnlyPhotoProvider } from '@/street-imagery/providers/registry'
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 

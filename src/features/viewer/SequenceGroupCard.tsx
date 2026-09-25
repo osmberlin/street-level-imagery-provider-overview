@@ -1,10 +1,10 @@
+import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
+import { providerById } from '@osm-editor-kit/street-imagery'
+import type { PhotoSequenceGroup } from '@osm-editor-kit/street-imagery'
+import { findPhotoIndexInGroup } from '@osm-editor-kit/street-imagery'
 import { twMerge } from 'tailwind-merge'
 import type { AppSearch } from '@/app/searchSchema'
 import { ViewerPanelSwitch } from '@/features/viewer/panels/ViewerPanelSwitch'
-import type { NormalizedPhoto } from '@/street-imagery/providers/model'
-import { providerById } from '@/street-imagery/providers/registry'
-import type { PhotoSequenceGroup } from '@/street-imagery/viewer/groupClickedPhotos'
-import { findPhotoIndexInGroup } from '@/street-imagery/viewer/groupClickedPhotos'
 
 type SequenceGroupCardProps = {
   group: PhotoSequenceGroup

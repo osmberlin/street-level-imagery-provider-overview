@@ -1,7 +1,7 @@
+import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
+import { providerById } from '@osm-editor-kit/street-imagery'
+import { usePhotoThumbnail } from '@osm-editor-kit/street-imagery-react'
 import { PhotoMetadata } from '@/features/viewer/PhotoMetadata'
-import { usePhotoThumbnail } from '@/street-imagery-react/hooks/usePhotoThumbnails'
-import type { NormalizedPhoto } from '@/street-imagery/providers/model'
-import { providerById } from '@/street-imagery/providers/registry'
 
 type PhotoViewerProps = {
   photo: NormalizedPhoto

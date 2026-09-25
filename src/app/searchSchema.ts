@@ -1,3 +1,9 @@
+import {
+  DEFAULT_PROVIDER_IDS,
+  isBrowserAvailableProvider,
+  PROVIDER_IDS,
+  type ProviderId,
+} from '@osm-editor-kit/street-imagery'
 import { z } from 'zod'
 import {
   coerceMapParam,
@@ -6,12 +12,6 @@ import {
   serializeMapParam,
   type MapParam,
 } from '@/app/mapParam'
-import {
-  DEFAULT_PROVIDER_IDS,
-  isBrowserAvailableProvider,
-  PROVIDER_IDS,
-  type ProviderId,
-} from '@/street-imagery/providers/registry'
 
 const normalizeLegacyProviderId = (raw: unknown): unknown =>
   raw === 'google-streetview' ? 'streetview' : raw

@@ -1,16 +1,16 @@
-import { useAppSearchNavigation } from '@/app/searchNavigation'
-import { MAIN_MAP_ID } from '@/features/map/constants'
-import { useStreetViewClickPhoto } from '@/features/viewer/useStreetViewClickPhoto'
-import { useAllProviderPhotos } from '@/street-imagery-react/hooks/useAllProviderPhotos'
-import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
-import { photoMatchesFilters } from '@/street-imagery/filters/searchFilters'
-import { getGoogleMapsApiKey } from '@/street-imagery/providers/adapters/streetview'
-import { clickRadiusMeters } from '@/street-imagery/viewer/clickRadius'
+import { photoMatchesFilters } from '@osm-editor-kit/street-imagery'
+import { getGoogleMapsApiKey } from '@osm-editor-kit/street-imagery'
+import { clickRadiusMeters } from '@osm-editor-kit/street-imagery'
 import {
   distanceToPhoto,
   groupClickedPhotos,
   type PhotoSequenceGroup,
-} from '@/street-imagery/viewer/groupClickedPhotos'
+} from '@osm-editor-kit/street-imagery'
+import { useAllProviderPhotos } from '@osm-editor-kit/street-imagery-react'
+import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
+import { useAppSearchNavigation } from '@/app/searchNavigation'
+import { MAIN_MAP_ID } from '@/features/map/constants'
+import { useStreetViewClickPhoto } from '@/features/viewer/useStreetViewClickPhoto'
 
 export type GsvStatus = 'idle' | 'loading' | 'ok' | 'none' | 'no-key' | 'error'
 

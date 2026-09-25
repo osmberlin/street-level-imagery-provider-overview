@@ -1,3 +1,4 @@
+import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
 import type { Cubemap } from '@photo-sphere-viewer/cubemap-adapter'
 import { describe, expect, it } from 'vitest'
 import {
@@ -5,7 +6,6 @@ import {
   buildStreetsideTileUrl,
   streetsideTileId,
 } from '@/features/viewer/streetsideCubemap'
-import type { NormalizedPhoto } from '@/street-imagery/providers/model'
 
 const template =
   'https://ecn.{subdomain}.tiles.virtualearth.net/tiles/hs1032000332102312{faceId}{tileId}?g=15580&key=test'

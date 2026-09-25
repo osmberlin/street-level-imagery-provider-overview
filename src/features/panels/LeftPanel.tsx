@@ -1,12 +1,4 @@
-import { twMerge } from 'tailwind-merge'
-import { useAppSearchNavigation } from '@/app/searchNavigation'
-import type { AppSearch } from '@/app/searchSchema'
-import { DEFAULT_PHOTO_TYPES } from '@/app/searchSchema'
-import { MAIN_MAP_ID } from '@/features/map/constants'
-import { ProviderLegend } from '@/features/panels/ProviderLegend'
-import { useResizableLeftPanelWidth } from '@/features/panels/useResizableLeftPanelWidth'
-import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
-import { getGoogleMapsApiKey } from '@/street-imagery/providers/adapters/streetview'
+import { getGoogleMapsApiKey } from '@osm-editor-kit/street-imagery'
 import {
   adapterById,
   isBrowserAvailableProvider,
@@ -14,8 +6,16 @@ import {
   PROVIDERS,
   providerById,
   type ProviderId,
-} from '@/street-imagery/providers/registry'
-import { providerLocationLink } from '@/street-imagery/viewer/externalLinks'
+} from '@osm-editor-kit/street-imagery'
+import { providerLocationLink } from '@osm-editor-kit/street-imagery'
+import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
+import { twMerge } from 'tailwind-merge'
+import { useAppSearchNavigation } from '@/app/searchNavigation'
+import type { AppSearch } from '@/app/searchSchema'
+import { DEFAULT_PHOTO_TYPES } from '@/app/searchSchema'
+import { MAIN_MAP_ID } from '@/features/map/constants'
+import { ProviderLegend } from '@/features/panels/ProviderLegend'
+import { useResizableLeftPanelWidth } from '@/features/panels/useResizableLeftPanelWidth'
 
 const STYLE_OPTIONS: { value: AppSearch['style']; label: string }[] = [
   { value: 'photoType', label: 'Photo type' },

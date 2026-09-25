@@ -1,9 +1,9 @@
+import { createStreetImageryConfig, setStreetImageryConfig } from '@osm-editor-kit/street-imagery'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { queryClient, router } from '@/app/router'
-import { createStreetImageryConfig, setStreetImageryConfig } from '@/street-imagery/config'
 import './index.css'
 
 setStreetImageryConfig(

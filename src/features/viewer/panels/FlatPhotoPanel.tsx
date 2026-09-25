@@ -1,7 +1,7 @@
+import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
+import { usePhotoFullUrl } from '@osm-editor-kit/street-imagery-react'
+import { useViewerActions } from '@osm-editor-kit/street-imagery-react'
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
-import { usePhotoFullUrl } from '@/street-imagery-react/hooks/usePhotoThumbnails'
-import { useViewerActions } from '@/street-imagery-react/useViewerStore'
-import type { NormalizedPhoto } from '@/street-imagery/providers/model'
 
 const MIN_SCALE = 1
 const MAX_SCALE = 8

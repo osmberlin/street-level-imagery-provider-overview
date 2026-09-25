@@ -1,16 +1,16 @@
-import { useAppSearchNavigation } from '@/app/searchNavigation'
-import { isProviderId } from '@/app/searchSchema'
-import { MAIN_MAP_ID } from '@/features/map/constants'
-import { useStreetViewClickPhoto } from '@/features/viewer/useStreetViewClickPhoto'
-import { useAllProviderPhotos } from '@/street-imagery-react/hooks/useAllProviderPhotos'
-import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
+import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
+import { photoGroupSequenceId } from '@osm-editor-kit/street-imagery'
+import { useAllProviderPhotos } from '@osm-editor-kit/street-imagery-react'
+import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import {
   useViewerBearing,
   useViewerHfov,
   useViewerLngLat,
-} from '@/street-imagery-react/useViewerStore'
-import type { NormalizedPhoto } from '@/street-imagery/providers/model'
-import { photoGroupSequenceId } from '@/street-imagery/viewer/groupClickedPhotos'
+} from '@osm-editor-kit/street-imagery-react'
+import { useAppSearchNavigation } from '@/app/searchNavigation'
+import { isProviderId } from '@/app/searchSchema'
+import { MAIN_MAP_ID } from '@/features/map/constants'
+import { useStreetViewClickPhoto } from '@/features/viewer/useStreetViewClickPhoto'
 
 export const useSelectedPhotoForMap = (): {
   selectedPhoto: NormalizedPhoto | null

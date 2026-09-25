@@ -1,6 +1,6 @@
+import { lookAroundDeepLink } from '@osm-editor-kit/street-imagery'
 import { useEffect, useRef, useState } from 'react'
 import { getAppleMapKitToken, loadMapKitJs } from '@/features/viewer/mapkitLoader'
-import { lookAroundDeepLink } from '@/street-imagery/providers/adapters/lookaround'
 
 type LookAroundEmbedProps = {
   lat: number

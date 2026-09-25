@@ -1,3 +1,4 @@
+import { DEFAULT_PROVIDER_IDS } from '@osm-editor-kit/street-imagery'
 import { describe, expect, it } from 'vitest'
 import { serializeMapParam } from '@/app/mapParam'
 import { routerSearch } from '@/app/routerSearch'
@@ -9,7 +10,6 @@ import {
   parseAppSearch,
   serializeAppSearch,
 } from '@/app/searchSchema'
-import { DEFAULT_PROVIDER_IDS } from '@/street-imagery/providers/registry'
 
 describe('appSearchSchema', () => {
   it('applies defaults for an empty search object', () => {

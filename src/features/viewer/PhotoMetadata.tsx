@@ -1,7 +1,7 @@
+import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
+import { providerById } from '@osm-editor-kit/street-imagery'
+import { providerExternalLink } from '@osm-editor-kit/street-imagery'
 import { twMerge } from 'tailwind-merge'
-import type { NormalizedPhoto } from '@/street-imagery/providers/model'
-import { providerById } from '@/street-imagery/providers/registry'
-import { providerExternalLink } from '@/street-imagery/viewer/externalLinks'
 
 type PhotoMetadataProps = {
   photo: NormalizedPhoto

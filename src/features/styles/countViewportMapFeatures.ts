@@ -1,7 +1,7 @@
+import type { NormalizedMapFeature } from '@osm-editor-kit/street-imagery'
 import { APP_START_NOW } from '@/features/styles/ageBuckets'
 import { emptyCategoryCounts, type CategoryCounts } from '@/features/styles/countViewportPhotos'
 import { categoryIdForMapFeature, type StyleMode } from '@/features/styles/styleDefinitions'
-import type { NormalizedMapFeature } from '@/street-imagery/providers/model'
 
 export const countMapFeaturesByCategory = (
   features: NormalizedMapFeature[],

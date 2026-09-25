@@ -1,12 +1,12 @@
+import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
+import type { ProviderId } from '@osm-editor-kit/street-imagery'
+import { StreetLevelImageryViewer } from '@osm-editor-kit/street-imagery-react'
+import { useViewerActions } from '@osm-editor-kit/street-imagery-react'
 import { lazy, Suspense, useEffect } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
 import { PhotoMetadata } from '@/features/viewer/PhotoMetadata'
 import { PhotoViewer } from '@/features/viewer/PhotoViewer'
-import { StreetLevelImageryViewer } from '@/street-imagery-react/StreetLevelImageryViewer'
-import { useViewerActions } from '@/street-imagery-react/useViewerStore'
-import type { NormalizedPhoto } from '@/street-imagery/providers/model'
-import type { ProviderId } from '@/street-imagery/providers/registry'
 
 const PsvPanoPanel = lazy(() =>
   import('@/features/viewer/panels/PsvPanoPanel').then((module) => ({

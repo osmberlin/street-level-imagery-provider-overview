@@ -1,8 +1,5 @@
+import { fetchStreetViewMetadata, getGoogleMapsApiKey } from '@osm-editor-kit/street-imagery'
 import { useQuery } from '@tanstack/react-query'
-import {
-  fetchStreetViewMetadata,
-  getGoogleMapsApiKey,
-} from '@/street-imagery/providers/adapters/streetview'
 
 export type ClickedPoint = { lng: number; lat: number }
 

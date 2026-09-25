@@ -1,9 +1,9 @@
+import type { NormalizedMapFeature } from '@osm-editor-kit/street-imagery'
+import { haversineDistanceMeters, clickRadiusMeters } from '@osm-editor-kit/street-imagery'
+import { useAllProviderMapFeatures } from '@osm-editor-kit/street-imagery-react'
+import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { MAIN_MAP_ID } from '@/features/map/constants'
-import { useAllProviderMapFeatures } from '@/street-imagery-react/hooks/useAllProviderMapFeatures'
-import { useMapViewportBbox } from '@/street-imagery-react/hooks/useMapViewportBbox'
-import type { NormalizedMapFeature } from '@/street-imagery/providers/model'
-import { haversineDistanceMeters, clickRadiusMeters } from '@/street-imagery/viewer/clickRadius'
 
 export type ClickedMapFeature = NormalizedMapFeature & {
   distanceMeters: number

@@ -1,5 +1,8 @@
-import { type PanoData, type PanoDataProvider, Viewer } from '@photo-sphere-viewer/core'
+import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
 import '@photo-sphere-viewer/core/index.css'
+import { resolvePhotoPanoramaUrl } from '@osm-editor-kit/street-imagery'
+import { useViewerActions } from '@osm-editor-kit/street-imagery-react'
+import { type PanoData, type PanoDataProvider, Viewer } from '@photo-sphere-viewer/core'
 import {
   events,
   VirtualTourPlugin,
@@ -8,9 +11,6 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
-import { useViewerActions } from '@/street-imagery-react/useViewerStore'
-import type { NormalizedPhoto } from '@/street-imagery/providers/model'
-import { resolvePhotoPanoramaUrl } from '@/street-imagery/viewer/photoThumbnails'
 
 const normalizeBearing = (degrees: number) => ((degrees % 360) + 360) % 360
 

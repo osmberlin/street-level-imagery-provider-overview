@@ -1,5 +1,9 @@
-import { type PanoData, type PanoDataProvider, Viewer } from '@photo-sphere-viewer/core'
+import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
 import '@photo-sphere-viewer/core/index.css'
+import { haversineDistanceMeters } from '@osm-editor-kit/street-imagery'
+import { photoGroupSequenceId } from '@osm-editor-kit/street-imagery'
+import { useViewerActions } from '@osm-editor-kit/street-imagery-react'
+import { type PanoData, type PanoDataProvider, Viewer } from '@photo-sphere-viewer/core'
 import { CubemapTilesAdapter } from '@photo-sphere-viewer/cubemap-tiles-adapter'
 import {
   events,
@@ -10,10 +14,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
 import { buildStreetsidePanoramaConfig } from '@/features/viewer/streetsideCubemap'
-import { useViewerActions } from '@/street-imagery-react/useViewerStore'
-import type { NormalizedPhoto } from '@/street-imagery/providers/model'
-import { haversineDistanceMeters } from '@/street-imagery/viewer/clickRadius'
-import { photoGroupSequenceId } from '@/street-imagery/viewer/groupClickedPhotos'
 
 const normalizeBearing = (degrees: number) => ((degrees % 360) + 360) % 360
 
