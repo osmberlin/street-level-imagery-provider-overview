@@ -1,3 +1,4 @@
+import '@/features/map/maplibre-worker'
 import { isClickOnlyPhotoProvider } from '@osm-editor-kit/street-imagery'
 import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import { streetImageryInteractiveLayerIds } from '@osm-editor-kit/street-imagery-react'

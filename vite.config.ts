@@ -114,8 +114,10 @@ export default defineConfig({
     react({ compiler: true }),
     tailwindcss(),
   ],
+  // MapLibre 6 worker must not land in Vite's optimize-deps cache; loaded via `setWorkerUrl` +
+  // `?worker&url` (src/features/map/maplibre-worker.ts), same as knotenpunkte.
   optimizeDeps: {
-    exclude: ['@panoramax/web-viewer'],
+    exclude: ['@panoramax/web-viewer', 'maplibre-gl/dist/maplibre-gl-worker.mjs'],
     include: ['three', '@panoramax/web-viewer > json5'],
   },
   server: {
