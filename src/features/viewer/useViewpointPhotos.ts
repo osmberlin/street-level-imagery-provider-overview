@@ -12,7 +12,10 @@ import {
   useViewSuggestions,
   type ViewpointHistoryEntry,
 } from '@osm-editor-kit/street-imagery-react'
+import { mapillaryTilePhotoSource } from '@osm-editor-kit/street-imagery/providers/mapillary'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
+
+const VIEW_SOURCES = [mapillaryTilePhotoSource]
 
 /**
  * Viewpoints of the current click (from the session, or the `clicked` URL point after a reload),
@@ -40,6 +43,8 @@ export const useViewpointPhotos = () => {
           : []
 
   const { suggestions, isLoading, isError } = useViewSuggestions(viewpoints, {
+    // The photos that are dots on the map; the API's radius search returns at most 50 of them.
+    sources: VIEW_SOURCES,
     photoTypes,
     filterPhoto: (photo) => photoMatchesDateRange(photo, date),
     enabled: viewpointsEnabled,
