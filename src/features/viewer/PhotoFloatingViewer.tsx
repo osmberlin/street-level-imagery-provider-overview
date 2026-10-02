@@ -273,29 +273,30 @@ export const PhotoFloatingViewer = () => {
       }
       footer={
         photo && provider ? (
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <PhotoDate timestamp={photo.capturedAt} />
-            <span>
-              {photo.isPano
-                ? t.viewer.pano
-                : photo.isPano === false
-                  ? t.viewer.flat
-                  : t.viewer.unknownType}
-            </span>
-            {photo.heading != null ? <span>{Math.round(photo.heading)}°</span> : null}
+          <div className="flex items-center gap-3">
+            <p className="flex min-w-0 flex-1 gap-3 truncate">
+              <PhotoDate timestamp={photo.capturedAt} />
+              <span>
+                {photo.isPano
+                  ? t.viewer.pano
+                  : photo.isPano === false
+                    ? t.viewer.flat
+                    : t.viewer.unknownType}
+              </span>
+              {creator?.photoId === photo.photoId ? (
+                <span className="truncate">
+                  {t.viewer.photoBy(creator.name)} · {t.viewer.license}
+                </span>
+              ) : null}
+            </p>
             <a
-              className="font-medium text-slate-800 underline-offset-2 hover:underline"
+              className="shrink-0 font-medium text-slate-800 underline-offset-2 hover:underline"
               href={providerExternalLink(photo)}
               rel="noreferrer"
               target="_blank"
             >
               {t.opener.openIn(provider.label)}
             </a>
-            {creator?.photoId === photo.photoId ? (
-              <span>
-                {t.viewer.photoBy(creator.name)} · {t.viewer.license}
-              </span>
-            ) : null}
           </div>
         ) : undefined
       }
