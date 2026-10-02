@@ -1,7 +1,7 @@
 # Using the street-imagery packages in Knotenpunkte and tilda-geo
 
-Status 2026-10-02. Packages: `@osm-editor-kit/street-imagery` 0.1.0-alpha.4 (pure TypeScript) and
-`@osm-editor-kit/street-imagery-react` 0.1.0-alpha.5 (React, react-map-gl, MapLibre 6), source in
+Status 2026-10-02. Packages: `@osm-editor-kit/street-imagery` 0.1.0-alpha.5 (pure TypeScript) and
+`@osm-editor-kit/street-imagery-react` 0.1.0-alpha.6 (React, react-map-gl, MapLibre 6), source in
 `OSM/street-space-editor/packages/`. This app is the test bed for both.
 
 Much of the Mapillary logic comes from the iD Radnetz fork (`iD--radnetz-berlin/WORKDOC.md`,
@@ -23,8 +23,61 @@ setStreetImageryConfig(createStreetImageryConfig({ mapillaryToken: MAPILLARY_TOK
 @source '../node_modules/@osm-editor-kit/street-imagery-react';
 ```
 
+Wrap the app once for German texts and dates (without it everything is English):
+
+```tsx
+<StreetImageryLocaleProvider locale="de">…</StreetImageryLocaleProvider>
+```
+
 MapLibre 6 needs its worker set up once (`setWorkerUrl`, see `src/features/map/maplibre-worker.ts`
 here; Knotenpunkte already has this).
+
+## The map layers and their look
+
+Render `<StreetLevelImagerySourcesAndLayers>` inside the react-map-gl `<Map>`; the paint is built
+in and not configurable beyond the options below. Reference: `src/features/map/MapRoot.tsx` here.
+
+```tsx
+<StreetLevelImagerySourcesAndLayers
+  providers={['mapillary', 'mapillary-signs']}
+  bbox={bbox} // useMapViewportBbox(mapId, { lng, lat, zoom })
+  zoom={zoom}
+  filter={{
+    date: { from: '2024-10-02' },
+    mapFeatureValue: matchesAnyGroup(JUNCTION_FEATURE_GROUPS),
+  }}
+  options={{
+    photoCircleColor: photoTypeColorExpression, // or ageBandColorExpression(cutoff, now)
+    mapFeatureCircleColor: MAP_FEATURE_COLOR,
+    selectedPhoto,
+    selectedSequenceId,
+    viewerPov, // viewerPov: useViewerPov()
+    showSelectionHighlight: true,
+    showViewCone: true,
+  }}
+/>
+```
+
+- Clicks: add `streetImageryInteractiveLayerIds(providers)` to `interactiveLayerIds` and read the hit
+  with `queryStreetImageryFeatures(event)` (`kind: 'photo' | 'mapFeature'`).
+- Look: lines and dots are black and fade to grey with age (per year, up to 3 years). The style
+  colour (`photoCircleColor`) fills the view-direction shapes from zoom 17; below that, dots and
+  lines take it. The shown photo is orange with a black outline; its sequence is thicker and the
+  others step back. Sequence lines run through their photos.
+- A dense area needs a date filter: without one, Berlin loads hundreds of thousands of photos.
+
+## The floating viewer
+
+`<FloatingPhotoViewer>` is the box; put `<StreetLevelImageryViewer photo … />` inside. Reference:
+`src/features/viewer/PhotoFloatingViewer.tsx` here (about 300 lines, most of it this app's
+multi-provider handling).
+
+- `toolbar`: e.g. `<MapillaryFeatureBar data shownImage onShow />` for a selected sign or object.
+- `hideAttribution` on the viewer hides Mapillary's attribution and Panoramax's legend. Then show
+  creator and licence yourself; `onViewerPhoto` gives `creatorName` and `details`.
+- `<PhotoDate timestamp />` shows month and year, with the full date and age as tooltip.
+- Optional, own entry: `PhotoDetailsDialog` from `@osm-editor-kit/street-imagery-react/photo-details`.
+- History: `getViewpointSession().actions` (`showPhoto`, `back`, `forward`, `close`, `reset`).
 
 ## Knotenpunkte: plan phases → package API
 
@@ -37,6 +90,7 @@ The plan is `FMC/knotenpunkte/MAPILLARY-PLAN.md`.
 | Photos near the node                          | `fetchMapillaryImagesNearPoint(node)` (≤ 50 images within 50 m), or `useViewSuggestions`                                                   |
 | One view per approaching street, looking in   | `viewpointsIntoNode(node, approachLines, { distanceMeters: 20 })` → `useViewSuggestions(viewpoints, { maxAgeYears: 2 })`                   |
 | Draw the predefined viewpoints                | `<ViewpointLayer viewpoints suggestions activeDirectionKey zoom />`, clickable via `VIEWPOINT_DIRECTION_LAYER_ID`                          |
+| German names of signs and objects             | `mapillaryValueName(value, 'de')` (curated list for signs found in Germany; other values get the English name)                             |
 | Viewer turned to the node                     | `<StreetLevelImageryViewer photo lookAt={{ lngLat: node, shape: PLACE_TARGET }} />` (360° and flat photos)                                 |
 | Floating box with chips and history           | `<FloatingPhotoViewer>` + `getViewpointSession()`                                                                                          |
 | "Dieses Foto übernehmen"                      | `onViewerPhoto` gives the shown photo; write `photo.photoId` into `Mapillary-ID`                                                           |
@@ -84,13 +138,14 @@ has no colour attribute.
   (a constant in the host app, not `.env`).
 - Still to build for Street View: the viewer panel (`google.maps.StreetViewPanorama`) for the
   floating box. See `docs/viewpoint-photo-finder-plan.md`, section 7, incl. the terms-of-service note.
-- Infra3D: write a `ViewpointPhotoSource` (`{ id: 'infra3d', fetchNear }`) in the host app or the
-  package, plus a viewer panel. The provider list (`PROVIDER_IDS`) has no `infra3d` entry yet; it
-  needs one for map layers and the URL state. Open: Infra3D's API and access.
+- infra3D is an opener only: `createStreetImageryConfig({ infra3d: { projects: [{ uid, name }] } })`
+  gives one "open in infra3D <name>" opener per project (`getLocationOpeners()`,
+  `<LocationPickOnMap />`). A viewer panel and photos in suggested views are not built.
+- Bing Streetside needs the host's own `bingMapsKey`; Microsoft issues no new keys.
 
 ## Not in the packages
 
 - Writing OSM tags from a photo or sign (iD's sign bar): stays in iD.
-- German sign meanings (`DE:237` for `bicycles-only`): stays in iD until it moves into the traffic
-  sign tool's country data.
+- German sign numbers (`DE:237` for `bicycles-only`): stays in iD until it moves into the traffic
+  sign tool's country data. German sign names are in the package (`mapillaryValueName`).
 - Reading pixel colours inside outlines (Knotenpunkte phase 4).
