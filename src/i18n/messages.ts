@@ -101,7 +101,8 @@ const en: AppMessages = {
     heading: 'Providers',
     openerHint:
       'The pointer opens a place there: click it, then click the map. Shift+click opens the map center right away.',
-    unavailableInBrowser: 'Unavailable in browser (CORS)',
+    unavailableInBrowser:
+      'Not available here: the provider does not allow requests from other websites (CORS).',
     checksOnClick: 'Checks coverage on click',
     zoomIn: (minZoom) => `Zoom in to see data (z${minZoom}+)`,
     inView: 'In view',
@@ -205,7 +206,8 @@ const de: AppMessages = {
     heading: 'Anbieter',
     openerHint:
       'Der Zeiger öffnet einen Ort beim Anbieter: erst ihn anklicken, dann die Karte. Umschalt+Klick öffnet sofort die Kartenmitte.',
-    unavailableInBrowser: 'Im Browser nicht verfügbar (CORS)',
+    unavailableInBrowser:
+      'Hier nicht verfügbar: Der Anbieter erlaubt keine Anfragen von anderen Websites (CORS).',
     checksOnClick: 'Prüft die Abdeckung beim Klick',
     zoomIn: (minZoom) => `Für Daten näher heranzoomen (z${minZoom}+)`,
     inView: 'Im Ausschnitt',

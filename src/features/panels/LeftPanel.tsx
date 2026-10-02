@@ -26,6 +26,13 @@ import { ProviderLegend } from '@/features/panels/ProviderLegend'
 import { useResizableLeftPanelWidth } from '@/features/panels/useResizableLeftPanelWidth'
 import { useAppI18n } from '@/i18n/useAppI18n'
 
+/** Shown after the other providers: little or no coverage for most users. */
+const LAST_PROVIDER_IDS: ProviderId[] = ['kartaview', 'mapilio', 'vegbilder']
+const ORDERED_PROVIDERS = [
+  ...PROVIDERS.filter((provider) => !LAST_PROVIDER_IDS.includes(provider.id)),
+  ...LAST_PROVIDER_IDS.flatMap((id) => PROVIDERS.filter((provider) => provider.id === id)),
+]
+
 const STYLE_MODES: AppSearch['style'][] = ['photoType', 'age']
 
 const CloseIcon = () => (
@@ -209,7 +216,7 @@ export const LeftPanel = () => {
         <div className="px-5 py-5">
           <section>
             <ul className="space-y-2">
-              {PROVIDERS.map((provider) => {
+              {ORDERED_PROVIDERS.map((provider) => {
                 const checked = activeProviders.has(provider.id)
                 const meta = providerById[provider.id]
                 const adapter = adapterById[provider.id]
@@ -242,7 +249,7 @@ export const LeftPanel = () => {
                           'flex min-w-0 flex-1 items-center gap-3 px-2.5 py-2',
                           checkboxDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
                         )}
-                        title={adapter.browserUnavailableReason}
+                        title={browserUnavailable ? t.providers.unavailableInBrowser : undefined}
                       >
                         <input
                           checked={checked}
@@ -262,11 +269,7 @@ export const LeftPanel = () => {
                           <span className="text-sm font-medium text-slate-800">
                             {provider.label}
                           </span>
-                          {browserUnavailable ? (
-                            <span className="text-xs text-slate-500">
-                              {t.providers.unavailableInBrowser}
-                            </span>
-                          ) : clickOnly ? (
+                          {clickOnly ? (
                             <span className="text-xs text-slate-500">
                               {t.providers.checksOnClick}
                             </span>
