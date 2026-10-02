@@ -19,7 +19,7 @@ import { useAppSearchNavigation } from '@/app/searchNavigation'
  */
 export const useViewpointPhotos = () => {
   const { search, updateSelected, updateSearch } = useAppSearchNavigation()
-  const { clicked, providers, photoTypes, date, feature } = search
+  const { clicked, providers, photoTypes, date, feature, selected } = search
   const sessionViewpoints = useViewpoints()
   const activeDirectionKey = useActiveDirectionKey()
 
@@ -31,7 +31,9 @@ export const useViewpointPhotos = () => {
       ? []
       : sessionViewpoints.length > 0
         ? sessionViewpoints
-        : clicked
+        : // No session (reload, or a photo pin was clicked): only a bare click point without
+          // a photo gets views; a shown photo stays as it is.
+          clicked && !selected
           ? [viewpointFromPoint([clicked.lng, clicked.lat])]
           : []
 

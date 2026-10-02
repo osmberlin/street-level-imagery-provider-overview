@@ -149,7 +149,7 @@ export const MapRoot = () => {
       return
     }
 
-    // 3. A photo dot: show it, and suggest views around the click. The larger view-direction
+    // 3. A photo dot: show that photo, without suggested views. The larger view-direction
     //    halos around photos only count when no street is under the pointer.
     const street = features.find((feature) => feature.layer?.id === STREET_HIT_LAYER_ID)
     const hitPhotoDot = features.some((feature) => feature.layer?.id.startsWith('photos-'))
@@ -158,9 +158,7 @@ export const MapRoot = () => {
         ? queryStreetImageryFeatures(event).find((hit) => hit.kind === 'photo')
         : undefined
     if (photo?.photoId) {
-      if (viewpointsEnabled) {
-        actions.open({ viewpoints: [viewpointFromPoint(click)] })
-      }
+      actions.close()
       updateSearch(
         {
           clicked: clickPoint,
