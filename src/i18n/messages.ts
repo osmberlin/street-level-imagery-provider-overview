@@ -61,6 +61,9 @@ export type AppMessages = {
     unknownType: string
     license: string
     creatorProfile: string
+    fieldOfView: (degrees: number) => string
+    positionAccuracy: (meters: number) => string
+    instance: (name: string) => string
     loadingViewer: string
     loadingPreview: string
     loadingImage: string
@@ -161,6 +164,9 @@ const en: AppMessages = {
     unknownType: 'Unknown type',
     license: 'CC BY-SA',
     creatorProfile: 'Profile on Mapillary, with this photo',
+    fieldOfView: (degrees) => `Field of view ${Math.round(degrees)}°`,
+    positionAccuracy: (meters) => `Position accurate to ${meters} m`,
+    instance: (name) => `Stored on the instance "${name}"`,
     loadingViewer: 'Loading viewer…',
     loadingPreview: 'Loading preview…',
     loadingImage: 'Loading image…',
@@ -271,6 +277,9 @@ const de: AppMessages = {
     unknownType: 'Typ unbekannt',
     license: 'CC BY-SA',
     creatorProfile: 'Profil bei Mapillary, mit diesem Foto',
+    fieldOfView: (degrees) => `Bildwinkel ${Math.round(degrees)}°`,
+    positionAccuracy: (meters) => `Position auf ${meters} m genau`,
+    instance: (name) => `Gespeichert auf der Instanz „${name}“`,
     loadingViewer: 'Ansicht wird geladen…',
     loadingPreview: 'Vorschau wird geladen…',
     loadingImage: 'Bild wird geladen…',

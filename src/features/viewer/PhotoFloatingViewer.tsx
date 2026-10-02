@@ -47,8 +47,9 @@ export const PhotoFloatingViewer = () => {
   const { clicked, selected, providers } = search
   const { t } = useAppI18n()
   const { messages } = useStreetImageryI18n()
-  // Mapillary's own attribution is hidden in the viewer; the footer shows the creator instead.
-  const [creator, setCreator] = useState<{ photoId: string; name: string } | null>(null)
+  // The viewers' own attribution and legend are hidden; the footer shows creator, licence and the
+  // other details instead. The viewer knows more about a photo than the map tiles do.
+  const [viewerPhoto, setViewerPhoto] = useState<NormalizedPhoto | null>(null)
   const {
     viewpoints,
     suggestions,
@@ -208,6 +209,25 @@ export const PhotoFloatingViewer = () => {
     return null
   })()
 
+  // Details of the shown photo, once its viewer has loaded it.
+  const shown = photo && viewerPhoto?.photoId === photo.photoId ? viewerPhoto : null
+  const details = shown?.details
+  const creatorName = shown?.creatorName
+  // Mapillary's licence is the same for every image; Panoramax states it per photo.
+  const license =
+    details?.license ?? (photo?.providerId === 'mapillary' && shown ? t.viewer.license : null)
+  const typeTooltip =
+    [
+      details?.camera,
+      details?.fieldOfViewDeg != null ? t.viewer.fieldOfView(details.fieldOfViewDeg) : null,
+      details?.positionAccuracyMeters != null
+        ? t.viewer.positionAccuracy(details.positionAccuracyMeters)
+        : null,
+      details?.instance ? t.viewer.instance(details.instance) : null,
+    ]
+      .filter(Boolean)
+      .join('\n') || undefined
+
   return (
     <FloatingPhotoViewer
       activeDirectionKey={activeDirectionKey}
@@ -217,27 +237,48 @@ export const PhotoFloatingViewer = () => {
         photo && provider ? (
           <div className="flex items-center gap-3 text-[11px]">
             <p className="min-w-0 flex-1 truncate">
-              <PhotoDate timestamp={photo.capturedAt} />
+              <PhotoDate localDateTime={details?.capturedAtLocal} timestamp={photo.capturedAt} />
               {separator}
-              {photo.isPano
-                ? t.viewer.pano
-                : photo.isPano === false
-                  ? t.viewer.flat
-                  : t.viewer.unknownType}
-              {creator?.photoId === photo.photoId ? (
+              <span title={typeTooltip}>
+                {photo.isPano
+                  ? t.viewer.pano
+                  : photo.isPano === false
+                    ? t.viewer.flat
+                    : t.viewer.unknownType}
+              </span>
+              {creatorName ? (
                 <>
                   {separator}
-                  <a
-                    className="underline-offset-2 hover:underline"
-                    href={`https://www.mapillary.com/app/user/${encodeURIComponent(creator.name)}?pKey=${encodeURIComponent(photo.photoId)}&focus=photo`}
-                    rel="noreferrer"
-                    target="_blank"
-                    title={t.viewer.creatorProfile}
-                  >
-                    {creator.name}
-                  </a>
+                  {photo.providerId === 'mapillary' ? (
+                    <a
+                      className="underline-offset-2 hover:underline"
+                      href={`https://www.mapillary.com/app/user/${encodeURIComponent(creatorName)}?pKey=${encodeURIComponent(photo.photoId)}&focus=photo`}
+                      rel="noreferrer"
+                      target="_blank"
+                      title={t.viewer.creatorProfile}
+                    >
+                      {creatorName}
+                    </a>
+                  ) : (
+                    <span title={details?.creatorContact}>{creatorName}</span>
+                  )}
+                </>
+              ) : null}
+              {license ? (
+                <>
                   {separator}
-                  {t.viewer.license}
+                  {details?.licenseUrl ? (
+                    <a
+                      className="underline-offset-2 hover:underline"
+                      href={details.licenseUrl}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {license}
+                    </a>
+                  ) : (
+                    license
+                  )}
                 </>
               ) : null}
             </p>
@@ -287,13 +328,9 @@ export const PhotoFloatingViewer = () => {
             groupPhotos={activeGroup?.photos ?? [photo]}
             lookAt={lookAt}
             lookAtBearing={lookAtBearing}
-            onViewerPhoto={(viewerPhoto) => {
-              setCreator(
-                viewerPhoto.creatorName
-                  ? { photoId: viewerPhoto.photoId, name: viewerPhoto.creatorName }
-                  : null,
-              )
-              showPhoto(viewerPhoto)
+            onViewerPhoto={(loaded) => {
+              setViewerPhoto(loaded)
+              showPhoto(loaded)
             }}
             photo={photo}
           />
