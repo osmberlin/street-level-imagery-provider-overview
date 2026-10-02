@@ -16,6 +16,7 @@ export type AppMessages = {
     openerHint: string
     unavailableInBrowser: string
     checksOnClick: string
+    notAvailableHere: (area: string) => string
     zoomIn: (minZoom: number) => string
     inView: string
   }
@@ -106,6 +107,7 @@ const en: AppMessages = {
     unavailableInBrowser:
       'Not available here: the provider does not allow requests from other websites (CORS).',
     checksOnClick: 'Checks coverage on click',
+    notAvailableHere: (area) => `Not available here (${area} only)`,
     zoomIn: (minZoom) => `Zoom in to see data (z${minZoom}+)`,
     inView: 'In view',
   },
@@ -212,6 +214,8 @@ const de: AppMessages = {
     unavailableInBrowser:
       'Hier nicht verfügbar: Der Anbieter erlaubt keine Anfragen von anderen Websites (CORS).',
     checksOnClick: 'Prüft die Abdeckung beim Klick',
+    notAvailableHere: (area) =>
+      `Hier nicht verfügbar (nur ${area === 'Norway' ? 'Norwegen' : area})`,
     zoomIn: (minZoom) => `Für Daten näher heranzoomen (z${minZoom}+)`,
     inView: 'Im Ausschnitt',
   },

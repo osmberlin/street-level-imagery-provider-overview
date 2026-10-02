@@ -3,6 +3,7 @@ import {
   adapterById,
   isBrowserAvailableProvider,
   isClickOnlyPhotoProvider,
+  providerCoversBbox,
   PROVIDERS,
   type OpenTarget,
   providerById,
@@ -232,7 +233,9 @@ export const LeftPanel = () => {
                 const belowMinZoom = !clickOnly && currentZoom < meta.minZoom
                 const browserUnavailable = adapter.browserUnavailableReason != null
                 const streetViewNeedsKey = provider.id === 'streetview' && !googleMapsConfigured
-                const checkboxDisabled = browserUnavailable && !checked
+                // Providers with a coverage area (Vegbilder: Norway) are off elsewhere.
+                const outsideCoverage = bbox != null && !providerCoversBbox(provider.id, bbox)
+                const checkboxDisabled = (browserUnavailable || outsideCoverage) && !checked
                 const opener = locationOpeners.find((candidate) => candidate.id === provider.id)
                 const streetsideNeedsKey = provider.id === 'streetside' && !bingMapsConfigured
                 // Nothing to show on the map (Apple; Google or Bing without a key): only the opener.
@@ -289,7 +292,11 @@ export const LeftPanel = () => {
                           <span className="text-sm font-medium text-slate-800">
                             {provider.label}
                           </span>
-                          {clickOnly ? (
+                          {outsideCoverage ? (
+                            <span className="text-xs text-slate-500">
+                              {t.providers.notAvailableHere(meta.coverage?.label ?? '')}
+                            </span>
+                          ) : clickOnly ? (
                             <span className="text-xs text-slate-500">
                               {t.providers.checksOnClick}
                             </span>
@@ -300,7 +307,7 @@ export const LeftPanel = () => {
                           ) : null}
                         </span>
                       </label>
-                      {opener ? (
+                      {opener && !outsideCoverage ? (
                         <OpenLocationButton
                           iconOnly
                           opener={opener}
@@ -308,7 +315,7 @@ export const LeftPanel = () => {
                         />
                       ) : null}
                     </div>
-                    {checked && !clickOnly && !belowMinZoom ? (
+                    {checked && !clickOnly && !belowMinZoom && !outsideCoverage ? (
                       <div className="border-t border-slate-200 px-2.5 py-2">
                         <ProviderLegend
                           bbox={bbox}
