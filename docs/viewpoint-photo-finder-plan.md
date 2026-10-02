@@ -1,6 +1,6 @@
 # Viewpoints + floating photo viewer — plan (DRAFT for review)
 
-Status: **draft v2 — questions answered (see “Decisions”), build in one go, review at the end**. Nothing implemented yet.
+Status: **round 1 implemented (2026-09-27), ready for review** — see “Implementation status (round 1)” at the end.
 
 ## Goal
 
@@ -280,3 +280,49 @@ for history. On narrow screens the box becomes a bottom sheet. The left panel (f
 8. **URL state:** should viewpoints be shareable via URL (yes in this app?), and history only in
    memory?
 9. Scope check: this is ~5 phases of work — build phase by phase with a review after each?
+
+## Implementation status (round 1, 2026-09-27)
+
+Built in `@osm-editor-kit/street-imagery` 0.1.0-alpha.3 / `street-imagery-react` 0.1.0-alpha.4 and this app.
+
+- **Core** (`street-imagery/src/viewpoints/`): viewpoints (point, line, into-node), geometry helpers,
+  `rankPhotosForDirection` / `buildViewSuggestions`, `fetchMapillaryImagesNearPoint`. Unit-tested.
+- **React** (`street-imagery-react/src/viewpoints/`): `FloatingPhotoViewer`, `ViewpointLayer`,
+  `useViewSuggestions`, session store with history. `MapillaryPanel` turns 360° photos to the
+  suggested direction (`lookAtBearing`).
+- **App**: right sidebar removed. Floating viewer (bottom right), map features card (top left),
+  blue clickable streets from the basemap, point / street / photo / view-direction clicks.
+
+Deviations and findings:
+
+- **Mapillary radius search** returns at most 50 images and ignores `start_captured_at` → age filter is local.
+- **One floating box** for all providers (Mapillary suggestions only this round); the box renders
+  whichever provider the selected photo comes from. Separate boxes per provider come with Street View.
+- **URL**: `selected` (photo) plus the existing `clicked` point (drives nearby photos and map
+  features). A shared link rebuilds a point viewpoint at `clicked`; the clicked street is not in the URL.
+- **Street click priority**: a photo dot wins; the large view-direction halo around photos does not,
+  so streets with dense imagery stay clickable.
+- **Streets** come from OpenMapTiles `transportation`; tile fragments are joined; the result runs
+  between junctions in the data we tested (Berlin-Kladow), not along the whole OSM way.
+- **`rightPanel` URL param** removed (old links still work, the param is ignored).
+- Keys: `[` / `]` history, Esc closes.
+
+Open for round 2: Street View box, Knotenpunkte (`viewpointsIntoNode` + 2-year filter + "no photo"
+node color), per-provider boxes, bottom sheet on narrow screens.
+
+## Implementation status (round 2, 2026-10-02)
+
+Packages 0.1.0-alpha.4 / 0.1.0-alpha.5. Guide for the other apps: [packages-for-knotenpunkte-and-tilda.md](packages-for-knotenpunkte-and-tilda.md).
+
+- **Dense areas**: Mapillary photo points from zoom 15, drawing limited to the viewport, view cones
+  from zoom 16 (max 1,500). Before, zoom 13 in Neukölln loaded ~600k photos and crashed the tab.
+- **Default date filter**: last 2 years (`date={}` in the URL = all dates).
+- **Viewpoints need Mapillary**: without it a click behaves as before (click point for Look Around / Street View only).
+- **From the iD Radnetz fork**: map features with their images by day, turning the viewer to a sign
+  or place (`lookAt`), detection outlines, sign and junction groups, age bands, Mapillary keys in OSM tags.
+  In this app: "Show photos of this feature" on a sign/object card, and sign group chips in the left panel.
+- **Google key**: constant in `src/config.ts`, passed to the package config; no `.env`.
+- **Photo sources** for suggested views are pluggable (`mapillaryPhotoSource`, `streetViewPhotoSource`).
+
+Still open: Street View viewer panel, Infra3D, per-provider boxes, bottom sheet on narrow screens,
+highlighting own users/organizations in this app's map.
