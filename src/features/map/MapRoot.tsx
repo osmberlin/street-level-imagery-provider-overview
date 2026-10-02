@@ -3,8 +3,8 @@ import {
   isClickOnlyPhotoProvider,
   snapToLine,
   viewpointFromPoint,
-  viewpointsFromLine,
   type LngLat,
+  type Viewpoint,
 } from '@osm-editor-kit/street-imagery'
 import {
   getViewpointSession,
@@ -174,7 +174,7 @@ export const MapRoot = () => {
       return
     }
 
-    // 4. A street: a viewpoint at the click, looking both ways along the street.
+    // 4. A street: a viewpoint at the click, looking along the street both ways and across it.
     const clickedLine = street ? closestLine(street, click) : null
     if (street && clickedLine) {
       const fragments = event.target
@@ -184,10 +184,13 @@ export const MapRoot = () => {
         })
         .flatMap((feature) => geometryLines(feature.geometry))
       const line = joinStreetFragments(clickedLine, fragments)
-      // Only the clicked spot, looking both ways along the street. Views from the street's start
+      // Only the clicked spot, looking along and across the street. Views from the street's start
       // and end made the map jump away from where the user clicked.
-      const here = viewpointsFromLine(line, click).filter((viewpoint) => viewpoint.role === 'here')
-      actions.open({ viewpoints: here, line })
+      const snapped = snapToLine(line, click)
+      const here: Viewpoint = snapped
+        ? { id: 'here', role: 'here', lngLat: snapped.point, bearing: snapped.bearing }
+        : viewpointFromPoint(click)
+      actions.open({ viewpoints: [here], line })
       updateSearch(
         { clicked: clickPoint, selected: undefined, feature: undefined },
         { replace: true },
