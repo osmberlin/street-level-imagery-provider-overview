@@ -28,6 +28,13 @@ import { useStepAlongLine } from '@/features/viewer/useStepAlongLine'
 import { useViewpointPhotos } from '@/features/viewer/useViewpointPhotos'
 import { useAppI18n } from '@/i18n/useAppI18n'
 
+/** Light dot between the parts of the photo info line. */
+const separator = (
+  <span aria-hidden className="px-1.5 text-slate-300">
+    ·
+  </span>
+)
+
 const samePhoto = (a: NormalizedPhoto | null | undefined, b: NormalizedPhoto | null | undefined) =>
   a != null && b != null && a.providerId === b.providerId && a.photoId === b.photoId
 
@@ -273,18 +280,18 @@ export const PhotoFloatingViewer = () => {
       }
       footer={
         photo && provider ? (
-          <div className="flex items-center gap-3">
-            <p className="flex min-w-0 flex-1 gap-3 truncate">
+          <div className="flex items-center gap-3 text-[11px]">
+            <p className="min-w-0 flex-1 truncate">
               <PhotoDate timestamp={photo.capturedAt} />
-              <span>
-                {photo.isPano
-                  ? t.viewer.pano
-                  : photo.isPano === false
-                    ? t.viewer.flat
-                    : t.viewer.unknownType}
-              </span>
+              {separator}
+              {photo.isPano
+                ? t.viewer.pano
+                : photo.isPano === false
+                  ? t.viewer.flat
+                  : t.viewer.unknownType}
               {creator?.photoId === photo.photoId ? (
-                <span className="truncate">
+                <>
+                  {separator}
                   <a
                     className="underline-offset-2 hover:underline"
                     href={`https://www.mapillary.com/app/user/${encodeURIComponent(creator.name)}?pKey=${encodeURIComponent(photo.photoId)}&focus=photo`}
@@ -293,13 +300,14 @@ export const PhotoFloatingViewer = () => {
                     title={t.viewer.creatorProfile}
                   >
                     {creator.name}
-                  </a>{' '}
-                  · {t.viewer.license}
-                </span>
+                  </a>
+                  {separator}
+                  {t.viewer.license}
+                </>
               ) : null}
             </p>
             <a
-              className="shrink-0 font-medium text-slate-800 underline-offset-2 hover:underline"
+              className="shrink-0 text-slate-800 underline-offset-2 hover:underline"
               href={providerExternalLink(photo)}
               rel="noreferrer"
               target="_blank"

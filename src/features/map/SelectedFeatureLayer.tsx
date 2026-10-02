@@ -5,7 +5,9 @@ import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { MAIN_MAP_ID } from '@/features/map/constants'
 import { useSelectedFeature } from '@/features/viewer/useSelectedFeature'
 
-const COLOR = '#f59e0b'
+/** The selected feature, the line to it and the view cone share the map features' purple. */
+export const SELECTED_FEATURE_COLOR = '#7c3aed'
+const COLOR = SELECTED_FEATURE_COLOR
 
 /**
  * The selected sign or object on the map: a ring around it and a dotted line to it from the
@@ -66,11 +68,11 @@ export const SelectedFeatureLayer = () => {
       <Layer
         id="selected-feature-ring"
         paint={{
-          'circle-radius': 11,
+          'circle-radius': 8,
           'circle-color': COLOR,
-          'circle-opacity': 0.15,
+          'circle-opacity': 0,
           'circle-stroke-color': COLOR,
-          'circle-stroke-width': 2.5,
+          'circle-stroke-width': 2,
         }}
         source="selected-feature-point"
         type="circle"
