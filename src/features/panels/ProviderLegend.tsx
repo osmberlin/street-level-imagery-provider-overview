@@ -9,6 +9,7 @@ import {
   getMapFeatureStyleDefinition,
   getStyleDefinition,
 } from '@/features/styles/styleDefinitions'
+import { useAppI18n } from '@/i18n/useAppI18n'
 
 type ProviderLegendProps = {
   providerId: ProviderId
@@ -27,6 +28,7 @@ export const ProviderLegend = ({
   photoTypes,
   date,
 }: ProviderLegendProps) => {
+  const { t } = useAppI18n()
   const meta = providerById[providerId]
   const adapter = adapterById[providerId]
   const { data: photos = [] } = useProviderPhotos(providerId, bbox, zoom)
@@ -63,14 +65,16 @@ export const ProviderLegend = ({
             className="size-2.5 shrink-0 rounded-full"
             style={{ backgroundColor: category.color }}
           />
-          <span className="min-w-0 flex-1 truncate">{category.label}</span>
+          <span className="min-w-0 flex-1 truncate">
+            {t.style.category[category.id] ?? category.label}
+          </span>
           <span className="w-10 shrink-0 text-right font-medium text-slate-700 tabular-nums">
             {counts[category.id]}
           </span>
         </li>
       ))}
       <li className="flex items-center gap-2 border-t border-slate-200 pt-1 text-xs text-slate-600">
-        <span className="min-w-0 flex-1 truncate">In view</span>
+        <span className="min-w-0 flex-1 truncate">{t.providers.inView}</span>
         <span className="w-10 shrink-0 text-right font-medium text-slate-700 tabular-nums">
           {total}
         </span>

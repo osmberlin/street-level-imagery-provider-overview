@@ -1,6 +1,8 @@
 import {
+  DEFAULT_STREET_IMAGERY_LOCALE,
   isBrowserAvailableProvider,
   PROVIDER_IDS,
+  STREET_IMAGERY_LOCALES,
   type ProviderId,
 } from '@osm-editor-kit/street-imagery'
 import { z } from 'zod'
@@ -108,6 +110,11 @@ export const appSearchSchema = z.object({
     .catch([...SIGN_GROUP_IDS]),
   /** Map toggle: show clickable streets and suggest views for clicks on streets and spots. */
   streetViews: z.enum(['on', 'off']).default('off').catch('off'),
+  /** Language of the texts and dates. */
+  locale: z
+    .enum(STREET_IMAGERY_LOCALES)
+    .default(DEFAULT_STREET_IMAGERY_LOCALE)
+    .catch(DEFAULT_STREET_IMAGERY_LOCALE),
   leftPanel: z.enum(['open', 'closed']).default(LEFT_PANEL_DEFAULT).catch(LEFT_PANEL_DEFAULT),
   /** Missing → last 2 years. `{}` (no from/to) → all dates. */
   date: dateSearchSchema.default(defaultDate).catch(defaultDate),
@@ -153,6 +160,10 @@ export const serializeAppSearch = (search: AppSearch): Record<string, unknown> =
 
   if (search.streetViews === 'on') {
     serialized.streetViews = search.streetViews
+  }
+
+  if (search.locale !== DEFAULT_STREET_IMAGERY_LOCALE) {
+    serialized.locale = search.locale
   }
 
   if (search.leftPanel !== LEFT_PANEL_DEFAULT) {

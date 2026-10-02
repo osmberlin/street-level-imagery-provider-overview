@@ -1,6 +1,7 @@
 import { lookAroundDeepLink } from '@osm-editor-kit/street-imagery'
 import { useEffect, useRef, useState } from 'react'
 import { getAppleMapKitToken, loadMapKitJs } from '@/features/viewer/mapkitLoader'
+import { useAppI18n } from '@/i18n/useAppI18n'
 
 type LookAroundEmbedProps = {
   lat: number
@@ -15,6 +16,7 @@ type LookAroundInstance = {
 }
 
 export const LookAroundEmbed = ({ lat, lng }: LookAroundEmbedProps) => {
+  const { t } = useAppI18n()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [status, setStatus] = useState<EmbedStatus>('loading')
   const deepLink = lookAroundDeepLink(lat, lng)
@@ -102,20 +104,18 @@ export const LookAroundEmbed = ({ lat, lng }: LookAroundEmbedProps) => {
         hidden={status === 'no-imagery' || status === 'error'}
       />
       {status === 'loading' ? (
-        <p className="text-xs text-slate-500">Loading Look Around preview…</p>
+        <p className="text-xs text-slate-500">{t.lookAround.loading}</p>
       ) : null}
       {status === 'no-imagery' || status === 'error' ? (
         <p className="text-xs text-slate-500">
-          {status === 'no-imagery'
-            ? 'No Look Around imagery at this location (or unsupported browser).'
-            : 'Could not load MapKit Look Around preview.'}{' '}
+          {status === 'no-imagery' ? t.lookAround.noImagery : t.lookAround.error}{' '}
           <a
             className="font-medium text-[#007AFF] underline underline-offset-2"
             href={deepLink}
             rel="noreferrer"
             target="_blank"
           >
-            Open in Apple Maps
+            {t.lookAround.openInAppleMaps}
           </a>
         </p>
       ) : null}

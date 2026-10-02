@@ -2,6 +2,7 @@ import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
 import { usePhotoFullUrl } from '@osm-editor-kit/street-imagery-react'
 import { useViewerActions } from '@osm-editor-kit/street-imagery-react'
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useAppI18n } from '@/i18n/useAppI18n'
 
 const MIN_SCALE = 1
 const MAX_SCALE = 8
@@ -39,6 +40,7 @@ type FlatPhotoPanelProps = {
 }
 
 const FlatPhotoViewer = ({ photo }: { photo: NormalizedPhoto }) => {
+  const { t } = useAppI18n()
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
   const transformRef = useRef({ x: 0, y: 0, scale: MIN_SCALE })
@@ -223,12 +225,12 @@ const FlatPhotoViewer = ({ photo }: { photo: NormalizedPhoto }) => {
     >
       {isLoading ? (
         <div className="flex h-full items-center justify-center text-sm text-slate-300">
-          Loading image…
+          {t.viewer.loadingImage}
         </div>
       ) : imageUrl ? (
         <img
           ref={imageRef}
-          alt="Street-level photo"
+          alt={t.viewer.photoAlt}
           className={`mx-auto h-full w-full max-w-none object-contain ${imageCursor}`}
           draggable={false}
           src={imageUrl}
@@ -236,14 +238,14 @@ const FlatPhotoViewer = ({ photo }: { photo: NormalizedPhoto }) => {
         />
       ) : (
         <div className="flex h-full items-center justify-center px-4 text-center text-sm text-slate-300">
-          {isError ? 'Image unavailable' : 'No image for this photo'}
+          {isError ? t.viewer.imageUnavailable : t.viewer.noImage}
         </div>
       )}
 
       {imageUrl ? (
         <div className="absolute right-2 bottom-2 flex flex-col gap-1 rounded-md bg-black/50 p-1 backdrop-blur-sm">
           <button
-            aria-label="Zoom in"
+            aria-label={t.viewer.zoomIn}
             className="flex size-7 items-center justify-center rounded text-sm font-medium text-white hover:bg-white/20 disabled:opacity-40"
             disabled={scale >= MAX_SCALE}
             type="button"
@@ -254,7 +256,7 @@ const FlatPhotoViewer = ({ photo }: { photo: NormalizedPhoto }) => {
             +
           </button>
           <button
-            aria-label="Zoom out"
+            aria-label={t.viewer.zoomOut}
             className="flex size-7 items-center justify-center rounded text-sm font-medium text-white hover:bg-white/20 disabled:opacity-40"
             disabled={scale <= MIN_SCALE}
             type="button"
@@ -265,7 +267,7 @@ const FlatPhotoViewer = ({ photo }: { photo: NormalizedPhoto }) => {
             −
           </button>
           <button
-            aria-label="Reset zoom"
+            aria-label={t.viewer.resetZoom}
             className="flex size-7 items-center justify-center rounded text-xs font-medium text-white hover:bg-white/20 disabled:opacity-40"
             disabled={scale <= MIN_SCALE}
             type="button"

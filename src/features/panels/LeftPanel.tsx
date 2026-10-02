@@ -8,7 +8,7 @@ import {
   providerById,
   type ProviderId,
 } from '@osm-editor-kit/street-imagery'
-import { LOCATION_OPENERS } from '@osm-editor-kit/street-imagery'
+import { LOCATION_OPENERS, STREET_IMAGERY_LOCALES } from '@osm-editor-kit/street-imagery'
 import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import { twMerge } from 'tailwind-merge'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
@@ -20,22 +20,13 @@ import {
   isProviderId,
   SIGN_GROUP_IDS,
 } from '@/app/searchSchema'
-
-const SIGN_GROUP_LABELS: Record<(typeof SIGN_GROUP_IDS)[number], string> = {
-  bike: 'Bike',
-  speed: 'Speed',
-  access: 'Access & oneway',
-  other: 'Other',
-}
 import { MAIN_MAP_ID } from '@/features/map/constants'
 import { OpenLocationButton } from '@/features/openers/OpenLocationButton'
 import { ProviderLegend } from '@/features/panels/ProviderLegend'
 import { useResizableLeftPanelWidth } from '@/features/panels/useResizableLeftPanelWidth'
+import { useAppI18n } from '@/i18n/useAppI18n'
 
-const STYLE_OPTIONS: { value: AppSearch['style']; label: string }[] = [
-  { value: 'photoType', label: 'Photo type' },
-  { value: 'age', label: 'Age' },
-]
+const STYLE_MODES: AppSearch['style'][] = ['photoType', 'age']
 
 const CloseIcon = () => (
   <svg
@@ -81,6 +72,7 @@ export const LeftPanel = () => {
     updateLeftPanel,
     updateSearch,
   } = useAppSearchNavigation()
+  const { locale, t } = useAppI18n()
   const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
   const activeProviders = new Set(search.providers)
   const currentZoom = map.zoom
@@ -136,7 +128,7 @@ export const LeftPanel = () => {
   if (!isOpen) {
     return (
       <button
-        aria-label="Show navigation"
+        aria-label={t.app.showNavigation}
         className="absolute top-3 left-3 z-10 flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900"
         type="button"
         onClick={() => {
@@ -156,18 +148,44 @@ export const LeftPanel = () => {
       <div
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize left panel"
+        aria-label={t.app.resizePanel}
         className="absolute top-0 right-0 bottom-0 z-30 w-2 cursor-col-resize touch-none bg-slate-400/70 opacity-0 transition-opacity select-none group-hover/panel:opacity-100 active:opacity-100"
         onPointerDown={onResizeHandlePointerDown}
       />
-      <div className="border-b border-slate-200 px-5 py-5">
-        <div className="flex items-start gap-3">
-          <h1 className="min-w-0 flex-1 text-lg font-semibold tracking-tight text-slate-900">
-            Street-Level Imagery Provider Overview
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {/* Stays in place while the rest of the panel scrolls. */}
+        <div className="sticky top-0 z-20 flex items-start gap-2 border-b border-slate-200 bg-white py-3 pr-3 pl-5">
+          <h1 className="min-w-0 flex-1 text-base leading-tight font-semibold tracking-tight text-slate-900">
+            {t.app.title}
           </h1>
+          <div
+            aria-label={t.app.language}
+            className="mt-0.5 flex shrink-0 overflow-hidden rounded-md border border-slate-200 text-xs font-medium"
+            role="group"
+          >
+            {STREET_IMAGERY_LOCALES.map((option) => (
+              <button
+                aria-pressed={locale === option}
+                className={twMerge(
+                  'px-1.5 py-1 uppercase',
+                  locale === option
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-50',
+                )}
+                key={option}
+                lang={option}
+                type="button"
+                onClick={() => {
+                  updateSearch({ locale: option }, { replace: true })
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
           <button
-            aria-label="Hide navigation"
-            className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            aria-label={t.app.hideNavigation}
+            className="flex size-7 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-800"
             type="button"
             onClick={() => {
               updateLeftPanel('closed')
@@ -176,266 +194,268 @@ export const LeftPanel = () => {
             <CloseIcon />
           </button>
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600">
-          Explore and compare street-level imagery from multiple open and commercial providers on
-          one map. Toggle providers and switch visualization styles to see coverage at a glance.{' '}
+        <p className="px-5 pt-3 text-sm leading-snug text-slate-600">
+          {t.app.intro}{' '}
           <a
             className="text-slate-800 underline decoration-slate-300 underline-offset-2 hover:text-slate-900 hover:decoration-slate-500"
             href="https://github.com/osmberlin/street-level-imagery-provider-overview"
             rel="noreferrer"
             target="_blank"
           >
-            Source on GitHub
+            {t.app.sourceOnGitHub}
           </a>
         </p>
-      </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-5">
-        <section>
-          <h2 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
-            Providers
-          </h2>
-          <p className="mt-2 text-xs leading-relaxed text-slate-500">
-            The pointer opens a place there: click it, then click the map. Shift+click opens the map
-            center right away.
-          </p>
-          <ul className="mt-3 space-y-2">
-            {PROVIDERS.map((provider) => {
-              const checked = activeProviders.has(provider.id)
-              const meta = providerById[provider.id]
-              const adapter = adapterById[provider.id]
-              const clickOnly = isClickOnlyPhotoProvider(provider.id)
-              const belowMinZoom = !clickOnly && currentZoom < meta.minZoom
-              const browserUnavailable = adapter.browserUnavailableReason != null
-              const streetViewNeedsKey = provider.id === 'streetview' && !googleMapsConfigured
-              const checkboxDisabled = browserUnavailable && !checked
-              const opener = LOCATION_OPENERS.find((candidate) => candidate.id === provider.id)
-              // Nothing to show on the map (Apple, Google without a key): only the opener.
-              if (opener && !checked && (provider.id === 'lookaround' || streetViewNeedsKey)) {
+        <div className="px-5 py-5">
+          <section>
+            <ul className="space-y-2">
+              {PROVIDERS.map((provider) => {
+                const checked = activeProviders.has(provider.id)
+                const meta = providerById[provider.id]
+                const adapter = adapterById[provider.id]
+                const clickOnly = isClickOnlyPhotoProvider(provider.id)
+                const belowMinZoom = !clickOnly && currentZoom < meta.minZoom
+                const browserUnavailable = adapter.browserUnavailableReason != null
+                const streetViewNeedsKey = provider.id === 'streetview' && !googleMapsConfigured
+                const checkboxDisabled = browserUnavailable && !checked
+                const opener = LOCATION_OPENERS.find((candidate) => candidate.id === provider.id)
+                // Nothing to show on the map (Apple, Google without a key): only the opener.
+                if (opener && !checked && (provider.id === 'lookaround' || streetViewNeedsKey)) {
+                  return (
+                    <li key={provider.id}>
+                      <OpenLocationButton
+                        className="w-full"
+                        opener={opener}
+                        quickLocation={quickLocation}
+                      />
+                    </li>
+                  )
+                }
                 return (
-                  <li key={provider.id}>
-                    <OpenLocationButton
-                      className="w-full"
-                      opener={opener}
-                      quickLocation={quickLocation}
-                    />
+                  <li
+                    key={provider.id}
+                    className="rounded-lg border border-slate-200 hover:bg-slate-50/60"
+                  >
+                    <div className="flex items-center gap-1 pr-1.5">
+                      <label
+                        className={twMerge(
+                          'flex min-w-0 flex-1 items-center gap-3 px-2.5 py-2',
+                          checkboxDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+                        )}
+                        title={adapter.browserUnavailableReason}
+                      >
+                        <input
+                          checked={checked}
+                          className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400 disabled:cursor-not-allowed"
+                          disabled={checkboxDisabled}
+                          type="checkbox"
+                          onChange={(event) => {
+                            setProviderEnabled(provider.id, event.target.checked)
+                          }}
+                        />
+                        <span
+                          aria-hidden
+                          className="size-2.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: provider.color }}
+                        />
+                        <span className="flex min-w-0 flex-1 flex-col">
+                          <span className="text-sm font-medium text-slate-800">
+                            {provider.label}
+                          </span>
+                          {browserUnavailable ? (
+                            <span className="text-xs text-slate-500">
+                              {t.providers.unavailableInBrowser}
+                            </span>
+                          ) : clickOnly ? (
+                            <span className="text-xs text-slate-500">
+                              {t.providers.checksOnClick}
+                            </span>
+                          ) : belowMinZoom ? (
+                            <span className="text-xs text-slate-500">
+                              {t.providers.zoomIn(meta.minZoom)}
+                            </span>
+                          ) : null}
+                        </span>
+                      </label>
+                      {opener ? (
+                        <OpenLocationButton
+                          iconOnly
+                          opener={opener}
+                          quickLocation={quickLocation}
+                        />
+                      ) : null}
+                    </div>
+                    {checked && !clickOnly && !belowMinZoom ? (
+                      <div className="border-t border-slate-200 px-2.5 py-2">
+                        <ProviderLegend
+                          bbox={bbox}
+                          date={search.date}
+                          photoTypes={search.photoTypes}
+                          providerId={provider.id}
+                          style={search.style}
+                          zoom={currentZoom}
+                        />
+                      </div>
+                    ) : null}
                   </li>
                 )
-              }
-              return (
-                <li
-                  key={provider.id}
-                  className="rounded-lg border border-slate-200 hover:bg-slate-50/60"
-                >
-                  <div className="flex items-center gap-1 pr-1.5">
-                    <label
-                      className={twMerge(
-                        'flex min-w-0 flex-1 items-center gap-3 px-2.5 py-2',
-                        checkboxDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
-                      )}
-                      title={adapter.browserUnavailableReason}
-                    >
-                      <input
-                        checked={checked}
-                        className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400 disabled:cursor-not-allowed"
-                        disabled={checkboxDisabled}
-                        type="checkbox"
-                        onChange={(event) => {
-                          setProviderEnabled(provider.id, event.target.checked)
-                        }}
-                      />
-                      <span
-                        aria-hidden
-                        className="size-2.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: provider.color }}
-                      />
-                      <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="text-sm font-medium text-slate-800">{provider.label}</span>
-                        {browserUnavailable ? (
-                          <span className="text-xs text-slate-500">
-                            Unavailable in browser (CORS)
-                          </span>
-                        ) : clickOnly ? (
-                          <span className="text-xs text-slate-500">Checks coverage on click</span>
-                        ) : belowMinZoom ? (
-                          <span className="text-xs text-slate-500">
-                            Zoom in to see data (z{meta.minZoom}+)
-                          </span>
-                        ) : null}
-                      </span>
-                    </label>
-                    {opener ? (
-                      <OpenLocationButton iconOnly opener={opener} quickLocation={quickLocation} />
-                    ) : null}
-                  </div>
-                  {checked && !clickOnly && !belowMinZoom ? (
-                    <div className="border-t border-slate-200 px-2.5 py-2">
-                      <ProviderLegend
-                        bbox={bbox}
-                        date={search.date}
-                        photoTypes={search.photoTypes}
-                        providerId={provider.id}
-                        style={search.style}
-                        zoom={currentZoom}
-                      />
-                    </div>
-                  ) : null}
+              })}
+              {LOCATION_OPENERS.filter(
+                (opener) => opener.isAvailable() && !isProviderId(opener.id),
+              ).map((opener) => (
+                <li key={opener.id}>
+                  <OpenLocationButton
+                    className="w-full"
+                    opener={opener}
+                    quickLocation={quickLocation}
+                  />
                 </li>
-              )
-            })}
-            {LOCATION_OPENERS.filter(
-              (opener) => opener.isAvailable() && !isProviderId(opener.id),
-            ).map((opener) => (
-              <li key={opener.id}>
-                <OpenLocationButton
-                  className="w-full"
-                  opener={opener}
-                  quickLocation={quickLocation}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
+              ))}
+            </ul>
+          </section>
 
-        <section className="mt-8">
-          <h2 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Filters</h2>
-          <div className="mt-3 space-y-3">
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  checked={flatChecked}
-                  className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
-                  type="checkbox"
-                  onChange={(event) => {
-                    togglePhotoType('flat', event.target.checked)
-                  }}
-                />
-                Flat
-              </label>
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  checked={panoChecked}
-                  className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
-                  type="checkbox"
-                  onChange={(event) => {
-                    togglePhotoType('pano', event.target.checked)
-                  }}
-                />
-                Panorama
-              </label>
-            </div>
+          <section className="mt-8">
+            <h2 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+              {t.filters.heading}
+            </h2>
+            <div className="mt-3 space-y-3">
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    checked={flatChecked}
+                    className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
+                    type="checkbox"
+                    onChange={(event) => {
+                      togglePhotoType('flat', event.target.checked)
+                    }}
+                  />
+                  {t.filters.flat}
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    checked={panoChecked}
+                    className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
+                    type="checkbox"
+                    onChange={(event) => {
+                      togglePhotoType('pano', event.target.checked)
+                    }}
+                  />
+                  {t.filters.panorama}
+                </label>
+              </div>
 
-            {search.providers.includes('mapillary-signs') ? (
-              <fieldset>
-                <legend className="mb-1 text-xs text-slate-600">Mapillary signs</legend>
-                <div className="flex flex-wrap gap-1">
-                  {SIGN_GROUP_IDS.map((group) => {
-                    const on = search.signGroups.includes(group)
-                    return (
-                      <button
-                        aria-pressed={on}
-                        className={`rounded-full border px-2 py-0.5 text-xs ${on ? 'border-slate-800 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400'}`}
-                        key={group}
-                        onClick={() => {
-                          updateSearch({
-                            signGroups: on
-                              ? search.signGroups.filter((id) => id !== group)
-                              : SIGN_GROUP_IDS.filter(
-                                  (id) => id === group || search.signGroups.includes(id),
-                                ),
-                          })
-                        }}
-                        type="button"
-                      >
-                        {SIGN_GROUP_LABELS[group]}
-                      </button>
-                    )
-                  })}
-                </div>
-              </fieldset>
-            ) : null}
-
-            <div className="grid grid-cols-2 gap-2">
-              <label className="flex flex-col gap-1 text-xs text-slate-600">
-                From
-                <input
-                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm text-slate-800"
-                  type="date"
-                  value={search.date?.from ?? ''}
-                  onChange={(event) => {
-                    const from = event.target.value || undefined
-                    updateDate({ ...search.date, from })
-                  }}
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-xs text-slate-600">
-                To
-                <input
-                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm text-slate-800"
-                  type="date"
-                  value={search.date?.to ?? ''}
-                  onChange={(event) => {
-                    const to = event.target.value || undefined
-                    updateDate({ ...search.date, to })
-                  }}
-                />
-              </label>
-            </div>
-
-            <div className="flex gap-3">
-              {search.date.from !== defaultDateFrom() || search.date.to ? (
-                <button
-                  className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-900"
-                  type="button"
-                  onClick={() => {
-                    updateDate({ from: defaultDateFrom() })
-                  }}
-                >
-                  Last {DEFAULT_MAX_AGE_YEARS} years
-                </button>
+              {search.providers.includes('mapillary-signs') ? (
+                <fieldset>
+                  <legend className="mb-1 text-xs text-slate-600">{t.filters.signs}</legend>
+                  <div className="flex flex-wrap gap-1">
+                    {SIGN_GROUP_IDS.map((group) => {
+                      const on = search.signGroups.includes(group)
+                      return (
+                        <button
+                          aria-pressed={on}
+                          className={`rounded-full border px-2 py-0.5 text-xs ${on ? 'border-slate-800 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400'}`}
+                          key={group}
+                          onClick={() => {
+                            updateSearch({
+                              signGroups: on
+                                ? search.signGroups.filter((id) => id !== group)
+                                : SIGN_GROUP_IDS.filter(
+                                    (id) => id === group || search.signGroups.includes(id),
+                                  ),
+                            })
+                          }}
+                          type="button"
+                        >
+                          {t.filters.signGroup[group]}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </fieldset>
               ) : null}
-              {search.date.from || search.date.to ? (
-                <button
-                  className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-900"
-                  type="button"
-                  onClick={() => {
-                    updateDate({})
-                  }}
-                >
-                  All dates
-                </button>
-              ) : null}
-            </div>
-          </div>
-        </section>
 
-        <section className="mt-8">
-          <h2 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
-            Map style
-          </h2>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            {STYLE_OPTIONS.map((option) => {
-              const selected = search.style === option.value
-              return (
-                <button
-                  key={option.value}
-                  className={twMerge(
-                    'rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
-                    selected
-                      ? 'border-slate-900 bg-slate-900 text-white'
-                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
-                  )}
-                  type="button"
-                  onClick={() => {
-                    updateStyle(option.value)
-                  }}
-                >
-                  {option.label}
-                </button>
-              )
-            })}
-          </div>
-        </section>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex flex-col gap-1 text-xs text-slate-600">
+                  {t.filters.from}
+                  <input
+                    className="rounded-md border border-slate-200 px-2 py-1.5 text-sm text-slate-800"
+                    type="date"
+                    value={search.date?.from ?? ''}
+                    onChange={(event) => {
+                      const from = event.target.value || undefined
+                      updateDate({ ...search.date, from })
+                    }}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs text-slate-600">
+                  {t.filters.to}
+                  <input
+                    className="rounded-md border border-slate-200 px-2 py-1.5 text-sm text-slate-800"
+                    type="date"
+                    value={search.date?.to ?? ''}
+                    onChange={(event) => {
+                      const to = event.target.value || undefined
+                      updateDate({ ...search.date, to })
+                    }}
+                  />
+                </label>
+              </div>
+
+              <div className="flex gap-3">
+                {search.date.from !== defaultDateFrom() || search.date.to ? (
+                  <button
+                    className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-900"
+                    type="button"
+                    onClick={() => {
+                      updateDate({ from: defaultDateFrom() })
+                    }}
+                  >
+                    {t.filters.lastYears(DEFAULT_MAX_AGE_YEARS)}
+                  </button>
+                ) : null}
+                {search.date.from || search.date.to ? (
+                  <button
+                    className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-900"
+                    type="button"
+                    onClick={() => {
+                      updateDate({})
+                    }}
+                  >
+                    {t.filters.allDates}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-8">
+            <h2 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+              {t.style.heading}
+            </h2>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {STYLE_MODES.map((mode) => {
+                const selected = search.style === mode
+                return (
+                  <button
+                    key={mode}
+                    className={twMerge(
+                      'rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
+                      selected
+                        ? 'border-slate-900 bg-slate-900 text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+                    )}
+                    type="button"
+                    onClick={() => {
+                      updateStyle(mode)
+                    }}
+                  >
+                    {t.style.mode[mode]}
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+        </div>
       </div>
     </aside>
   )

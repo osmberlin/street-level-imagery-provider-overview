@@ -9,6 +9,7 @@ import {
 } from '@osm-editor-kit/street-imagery-react'
 import type { MouseEvent } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { useAppI18n } from '@/i18n/useAppI18n'
 
 // Heroicons "cursor-arrow-rays" (24, outline).
 const CursorArrowRaysIcon = () => (
@@ -53,7 +54,8 @@ export const OpenLocationButton = ({
   iconOnly = false,
   className,
 }: OpenLocationButtonProps) => {
-  const label = `Open in ${opener.label}`
+  const { t } = useAppI18n()
+  const label = t.opener.openIn(opener.label)
   const armedOpenerId = useArmedLocationOpenerId()
   const { toggle, disarm } = useLocationPickActions()
   const armed = armedOpenerId === opener.id
@@ -103,7 +105,7 @@ export const OpenLocationButton = ({
         armed && 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800 hover:text-white',
         className,
       )}
-      title={`${label}: click, then click the map.${quickLocation ? ' Shift+click opens the map center right away.' : ''}`}
+      title={`${label}: ${t.opener.pickHint}${quickLocation ? ` ${t.opener.shiftHint}` : ''}`}
       type="button"
       onClick={handleClick}
     >

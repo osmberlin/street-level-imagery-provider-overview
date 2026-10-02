@@ -4,12 +4,14 @@ import {
   useLocationPickActions,
 } from '@osm-editor-kit/street-imagery-react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
+import { useAppI18n } from '@/i18n/useAppI18n'
 
 /** Hint on the map while a location opener waits for a map click. */
 export const LocationPickHint = () => {
   const armedOpenerId = useArmedLocationOpenerId()
   const { disarm } = useLocationPickActions()
   const { map } = useAppSearchNavigation()
+  const { t } = useAppI18n()
 
   if (!armedOpenerId) {
     return null
@@ -23,7 +25,7 @@ export const LocationPickHint = () => {
         role="status"
       >
         <span>
-          Click the map to open that place in <strong>{opener.label}</strong>
+          {t.opener.clickMapToOpenIn} <strong>{opener.label}</strong>
         </span>
         <button
           className="rounded-sm underline decoration-white/50 underline-offset-2 hover:decoration-white"
@@ -33,14 +35,14 @@ export const LocationPickHint = () => {
             openLocationInNewTab(opener, { lngLat: [map.lng, map.lat], zoom: map.zoom })
           }}
         >
-          Use map center
+          {t.opener.useMapCenter}
         </button>
         <button
           className="rounded-sm text-white/70 underline decoration-white/30 underline-offset-2 hover:text-white"
           type="button"
           onClick={disarm}
         >
-          Cancel (Esc)
+          {t.opener.cancel}
         </button>
       </div>
     </div>

@@ -9,6 +9,7 @@ const baseSearch: AppSearch = {
   providers: [...DEFAULT_PROVIDER_IDS],
   style: 'photoType',
   photoTypes: ['flat', 'pano'],
+  locale: 'en',
   leftPanel: 'open',
   date: {},
   streetViews: 'off',

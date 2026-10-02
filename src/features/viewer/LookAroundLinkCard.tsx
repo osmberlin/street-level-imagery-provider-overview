@@ -1,5 +1,6 @@
 import { lookAroundDeepLink } from '@osm-editor-kit/street-imagery'
 import { hasAppleMapKitToken, LookAroundEmbed } from '@/features/viewer/LookAroundEmbed'
+import { useAppI18n } from '@/i18n/useAppI18n'
 
 type LookAroundLinkCardProps = {
   lat: number
@@ -9,6 +10,7 @@ type LookAroundLinkCardProps = {
 export const LookAroundLinkCard = ({ lat, lng }: LookAroundLinkCardProps) => {
   const href = lookAroundDeepLink(lat, lng)
   const canEmbed = hasAppleMapKitToken()
+  const { t } = useAppI18n()
 
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
@@ -22,9 +24,7 @@ export const LookAroundLinkCard = ({ lat, lng }: LookAroundLinkCardProps) => {
           <div>
             <p className="text-sm font-medium text-slate-900">Apple Look Around</p>
             <p className="mt-1 text-xs leading-relaxed text-slate-500">
-              No map dots — Apple does not publish a coverage listing API. Open Look Around at this
-              click in Apple Maps
-              {canEmbed ? ', or preview it here when a Maps token is configured' : ''}.
+              {t.lookAround.intro(canEmbed)}
             </p>
           </div>
 
@@ -36,7 +36,7 @@ export const LookAroundLinkCard = ({ lat, lng }: LookAroundLinkCardProps) => {
             rel="noreferrer"
             target="_blank"
           >
-            Open Look Around at this location
+            {t.lookAround.open}
             <svg
               aria-hidden
               className="size-3.5"

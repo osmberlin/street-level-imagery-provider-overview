@@ -9,6 +9,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
 import { PhotoStaticPreview } from '@/features/viewer/PhotoViewer'
+import { useAppI18n } from '@/i18n/useAppI18n'
 
 const PsvPanoPanel = lazy(() =>
   import('@/features/viewer/panels/PsvPanoPanel').then((module) => ({
@@ -41,11 +42,14 @@ type ViewerPanelSwitchProps = {
   lookAt?: MapillaryLookAt | null
 }
 
-const ViewerPanelPlaceholder = () => (
-  <div className="flex min-h-48 animate-pulse items-center justify-center rounded-lg border border-slate-200 bg-slate-100">
-    <span className="text-sm text-slate-500">Loading viewer…</span>
-  </div>
-)
+const ViewerPanelPlaceholder = () => {
+  const { t } = useAppI18n()
+  return (
+    <div className="flex min-h-48 animate-pulse items-center justify-center rounded-lg border border-slate-200 bg-slate-100">
+      <span className="text-sm text-slate-500">{t.viewer.loadingViewer}</span>
+    </div>
+  )
+}
 
 export const ViewerPanelSwitch = ({
   photo,
@@ -69,6 +73,7 @@ export const ViewerPanelSwitch = ({
     return (
       <StreetLevelImageryViewer
         groupPhotos={groupPhotos}
+        hideAttribution
         onEaseMapToPoint={easeMainMapToPoint}
         onPhotoSelected={updateSelected}
         lookAt={lookAt}

@@ -8,30 +8,25 @@ import {
 } from '@osm-editor-kit/street-imagery'
 import {
   FloatingPhotoViewer,
+  MapillaryFeatureBar,
+  PhotoDate,
   getViewpointSession,
   useCanGoBack,
   useCanGoForward,
   useCurrentHistoryEntry,
+  useStreetImageryI18n,
 } from '@osm-editor-kit/street-imagery-react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { isProviderId } from '@/app/searchSchema'
-import { FeatureBar } from '@/features/viewer/FeatureBar'
 import { LookAroundLinkCard } from '@/features/viewer/LookAroundLinkCard'
-import { humanizeFeatureValue } from '@/features/viewer/mapFeatureDisplay'
 import { ViewerPanelSwitch } from '@/features/viewer/panels/ViewerPanelSwitch'
 import { useClickedPhotos } from '@/features/viewer/useClickedPhotos'
 import { targetImageToPhoto, useSelectedFeature } from '@/features/viewer/useSelectedFeature'
 import { useSelectedPhotoForMap } from '@/features/viewer/useSelectedPhotoForMap'
 import { useStepAlongLine } from '@/features/viewer/useStepAlongLine'
 import { useViewpointPhotos } from '@/features/viewer/useViewpointPhotos'
-
-const formatDate = (capturedAt: number | null) =>
-  capturedAt == null
-    ? 'Unknown date'
-    : new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: 'numeric' }).format(
-        capturedAt,
-      )
+import { useAppI18n } from '@/i18n/useAppI18n'
 
 const samePhoto = (a: NormalizedPhoto | null | undefined, b: NormalizedPhoto | null | undefined) =>
   a != null && b != null && a.providerId === b.providerId && a.photoId === b.photoId
@@ -65,7 +60,7 @@ const NearbyPhotoList = ({
             />
             <span className="w-20 shrink-0 truncate">{provider.label}</span>
             <span className="flex-1 truncate">
-              {formatDate(first?.capturedAt ?? null)}
+              <PhotoDate timestamp={first?.capturedAt} />
               {first?.isPano ? ' · 360°' : ''}
             </span>
             <span className="shrink-0 text-slate-400">{Math.round(group.distanceMeters)} m</span>
@@ -84,6 +79,10 @@ const NearbyPhotoList = ({
 export const PhotoFloatingViewer = () => {
   const { search } = useAppSearchNavigation()
   const { clicked, selected, providers } = search
+  const { t } = useAppI18n()
+  const { messages } = useStreetImageryI18n()
+  // Mapillary's own attribution is hidden in the viewer; the footer shows the creator instead.
+  const [creator, setCreator] = useState<{ photoId: string; name: string } | null>(null)
   const {
     viewpoints,
     suggestions,
@@ -210,7 +209,7 @@ export const PhotoFloatingViewer = () => {
           lngLat: featureData.feature.lngLat,
           outline: selectedFeature.shownImage.outline,
           value: featureData.feature.value,
-          label: humanizeFeatureValue(featureData.feature.value),
+          label: messages.feature.name(featureData.feature.value),
         }
       : null
   const previousOnLine = lineSteps?.previous ?? null
@@ -221,24 +220,24 @@ export const PhotoFloatingViewer = () => {
   const status = (() => {
     if (selectedFeature.featureId) {
       if (selectedFeature.isLoading) {
-        return 'Loading the feature and its photos…'
+        return t.viewer.loadingFeature
       }
-      return selectedFeature.isError ? 'Could not load this feature from Mapillary.' : null
+      return selectedFeature.isError ? t.viewer.featureError : null
     }
     if (loading && !photo) {
-      return 'Looking for photos…'
+      return t.viewer.lookingForPhotos
     }
     if (suggestionsError) {
-      return 'Could not load Mapillary photos for the suggested views.'
+      return t.viewer.suggestionsError
     }
     if (!photo && groups.length === 0 && !showLookAround) {
       if (gsvStatus === 'no-key' && providers.length === 1) {
-        return 'Set GOOGLE_MAPS_API_KEY in src/config.ts to check Google Street View.'
+        return t.viewer.noStreetViewKey
       }
-      return 'No photos from the enabled providers here. Try another spot, more providers, or wider filters.'
+      return t.viewer.noPhotos
     }
     if (suggestions.length > 0 && !suggestionsFound && !loading) {
-      return 'No Mapillary photo looks in any of the suggested directions.'
+      return t.viewer.noSuggestedPhotos
     }
     return null
   })()
@@ -260,7 +259,7 @@ export const PhotoFloatingViewer = () => {
       drawer={
         groups.length > 0 || (showLookAround && photo)
           ? {
-              label: `All photos near the click (${groups.length}${showLookAround ? ' + Look Around' : ''})`,
+              label: t.viewer.nearbyPhotos(groups.length, showLookAround),
               content: (
                 <div className="space-y-2">
                   {showLookAround && photo && clicked ? (
@@ -275,8 +274,14 @@ export const PhotoFloatingViewer = () => {
       footer={
         photo && provider ? (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span>{formatDate(photo.capturedAt)}</span>
-            <span>{photo.isPano ? '360°' : photo.isPano === false ? 'Flat' : 'Unknown type'}</span>
+            <PhotoDate timestamp={photo.capturedAt} />
+            <span>
+              {photo.isPano
+                ? t.viewer.pano
+                : photo.isPano === false
+                  ? t.viewer.flat
+                  : t.viewer.unknownType}
+            </span>
             {photo.heading != null ? <span>{Math.round(photo.heading)}°</span> : null}
             <a
               className="font-medium text-slate-800 underline-offset-2 hover:underline"
@@ -284,8 +289,13 @@ export const PhotoFloatingViewer = () => {
               rel="noreferrer"
               target="_blank"
             >
-              Open in {provider.label}
+              {t.opener.openIn(provider.label)}
             </a>
+            {creator?.photoId === photo.photoId ? (
+              <span>
+                {t.viewer.photoBy(creator.name)} · {t.viewer.license}
+              </span>
+            ) : null}
           </div>
         ) : undefined
       }
@@ -301,14 +311,14 @@ export const PhotoFloatingViewer = () => {
                 ? () => showPhoto(previousOnLine, activeDirectionKey)
                 : undefined,
               onNext: nextOnLine ? () => showPhoto(nextOnLine, activeDirectionKey) : undefined,
-              previousLabel: 'Previous photo along the street (Alt + ←)',
-              nextLabel: 'Next photo along the street (Alt + →)',
+              previousLabel: t.viewer.previousOnStreet,
+              nextLabel: t.viewer.nextOnStreet,
             }
           : undefined
       }
       toolbar={
         featureData ? (
-          <FeatureBar
+          <MapillaryFeatureBar
             data={featureData}
             onShow={(image) => showPhoto(targetImageToPhoto(image))}
             shownImage={selectedFeature.shownImage}
@@ -316,7 +326,7 @@ export const PhotoFloatingViewer = () => {
         ) : undefined
       }
       suggestions={suggestions}
-      title={featureData ? 'Mapillary feature' : provider ? provider.label : 'Photos here'}
+      title={featureData ? t.viewer.titleFeature : provider ? provider.label : t.viewer.titlePhotos}
     >
       {photo ? (
         <div className="px-2">
@@ -324,7 +334,14 @@ export const PhotoFloatingViewer = () => {
             groupPhotos={activeGroup?.photos ?? [photo]}
             lookAt={lookAt}
             lookAtBearing={lookAtBearing}
-            onViewerPhoto={(viewerPhoto) => showPhoto(viewerPhoto)}
+            onViewerPhoto={(viewerPhoto) => {
+              setCreator(
+                viewerPhoto.creatorName
+                  ? { photoId: viewerPhoto.photoId, name: viewerPhoto.creatorName }
+                  : null,
+              )
+              showPhoto(viewerPhoto)
+            }}
             photo={photo}
           />
         </div>
