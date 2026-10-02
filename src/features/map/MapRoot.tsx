@@ -31,7 +31,7 @@ import { MAIN_MAP_ID } from '@/features/map/constants'
 import { exposeMainMapForDebugging } from '@/features/map/exposeMainMapForDebugging'
 import { useMapActions } from '@/features/map/map-store'
 import { rememberWrittenMapViewport } from '@/features/map/mapViewportSync'
-import { SELECTED_FEATURE_COLOR, SelectedFeatureLayer } from '@/features/map/SelectedFeatureLayer'
+import { SelectedFeatureLayer } from '@/features/map/SelectedFeatureLayer'
 import { signGroupFilter } from '@/features/map/signGroupFilter'
 import {
   geometryLines,
@@ -261,8 +261,7 @@ export const MapRoot = () => {
           showSelectionHighlight: true,
           showSequences: true,
           showViewCone: true,
-          // A selected feature: a smaller cone in the feature's colour, pointing at it.
-          viewConeColor: search.feature ? SELECTED_FEATURE_COLOR : undefined,
+          // A selected feature: a smaller cone, pointing at it.
           viewConeScale: search.feature ? 1.5 : undefined,
           viewerPov,
         }}

@@ -1,16 +1,21 @@
-import { useAllProviderMapFeatures, useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
+import {
+  SELECTION_COLOR,
+  useAllProviderMapFeatures,
+  useMapViewportBbox,
+  VIEW_SHAPE_FILL_OPACITY,
+} from '@osm-editor-kit/street-imagery-react'
 import type { FeatureCollection, LineString, Point } from 'geojson'
 import { Layer, Source } from 'react-map-gl/maplibre'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { MAIN_MAP_ID } from '@/features/map/constants'
+import { MAP_FEATURE_COLORS } from '@/features/styles/styleDefinitions'
 import { useSelectedFeature } from '@/features/viewer/useSelectedFeature'
 
-/** The selected feature, the line to it and the view cone share the map features' purple. */
-export const SELECTED_FEATURE_COLOR = '#7c3aed'
-const COLOR = SELECTED_FEATURE_COLOR
+/** The map features' purple; the selected one is drawn larger, on a light disk. */
+const FEATURE_COLOR = MAP_FEATURE_COLORS.feature
 
 /**
- * The selected sign or object on the map: a ring around it and a dotted line to it from the
+ * The selected sign or object on the map: its dot on a light disk, and a dotted line to it from the
  * camera position of the shown photo (Mapillary's computed position, which the feature was located
  * from). The photo's own marker, camera pin and their connector come from the package's selection
  * overlay, so the chain reads photo dot → camera pin → feature, as in iD.
@@ -60,19 +65,28 @@ export const SelectedFeatureLayer = () => {
       <Source data={line} id="selected-feature-line" type="geojson" />
       <Layer
         id="selected-feature-line"
-        paint={{ 'line-color': COLOR, 'line-width': 1.5, 'line-dasharray': [2, 1.5] }}
+        paint={{ 'line-color': SELECTION_COLOR, 'line-width': 1.5, 'line-dasharray': [2, 1.5] }}
         source="selected-feature-line"
         type="line"
       />
       <Source data={points} id="selected-feature-point" type="geojson" />
+      {/* A light disk without an edge, like the 360° disks of photos. */}
       <Layer
-        id="selected-feature-ring"
+        id="selected-feature-disk"
         paint={{
-          'circle-radius': 8,
-          'circle-color': COLOR,
-          'circle-opacity': 0,
-          'circle-stroke-color': COLOR,
-          'circle-stroke-width': 2,
+          'circle-radius': 17,
+          'circle-color': FEATURE_COLOR,
+          'circle-opacity': VIEW_SHAPE_FILL_OPACITY,
+        }}
+        source="selected-feature-point"
+        type="circle"
+      />
+      {/* The feature's dot, 20 % larger than the other features' dots. */}
+      <Layer
+        id="selected-feature-dot"
+        paint={{
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 1.8, 14, 3.6, 18, 4.8],
+          'circle-color': FEATURE_COLOR,
         }}
         source="selected-feature-point"
         type="circle"
