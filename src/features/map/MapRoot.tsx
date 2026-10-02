@@ -174,7 +174,7 @@ export const MapRoot = () => {
       return
     }
 
-    // 4. A street: viewpoints at its start, the click and its end, looking along the street.
+    // 4. A street: a viewpoint at the click, looking both ways along the street.
     const clickedLine = street ? closestLine(street, click) : null
     if (street && clickedLine) {
       const fragments = event.target
@@ -184,7 +184,10 @@ export const MapRoot = () => {
         })
         .flatMap((feature) => geometryLines(feature.geometry))
       const line = joinStreetFragments(clickedLine, fragments)
-      actions.open({ viewpoints: viewpointsFromLine(line, click), line })
+      // Only the clicked spot, looking both ways along the street. Views from the street's start
+      // and end made the map jump away from where the user clicked.
+      const here = viewpointsFromLine(line, click).filter((viewpoint) => viewpoint.role === 'here')
+      actions.open({ viewpoints: here, line })
       updateSearch(
         { clicked: clickPoint, selected: undefined, feature: undefined },
         { replace: true },

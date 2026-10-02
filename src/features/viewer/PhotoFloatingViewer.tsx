@@ -3,6 +3,7 @@ import {
   findNearestPhoto,
   providerById,
   providerExternalLink,
+  viewpointFromPoint,
   type NormalizedPhoto,
 } from '@osm-editor-kit/street-imagery'
 import {
@@ -15,6 +16,7 @@ import {
   useCanGoBack,
   useCanGoForward,
   useCurrentHistoryEntry,
+  useViewpoints,
 } from '@osm-editor-kit/street-imagery-react'
 import {
   PHOTO_DETAILS_LABELS,
@@ -57,6 +59,7 @@ export const PhotoFloatingViewer = () => {
   const [viewerPhoto, setViewerPhoto] = useState<NormalizedPhoto | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const {
+    viewpointsEnabled,
     viewpoints,
     suggestions,
     suggestionsLoading,
@@ -90,6 +93,20 @@ export const PhotoFloatingViewer = () => {
       }
     },
     [urlPhoto],
+  )
+
+  // A link or reload with a clicked spot and no photo yet has no session. Open one for the spot,
+  // so its views stay when the best photo gets selected.
+  const sessionEmpty = useViewpoints().length === 0
+  useEffect(
+    function openSessionForClickedSpot() {
+      if (viewpointsEnabled && clicked && !selected && sessionEmpty && !selectedFeature.featureId) {
+        getViewpointSession().actions.open({
+          viewpoints: [viewpointFromPoint([clicked.lng, clicked.lat])],
+        })
+      }
+    },
+    [clicked, selected, selectedFeature.featureId, sessionEmpty, viewpointsEnabled],
   )
 
   // Auto-select once per click: the best suggested view, else the nearest photo of any provider.
