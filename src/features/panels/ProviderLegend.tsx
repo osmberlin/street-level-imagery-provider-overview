@@ -50,41 +50,31 @@ export const ProviderLegend = ({
   const belowMinZoom = zoom < meta.minZoom
   const isEmpty = !belowMinZoom && total === 0
 
+  if (belowMinZoom) {
+    return null
+  }
+
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
+    <ul className={isEmpty ? 'space-y-1 opacity-50' : 'space-y-1'}>
+      {styleDefinition.categories.map((category) => (
+        <li key={category.id} className="flex items-center gap-2 text-xs text-slate-600">
           <span
             aria-hidden
-            className="size-2 shrink-0 rounded-full"
-            style={{ backgroundColor: meta.color }}
+            className="size-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: category.color }}
           />
-          <span className="truncate text-sm font-medium text-slate-800">{meta.label}</span>
-        </div>
-        <span className="w-10 shrink-0 text-right text-xs font-medium text-slate-600 tabular-nums">
-          {belowMinZoom ? '—' : total}
+          <span className="min-w-0 flex-1 truncate">{category.label}</span>
+          <span className="w-10 shrink-0 text-right font-medium text-slate-700 tabular-nums">
+            {counts[category.id]}
+          </span>
+        </li>
+      ))}
+      <li className="flex items-center gap-2 border-t border-slate-200 pt-1 text-xs text-slate-600">
+        <span className="min-w-0 flex-1 truncate">In view</span>
+        <span className="w-10 shrink-0 text-right font-medium text-slate-700 tabular-nums">
+          {total}
         </span>
-      </div>
-
-      {belowMinZoom ? (
-        <p className="mt-1.5 text-xs text-slate-500">Zoom in to z{meta.minZoom}+ for counts</p>
-      ) : (
-        <ul className={isEmpty ? 'mt-2 space-y-1 opacity-50' : 'mt-2 space-y-1'}>
-          {styleDefinition.categories.map((category) => (
-            <li key={category.id} className="flex items-center gap-2 text-xs text-slate-600">
-              <span
-                aria-hidden
-                className="size-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: category.color }}
-              />
-              <span className="min-w-0 flex-1 truncate">{category.label}</span>
-              <span className="w-10 shrink-0 text-right font-medium text-slate-700 tabular-nums">
-                {counts[category.id]}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+      </li>
+    </ul>
   )
 }

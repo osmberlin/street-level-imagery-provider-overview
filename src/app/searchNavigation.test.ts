@@ -1,7 +1,7 @@
-import { DEFAULT_PROVIDER_IDS } from '@osm-editor-kit/street-imagery'
 import { describe, expect, it } from 'vitest'
 import { serializeMapParam } from '@/app/mapParam'
 import { mergeAppSearchForNavigate } from '@/app/searchNavigation'
+import { DEFAULT_PROVIDER_IDS } from '@/app/searchSchema'
 import { DEFAULT_MAP, type AppSearch } from '@/app/searchSchema'
 
 const baseSearch: AppSearch = {

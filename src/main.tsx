@@ -4,13 +4,14 @@ import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { queryClient, router } from '@/app/router'
-import { GOOGLE_MAPS_API_KEY, MAPILLARY_TOKEN } from '@/config'
+import { GOOGLE_MAPS_API_KEY, INFRA3D_PROJECT_UID, MAPILLARY_TOKEN } from '@/config'
 import './index.css'
 
 setStreetImageryConfig(
   createStreetImageryConfig({
     mapillaryToken: MAPILLARY_TOKEN,
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    infra3d: { projectUid: INFRA3D_PROJECT_UID },
   }),
 )
 

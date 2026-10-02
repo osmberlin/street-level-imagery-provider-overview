@@ -1,5 +1,4 @@
 import {
-  DEFAULT_PROVIDER_IDS,
   isBrowserAvailableProvider,
   PROVIDER_IDS,
   type ProviderId,
@@ -12,6 +11,9 @@ import {
   serializeMapParam,
   type MapParam,
 } from '@/app/mapParam'
+
+/** Enabled without a `providers` param: the two open providers. The rest is one click away. */
+export const DEFAULT_PROVIDER_IDS: ProviderId[] = ['mapillary', 'panoramax']
 
 const normalizeLegacyProviderId = (raw: unknown): unknown =>
   raw === 'google-streetview' ? 'streetview' : raw

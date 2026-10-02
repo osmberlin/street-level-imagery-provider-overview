@@ -1,7 +1,7 @@
-import { DEFAULT_PROVIDER_IDS } from '@osm-editor-kit/street-imagery'
 import { describe, expect, it } from 'vitest'
 import { serializeMapParam } from '@/app/mapParam'
 import { routerSearch } from '@/app/routerSearch'
+import { DEFAULT_PROVIDER_IDS } from '@/app/searchSchema'
 import {
   defaultDateFrom,
   DEFAULT_MAP,

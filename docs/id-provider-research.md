@@ -587,7 +587,7 @@ If Panoramax adds a signs/features MVT layer later, model it like Mapillary sign
 
 ### Apple Look Around (`lookaround`) — not in iD
 
-**Status in this app:** link-out only (Phase 1). Off by default (`defaultEnabled: false`). No map dots.
+**Status in this app:** link-out only (Phase 1). An "Open in Apple Look Around" button in the provider list, no checkbox. No map dots.
 
 Apple does **not** publish a bulk coverage listing API comparable to Mapillary MVT or Bing Streetside metadata. Official web access is MapKit JS 6 `LookAround` / `LookAroundPreview` (WWDC 2025), which embeds Apple’s viewer for a single place/coordinate and does not expose photo IDs, capture dates, headings, or bbox enumeration.
 
@@ -598,4 +598,4 @@ Apple does **not** publish a bulk coverage listing API comparable to Mapillary M
 | Bulk listing       | None official; reverse-engineered tiles (e.g. streetlevel) conflict with Apple Maps Service terms (no scrape / derivative DB)                                                                            |
 | iD                 | Not present                                                                                                                                                                                              |
 
-**App UX:** enabling Look Around shows a right-panel CTA on map click that opens the deep link. Optional: set `VITE_APPLE_MAPKIT_TOKEN` to lazy-load MapKit JS and embed `LookAroundPreview` (falls back to the deep link on error / no imagery). Full map-layer coverage is **not** implemented — see [lookaround-coverage-spike.md](lookaround-coverage-spike.md) for TOS evaluation of reverse-engineered tiles.
+**App UX:** the button arms "pick a place": the next map click opens the deep link there (Shift+click: map center). Links with `lookaround` in `providers` still show the click card. Optional: set `VITE_APPLE_MAPKIT_TOKEN` to lazy-load MapKit JS and embed `LookAroundPreview` (falls back to the deep link on error / no imagery). Full map-layer coverage is **not** implemented — see [lookaround-coverage-spike.md](lookaround-coverage-spike.md) for TOS evaluation of reverse-engineered tiles.

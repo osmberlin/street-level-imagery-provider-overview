@@ -8,9 +8,11 @@ import {
 } from '@osm-editor-kit/street-imagery'
 import {
   getViewpointSession,
+  LocationPickOnMap,
   queryStreetImageryFeatures,
   StreetLevelImagerySourcesAndLayers,
   streetImageryInteractiveLayerIds,
+  useArmedLocationOpenerId,
   useMapViewportBbox,
   useViewpointLine,
   VIEWPOINT_DIRECTION_LAYER_ID,
@@ -79,6 +81,7 @@ export const MapRoot = () => {
     useViewpointPhotos()
   const viewpointLine = useViewpointLine()
   const { markMapLoaded } = useMapActions()
+  const pickingLocation = useArmedLocationOpenerId() != null
 
   const styleDefinition = getStyleDefinition(style)
   const mapFeatureStyleDefinition = getMapFeatureStyleDefinition(style)
@@ -110,6 +113,10 @@ export const MapRoot = () => {
   }
 
   const handleClick = (event: MapLayerMouseEvent) => {
+    // This click opens the place in another service (LocationPickOnMap); keep the selection.
+    if (pickingLocation) {
+      return
+    }
     const features = event.features ?? []
     const clickPoint = {
       lng: Math.round(event.lngLat.lng * 1e6) / 1e6,
@@ -206,7 +213,7 @@ export const MapRoot = () => {
       style={{ width: '100%', height: '100%' }}
       attributionControl={false}
       RTLTextPlugin={false}
-      cursor={cursor}
+      cursor={pickingLocation ? 'crosshair' : cursor}
       interactiveLayerIds={interactiveLayerIds}
       onClick={handleClick}
       onLoad={handleLoad}
@@ -218,6 +225,7 @@ export const MapRoot = () => {
       <NavigationControl position="top-right" showCompass visualizePitch />
       <SyncMapCameraFromUrl />
       {viewpointsEnabled ? <StreetLinesLayer hovered={hoveredStreet} /> : null}
+      <LocationPickOnMap />
       <StreetLevelImagerySourcesAndLayers
         bbox={bbox}
         filter={{ photoTypes, date, mapFeatureValue: signGroupFilter(signGroups) }}

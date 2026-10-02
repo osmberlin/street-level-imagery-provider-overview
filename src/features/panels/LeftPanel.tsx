@@ -4,10 +4,11 @@ import {
   isBrowserAvailableProvider,
   isClickOnlyPhotoProvider,
   PROVIDERS,
+  type OpenTarget,
   providerById,
   type ProviderId,
 } from '@osm-editor-kit/street-imagery'
-import { providerLocationLink } from '@osm-editor-kit/street-imagery'
+import { LOCATION_OPENERS } from '@osm-editor-kit/street-imagery'
 import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import { twMerge } from 'tailwind-merge'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
@@ -16,6 +17,7 @@ import {
   DEFAULT_MAX_AGE_YEARS,
   DEFAULT_PHOTO_TYPES,
   defaultDateFrom,
+  isProviderId,
   SIGN_GROUP_IDS,
 } from '@/app/searchSchema'
 
@@ -26,6 +28,7 @@ const SIGN_GROUP_LABELS: Record<(typeof SIGN_GROUP_IDS)[number], string> = {
   other: 'Other',
 }
 import { MAIN_MAP_ID } from '@/features/map/constants'
+import { OpenLocationButton } from '@/features/openers/OpenLocationButton'
 import { ProviderLegend } from '@/features/panels/ProviderLegend'
 import { useResizableLeftPanelWidth } from '@/features/panels/useResizableLeftPanelWidth'
 
@@ -33,23 +36,6 @@ const STYLE_OPTIONS: { value: AppSearch['style']; label: string }[] = [
   { value: 'photoType', label: 'Photo type' },
   { value: 'age', label: 'Age' },
 ]
-
-const ExternalLinkIcon = () => (
-  <svg
-    aria-hidden
-    className="size-4"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth={1.75}
-    viewBox="0 0 24 24"
-  >
-    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-    <path d="M15 3h6v6" />
-    <path d="M10 14 21 3" />
-  </svg>
-)
 
 const CloseIcon = () => (
   <svg
@@ -97,8 +83,8 @@ export const LeftPanel = () => {
   } = useAppSearchNavigation()
   const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
   const activeProviders = new Set(search.providers)
-  const { lat: mapLat, lng: mapLng, zoom: currentZoom } = map
-  const enabledProviders = PROVIDERS.filter((provider) => activeProviders.has(provider.id))
+  const currentZoom = map.zoom
+  const quickLocation: OpenTarget = { lngLat: [map.lng, map.lat], zoom: map.zoom }
   const isOpen = search.leftPanel !== 'closed'
 
   const photoTypeSet = new Set(search.photoTypes)
@@ -209,6 +195,10 @@ export const LeftPanel = () => {
           <h2 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
             Providers
           </h2>
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">
+            The pointer opens a place there: click it, then click the map. Shift+click opens the map
+            center right away.
+          </p>
           <ul className="mt-3 space-y-2">
             {PROVIDERS.map((provider) => {
               const checked = activeProviders.has(provider.id)
@@ -218,28 +208,32 @@ export const LeftPanel = () => {
               const belowMinZoom = !clickOnly && currentZoom < meta.minZoom
               const browserUnavailable = adapter.browserUnavailableReason != null
               const streetViewNeedsKey = provider.id === 'streetview' && !googleMapsConfigured
-              const enableBlocked = browserUnavailable || streetViewNeedsKey
-              const checkboxDisabled = enableBlocked && !checked
+              const checkboxDisabled = browserUnavailable && !checked
+              const opener = LOCATION_OPENERS.find((candidate) => candidate.id === provider.id)
+              // Nothing to show on the map (Apple, Google without a key): only the opener.
+              if (opener && !checked && (provider.id === 'lookaround' || streetViewNeedsKey)) {
+                return (
+                  <li key={provider.id}>
+                    <OpenLocationButton
+                      className="w-full"
+                      opener={opener}
+                      quickLocation={quickLocation}
+                    />
+                  </li>
+                )
+              }
               return (
-                <li key={provider.id}>
-                  <div
-                    className={twMerge(
-                      'flex items-center justify-between gap-1 rounded-lg border border-transparent hover:border-slate-200 hover:bg-slate-50',
-                      checkboxDisabled && 'opacity-60',
-                    )}
-                  >
+                <li
+                  key={provider.id}
+                  className="rounded-lg border border-slate-200 hover:bg-slate-50/60"
+                >
+                  <div className="flex items-center gap-1 pr-1.5">
                     <label
                       className={twMerge(
-                        'flex min-w-0 flex-1 items-center gap-3 px-2 py-2',
-                        checkboxDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
+                        'flex min-w-0 flex-1 items-center gap-3 px-2.5 py-2',
+                        checkboxDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
                       )}
-                      title={
-                        streetViewNeedsKey
-                          ? 'Set GOOGLE_MAPS_API_KEY in src/config.ts'
-                          : browserUnavailable
-                            ? adapter.browserUnavailableReason
-                            : undefined
-                      }
+                      title={adapter.browserUnavailableReason}
                     >
                       <input
                         checked={checked}
@@ -257,16 +251,12 @@ export const LeftPanel = () => {
                       />
                       <span className="flex min-w-0 flex-1 flex-col">
                         <span className="text-sm font-medium text-slate-800">{provider.label}</span>
-                        {streetViewNeedsKey ? (
-                          <span className="text-xs text-slate-500">
-                            Set GOOGLE_MAPS_API_KEY in src/config.ts
-                          </span>
-                        ) : browserUnavailable ? (
+                        {browserUnavailable ? (
                           <span className="text-xs text-slate-500">
                             Unavailable in browser (CORS)
                           </span>
                         ) : clickOnly ? (
-                          <span className="text-xs text-slate-500">Click map for link-out</span>
+                          <span className="text-xs text-slate-500">Checks coverage on click</span>
                         ) : belowMinZoom ? (
                           <span className="text-xs text-slate-500">
                             Zoom in to see data (z{meta.minZoom}+)
@@ -274,19 +264,36 @@ export const LeftPanel = () => {
                         ) : null}
                       </span>
                     </label>
-                    <a
-                      aria-label={`Open ${provider.label} at map center`}
-                      className="shrink-0 p-2 text-slate-400 hover:text-slate-600"
-                      href={providerLocationLink(provider.id, mapLat, mapLng, currentZoom)}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      <ExternalLinkIcon />
-                    </a>
+                    {opener ? (
+                      <OpenLocationButton iconOnly opener={opener} quickLocation={quickLocation} />
+                    ) : null}
                   </div>
+                  {checked && !clickOnly && !belowMinZoom ? (
+                    <div className="border-t border-slate-200 px-2.5 py-2">
+                      <ProviderLegend
+                        bbox={bbox}
+                        date={search.date}
+                        photoTypes={search.photoTypes}
+                        providerId={provider.id}
+                        style={search.style}
+                        zoom={currentZoom}
+                      />
+                    </div>
+                  ) : null}
                 </li>
               )
             })}
+            {LOCATION_OPENERS.filter(
+              (opener) => opener.isAvailable() && !isProviderId(opener.id),
+            ).map((opener) => (
+              <li key={opener.id}>
+                <OpenLocationButton
+                  className="w-full"
+                  opener={opener}
+                  quickLocation={quickLocation}
+                />
+              </li>
+            ))}
           </ul>
         </section>
 
@@ -428,28 +435,6 @@ export const LeftPanel = () => {
               )
             })}
           </div>
-        </section>
-
-        <section className="mt-8">
-          <h2 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Legends</h2>
-          {enabledProviders.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-500">Enable a provider to see legend counts.</p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {enabledProviders.map((provider) => (
-                <li key={provider.id}>
-                  <ProviderLegend
-                    bbox={bbox}
-                    date={search.date}
-                    photoTypes={search.photoTypes}
-                    providerId={provider.id}
-                    style={search.style}
-                    zoom={currentZoom}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
         </section>
       </div>
     </aside>

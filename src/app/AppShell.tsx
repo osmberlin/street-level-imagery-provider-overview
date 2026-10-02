@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { MapProvider } from 'react-map-gl/maplibre'
 import { TanStackAppDevtools } from '@/components/shared/devtools/TanStackAppDevtools'
 import { MapRoot } from '@/features/map/MapRoot'
+import { LocationPickHint } from '@/features/openers/LocationPickHint'
 import { LeftPanel } from '@/features/panels/LeftPanel'
 import { MapFeaturesFloatingCard } from '@/features/viewer/MapFeaturesFloatingCard'
 import { PhotoFloatingViewer } from '@/features/viewer/PhotoFloatingViewer'
@@ -19,6 +20,7 @@ export const AppShell = ({ children }: AppShellProps) => {
           <MapRoot />
           <MapFeaturesFloatingCard />
           <PhotoFloatingViewer />
+          <LocationPickHint />
           {children}
         </main>
       </div>
