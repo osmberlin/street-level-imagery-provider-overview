@@ -1,4 +1,9 @@
-import { dayLabels, type MapFeatureImages, type TargetImage } from '@osm-editor-kit/street-imagery'
+import {
+  dayLabels,
+  mapillaryIconUrl,
+  type MapFeatureImages,
+  type TargetImage,
+} from '@osm-editor-kit/street-imagery'
 import { APP_START_NOW } from '@/features/styles/ageBuckets'
 import { formatFeatureDate, humanizeFeatureValue } from '@/features/viewer/mapFeatureDisplay'
 
@@ -18,9 +23,22 @@ export const FeatureBar = ({ data, shownImage, onShow }: FeatureBarProps) => {
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-baseline justify-between gap-2">
-        <p className="min-w-0 truncate text-sm font-medium text-slate-900" title={feature.value}>
-          {humanizeFeatureValue(feature.value)}
+      <div className="flex items-center justify-between gap-2">
+        <p
+          className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-slate-900"
+          title={feature.value}
+        >
+          {/* Mapillary's icon for the value; not every value has one. */}
+          <img
+            alt=""
+            className="size-6 shrink-0"
+            key={feature.value}
+            onError={(event) => {
+              event.currentTarget.style.display = 'none'
+            }}
+            src={mapillaryIconUrl(feature.value)}
+          />
+          <span className="truncate">{humanizeFeatureValue(feature.value)}</span>
         </p>
         <p className="shrink-0 text-xs text-slate-500">
           seen {formatFeatureDate(feature.firstSeenAt)} – {formatFeatureDate(feature.lastSeenAt)}
