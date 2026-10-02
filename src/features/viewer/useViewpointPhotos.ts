@@ -2,6 +2,7 @@ import {
   photoMatchesDateRange,
   viewpointFromPoint,
   type NormalizedPhoto,
+  type PhotoCandidate,
   type ViewSuggestion,
 } from '@osm-editor-kit/street-imagery'
 import {
@@ -57,10 +58,11 @@ export const useViewpointPhotos = () => {
     writeUrl(entry)
   }
 
-  const selectSuggestion = (suggestion: ViewSuggestion) => {
-    const best = suggestion.candidates[0]
-    if (best) {
-      showPhoto(best.photo, suggestion.direction.key)
+  /** Show a view: its best photo, or `candidate` when the view steps through its photos. */
+  const selectSuggestion = (suggestion: ViewSuggestion, candidate?: PhotoCandidate) => {
+    const pick = candidate ?? suggestion.candidates[0]
+    if (pick) {
+      showPhoto(pick.photo, suggestion.direction.key)
     }
   }
 

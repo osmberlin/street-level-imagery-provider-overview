@@ -331,6 +331,7 @@ export const PhotoFloatingViewer = () => {
         onClose={close}
         onForward={forward}
         onSelectSuggestion={selectSuggestion}
+        shownPhotoId={photo?.photoId}
         status={status}
         step={
           lineSteps
