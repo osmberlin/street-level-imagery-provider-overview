@@ -78,8 +78,9 @@ export const useViewpointPhotos = () => {
     }
   }
 
+  // Closing the panel ends the session: back/forward start empty next time.
   const close = () => {
-    getViewpointSession().actions.close()
+    getViewpointSession().actions.reset()
     updateSearch({ clicked: undefined, selected: undefined, feature: undefined }, { replace: true })
   }
 
