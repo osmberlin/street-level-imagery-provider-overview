@@ -1,4 +1,4 @@
-import { locationOpenerById, openLocationInNewTab } from '@osm-editor-kit/street-imagery'
+import { findLocationOpener, openLocationInNewTab } from '@osm-editor-kit/street-imagery'
 import {
   useArmedLocationOpenerId,
   useLocationPickActions,
@@ -13,10 +13,10 @@ export const LocationPickHint = () => {
   const { map } = useAppSearchNavigation()
   const { t } = useAppI18n()
 
-  if (!armedOpenerId) {
+  const opener = armedOpenerId ? findLocationOpener(armedOpenerId) : undefined
+  if (!opener) {
     return null
   }
-  const opener = locationOpenerById[armedOpenerId]
 
   return (
     <div className="pointer-events-none absolute inset-x-0 top-3 z-20 flex justify-center px-14">

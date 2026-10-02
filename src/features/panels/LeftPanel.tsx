@@ -8,7 +8,7 @@ import {
   providerById,
   type ProviderId,
 } from '@osm-editor-kit/street-imagery'
-import { LOCATION_OPENERS, STREET_IMAGERY_LOCALES } from '@osm-editor-kit/street-imagery'
+import { getLocationOpeners, STREET_IMAGERY_LOCALES } from '@osm-editor-kit/street-imagery'
 import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import { twMerge } from 'tailwind-merge'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
@@ -88,6 +88,7 @@ export const LeftPanel = () => {
   const currentZoom = map.zoom
   const quickLocation: OpenTarget = { lngLat: [map.lng, map.lat], zoom: map.zoom }
   const isOpen = search.leftPanel !== 'closed'
+  const locationOpeners = getLocationOpeners()
 
   const photoTypeSet = new Set(search.photoTypes)
   const flatChecked = photoTypeSet.has('flat')
@@ -228,7 +229,7 @@ export const LeftPanel = () => {
                 const browserUnavailable = adapter.browserUnavailableReason != null
                 const streetViewNeedsKey = provider.id === 'streetview' && !googleMapsConfigured
                 const checkboxDisabled = browserUnavailable && !checked
-                const opener = LOCATION_OPENERS.find((candidate) => candidate.id === provider.id)
+                const opener = locationOpeners.find((candidate) => candidate.id === provider.id)
                 // Nothing to show on the map (Apple, Google without a key): only the opener.
                 if (opener && !checked && (provider.id === 'lookaround' || streetViewNeedsKey)) {
                   return (
@@ -306,17 +307,17 @@ export const LeftPanel = () => {
                   </li>
                 )
               })}
-              {LOCATION_OPENERS.filter(
-                (opener) => opener.isAvailable() && !isProviderId(opener.id),
-              ).map((opener) => (
-                <li key={opener.id}>
-                  <OpenLocationButton
-                    className="w-full"
-                    opener={opener}
-                    quickLocation={quickLocation}
-                  />
-                </li>
-              ))}
+              {locationOpeners
+                .filter((opener) => opener.isAvailable() && !isProviderId(opener.id))
+                .map((opener) => (
+                  <li key={opener.id}>
+                    <OpenLocationButton
+                      className="w-full"
+                      opener={opener}
+                      quickLocation={quickLocation}
+                    />
+                  </li>
+                ))}
             </ul>
           </section>
 
