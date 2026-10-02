@@ -8,13 +8,14 @@ import { useAppI18n } from '@/i18n/useAppI18n'
 export const StreetViewsToggle = () => {
   const { search, updateSearch } = useAppSearchNavigation()
   const { t } = useAppI18n()
+  // With the left panel closed, its "show navigation" button sits in the map's top left corner.
   const on = search.streetViews === 'on'
   const available = search.providers.includes('mapillary')
 
   return (
     <button
       aria-pressed={on}
-      className={`absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium shadow ring-1 disabled:cursor-not-allowed disabled:opacity-60 ${on ? 'bg-fuchsia-700 text-white ring-fuchsia-800' : 'bg-white text-slate-700 ring-slate-200 hover:bg-slate-50'}`}
+      className={`absolute top-3 z-10 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium shadow ring-1 disabled:cursor-not-allowed disabled:opacity-60 ${search.leftPanel === 'closed' ? 'left-14' : 'left-3'} ${on ? 'bg-fuchsia-700 text-white ring-fuchsia-800' : 'bg-white text-slate-700 ring-slate-200 hover:bg-slate-50'}`}
       disabled={!available}
       onClick={() => updateSearch({ streetViews: on ? 'off' : 'on' }, { replace: true })}
       title={available ? t.streetViews.hint : t.streetViews.needsMapillary}
