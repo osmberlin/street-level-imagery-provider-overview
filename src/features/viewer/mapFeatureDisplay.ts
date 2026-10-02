@@ -8,11 +8,3 @@ export const humanizeFeatureValue = (value: string): string => {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' · ')
 }
-
-export const formatFeatureDate = (timestamp: number | null): string => {
-  if (timestamp == null) {
-    return 'Unknown'
-  }
-
-  return new Date(timestamp).toISOString().slice(0, 10)
-}
