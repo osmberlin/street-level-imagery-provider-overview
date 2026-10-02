@@ -112,10 +112,6 @@ export const useAppSearchNavigation = () => {
     updateSearch({ leftPanel }, { replace: true })
   }
 
-  const updateRightPanel = (rightPanel: AppSearch['rightPanel']) => {
-    updateSearch({ rightPanel }, { replace: true })
-  }
-
   return {
     search,
     map,
@@ -128,6 +124,5 @@ export const useAppSearchNavigation = () => {
     updateClicked,
     updateSelected,
     updateLeftPanel,
-    updateRightPanel,
   }
 }

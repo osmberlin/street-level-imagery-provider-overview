@@ -10,7 +10,8 @@ const baseSearch: AppSearch = {
   style: 'photoType',
   photoTypes: ['flat', 'pano'],
   leftPanel: 'open',
-  rightPanel: 'open',
+  date: {},
+  signGroups: ['bike', 'speed', 'access', 'other'],
 }
 
 describe('mergeAppSearchForNavigate', () => {

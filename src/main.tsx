@@ -4,11 +4,13 @@ import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { queryClient, router } from '@/app/router'
+import { GOOGLE_MAPS_API_KEY, MAPILLARY_TOKEN } from '@/config'
 import './index.css'
 
 setStreetImageryConfig(
   createStreetImageryConfig({
-    mapillaryToken: 'MLY|4100327730013843|5bb78b81720791946a9a7b956c57b7cf',
+    mapillaryToken: MAPILLARY_TOKEN,
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
   }),
 )
 

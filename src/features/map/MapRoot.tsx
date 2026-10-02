@@ -1,9 +1,23 @@
 import '@/features/map/maplibre-worker'
-import { isClickOnlyPhotoProvider } from '@osm-editor-kit/street-imagery'
-import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
-import { streetImageryInteractiveLayerIds } from '@osm-editor-kit/street-imagery-react'
-import { StreetLevelImagerySourcesAndLayers } from '@osm-editor-kit/street-imagery-react'
-import type { MapLibreEvent } from 'maplibre-gl'
+import {
+  isClickOnlyPhotoProvider,
+  snapToLine,
+  viewpointFromPoint,
+  viewpointsFromLine,
+  type LngLat,
+} from '@osm-editor-kit/street-imagery'
+import {
+  getViewpointSession,
+  queryStreetImageryFeatures,
+  StreetLevelImagerySourcesAndLayers,
+  streetImageryInteractiveLayerIds,
+  useMapViewportBbox,
+  useViewpointLine,
+  VIEWPOINT_DIRECTION_LAYER_ID,
+  ViewpointLayer,
+  viewDirectionKeyFromFeatures,
+} from '@osm-editor-kit/street-imagery-react'
+import type { MapGeoJSONFeature, MapLibreEvent } from 'maplibre-gl'
 import { useState } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
@@ -15,31 +29,68 @@ import { MAIN_MAP_ID } from '@/features/map/constants'
 import { exposeMainMapForDebugging } from '@/features/map/exposeMainMapForDebugging'
 import { useMapActions } from '@/features/map/map-store'
 import { rememberWrittenMapViewport } from '@/features/map/mapViewportSync'
+import { signGroupFilter } from '@/features/map/signGroupFilter'
+import {
+  geometryLines,
+  joinStreetFragments,
+  STREET_HIT_LAYER_ID,
+  STREET_SOURCE_ID,
+  STREET_SOURCE_LAYER,
+} from '@/features/map/streetLines'
+import { StreetLinesLayer } from '@/features/map/StreetLinesLayer'
 import { SyncMapCameraFromUrl } from '@/features/map/SyncMapCameraFromUrl'
 import {
   getMapFeatureStyleDefinition,
   getStyleDefinition,
 } from '@/features/styles/styleDefinitions'
 import { useSelectedPhotoForMap } from '@/features/viewer/useSelectedPhotoForMap'
+import { useViewpointPhotos } from '@/features/viewer/useViewpointPhotos'
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 
 const isNearZeroAngle = (value: number) => Math.abs(value) < 0.05
 
+/** Line piece of a (multi)line feature closest to the click. */
+const closestLine = (feature: MapGeoJSONFeature, click: LngLat): LngLat[] | null => {
+  let best: { line: LngLat[]; distance: number } | null = null
+  for (const line of geometryLines(feature.geometry)) {
+    const snapped = snapToLine(line, click)
+    if (!snapped) {
+      continue
+    }
+    const distance = Math.hypot(snapped.point[0] - click[0], snapped.point[1] - click[1])
+    if (!best || distance < best.distance) {
+      best = { line, distance }
+    }
+  }
+  return best?.line ?? null
+}
+
 export { MAIN_MAP_ID } from '@/features/map/constants'
 
 export const MapRoot = () => {
   const { map, search, updateMapViewport, updateSearch } = useAppSearchNavigation()
-  const { providers, style, photoTypes, date } = search
+  const { providers, style, photoTypes, date, signGroups } = search
   const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
   const { selectedPhoto, selectedSequenceId, viewerPov } = useSelectedPhotoForMap()
   const [cursor, setCursor] = useState('grab')
+  const [hoveredStreet, setHoveredStreet] = useState<LngLat[] | null>(null)
+  const { viewpointsEnabled, viewpoints, suggestions, activeDirectionKey, selectSuggestion } =
+    useViewpointPhotos()
+  const viewpointLine = useViewpointLine()
   const { markMapLoaded } = useMapActions()
 
   const styleDefinition = getStyleDefinition(style)
   const mapFeatureStyleDefinition = getMapFeatureStyleDefinition(style)
 
-  const interactiveLayerIds = streetImageryInteractiveLayerIds(providers)
+  const interactiveLayerIds = viewpointsEnabled
+    ? [
+        VIEWPOINT_DIRECTION_LAYER_ID,
+        ...streetImageryInteractiveLayerIds(providers),
+        STREET_HIT_LAYER_ID,
+      ]
+    : streetImageryInteractiveLayerIds(providers)
+  const hasClickOnlyProvider = providers.some((providerId) => isClickOnlyPhotoProvider(providerId))
 
   const handleLoad = (event: MapLibreEvent) => {
     markMapLoaded()
@@ -58,35 +109,87 @@ export const MapRoot = () => {
     updateMapViewport(nextViewport)
   }
 
-  const hasClickOnlyProvider = providers.some((providerId) => isClickOnlyPhotoProvider(providerId))
-
   const handleClick = (event: MapLayerMouseEvent) => {
     const features = event.features ?? []
     const clickPoint = {
       lng: Math.round(event.lngLat.lng * 1e6) / 1e6,
       lat: Math.round(event.lngLat.lat * 1e6) / 1e6,
     }
+    const click: LngLat = [clickPoint.lng, clickPoint.lat]
+    const { actions } = getViewpointSession()
 
-    if (features.length === 0 && !hasClickOnlyProvider) {
-      updateSearch({ clicked: undefined, selected: undefined }, { replace: true })
+    // 1. A suggested view direction of the current viewpoints.
+    const directionKey = viewDirectionKeyFromFeatures(features)
+    const suggestion = suggestions.find((s) => s.direction.key === directionKey)
+    if (suggestion) {
+      selectSuggestion(suggestion)
       return
     }
 
-    updateSearch(
-      {
-        clicked: clickPoint,
-        selected: undefined,
-      },
-      { replace: true },
-    )
+    // 2. A photo dot: show it, and suggest views around the click. The larger view-direction
+    //    halos around photos only count when no street is under the pointer.
+    const street = features.find((feature) => feature.layer?.id === STREET_HIT_LAYER_ID)
+    const hitPhotoDot = features.some((feature) => feature.layer?.id.startsWith('photos-'))
+    const photo =
+      hitPhotoDot || !street
+        ? queryStreetImageryFeatures(event).find((hit) => hit.kind === 'photo')
+        : undefined
+    if (photo?.photoId) {
+      if (viewpointsEnabled) {
+        actions.open({ viewpoints: [viewpointFromPoint(click)] })
+      }
+      updateSearch(
+        {
+          clicked: clickPoint,
+          selected: {
+            provider: photo.providerId,
+            sequenceId: photo.sequenceId,
+            photoId: photo.photoId,
+          },
+        },
+        { replace: true },
+      )
+      return
+    }
+
+    // 3. A street: viewpoints at its start, the click and its end, looking along the street.
+    const clickedLine = street ? closestLine(street, click) : null
+    if (street && clickedLine) {
+      const fragments = event.target
+        .querySourceFeatures(STREET_SOURCE_ID, {
+          sourceLayer: STREET_SOURCE_LAYER,
+          filter: ['==', ['get', 'class'], street.properties?.class ?? ''],
+        })
+        .flatMap((feature) => geometryLines(feature.geometry))
+      const line = joinStreetFragments(clickedLine, fragments)
+      actions.open({ viewpoints: viewpointsFromLine(line, click), line })
+      updateSearch({ clicked: clickPoint, selected: undefined }, { replace: true })
+      return
+    }
+
+    // 4. Anywhere else: one viewpoint looking in all four directions (Mapillary). Without
+    //    Mapillary, only click-only providers (Look Around, Street View) need the click point.
+    if (viewpointsEnabled) {
+      actions.open({ viewpoints: [viewpointFromPoint(click)] })
+    } else if (features.length === 0 && !hasClickOnlyProvider) {
+      updateSearch({ clicked: undefined, selected: undefined }, { replace: true })
+      return
+    }
+    updateSearch({ clicked: clickPoint, selected: undefined }, { replace: true })
   }
 
   const handleMouseMove = (event: MapLayerMouseEvent) => {
-    setCursor(event.features?.length ? 'pointer' : 'grab')
+    const features = event.features ?? []
+    setCursor(features.length ? 'pointer' : 'grab')
+    const street = features.some((f) => f.layer?.id.startsWith('photos-'))
+      ? undefined
+      : features.find((f) => f.layer?.id === STREET_HIT_LAYER_ID)
+    setHoveredStreet(street ? closestLine(street, [event.lngLat.lng, event.lngLat.lat]) : null)
   }
 
   const handleMouseLeave = () => {
     setCursor('grab')
+    setHoveredStreet(null)
   }
 
   return (
@@ -114,9 +217,10 @@ export const MapRoot = () => {
       <AttributionControl compact position="bottom-left" />
       <NavigationControl position="top-right" showCompass visualizePitch />
       <SyncMapCameraFromUrl />
+      {viewpointsEnabled ? <StreetLinesLayer hovered={hoveredStreet} /> : null}
       <StreetLevelImagerySourcesAndLayers
         bbox={bbox}
-        filter={{ photoTypes, date }}
+        filter={{ photoTypes, date, mapFeatureValue: signGroupFilter(signGroups) }}
         options={{
           mapFeatureCircleColor: mapFeatureStyleDefinition.circleColorExpression,
           photoCircleColor: styleDefinition.circleColorExpression,
@@ -130,6 +234,15 @@ export const MapRoot = () => {
         providers={providers}
         zoom={map.zoom}
       />
+      {viewpointsEnabled ? (
+        <ViewpointLayer
+          activeDirectionKey={activeDirectionKey}
+          line={viewpointLine}
+          suggestions={suggestions}
+          viewpoints={viewpoints}
+          zoom={map.zoom}
+        />
+      ) : null}
     </Map>
   )
 }

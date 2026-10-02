@@ -1,8 +1,10 @@
 @import 'tailwindcss';
 
+/* Classes used by @osm-editor-kit/street-imagery-react components (node_modules is not scanned). */
+@source '../node_modules/@osm-editor-kit/street-imagery-react';
+
 :root {
   --left-panel-width: 320px;
-  --right-panel-width: 384px;
 }
 
 @layer base {

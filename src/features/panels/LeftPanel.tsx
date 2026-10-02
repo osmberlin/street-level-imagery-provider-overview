@@ -12,7 +12,19 @@ import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import { twMerge } from 'tailwind-merge'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import type { AppSearch } from '@/app/searchSchema'
-import { DEFAULT_PHOTO_TYPES } from '@/app/searchSchema'
+import {
+  DEFAULT_MAX_AGE_YEARS,
+  DEFAULT_PHOTO_TYPES,
+  defaultDateFrom,
+  SIGN_GROUP_IDS,
+} from '@/app/searchSchema'
+
+const SIGN_GROUP_LABELS: Record<(typeof SIGN_GROUP_IDS)[number], string> = {
+  bike: 'Bike',
+  speed: 'Speed',
+  access: 'Access & oneway',
+  other: 'Other',
+}
 import { MAIN_MAP_ID } from '@/features/map/constants'
 import { ProviderLegend } from '@/features/panels/ProviderLegend'
 import { useResizableLeftPanelWidth } from '@/features/panels/useResizableLeftPanelWidth'
@@ -81,6 +93,7 @@ export const LeftPanel = () => {
     updatePhotoTypes,
     updateDate,
     updateLeftPanel,
+    updateSearch,
   } = useAppSearchNavigation()
   const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
   const activeProviders = new Set(search.providers)
@@ -222,7 +235,7 @@ export const LeftPanel = () => {
                       )}
                       title={
                         streetViewNeedsKey
-                          ? 'Set VITE_GOOGLE_MAPS_API_KEY in .env'
+                          ? 'Set GOOGLE_MAPS_API_KEY in src/config.ts'
                           : browserUnavailable
                             ? adapter.browserUnavailableReason
                             : undefined
@@ -246,7 +259,7 @@ export const LeftPanel = () => {
                         <span className="text-sm font-medium text-slate-800">{provider.label}</span>
                         {streetViewNeedsKey ? (
                           <span className="text-xs text-slate-500">
-                            Set VITE_GOOGLE_MAPS_API_KEY
+                            Set GOOGLE_MAPS_API_KEY in src/config.ts
                           </span>
                         ) : browserUnavailable ? (
                           <span className="text-xs text-slate-500">
@@ -305,6 +318,36 @@ export const LeftPanel = () => {
               </label>
             </div>
 
+            {search.providers.includes('mapillary-signs') ? (
+              <fieldset>
+                <legend className="mb-1 text-xs text-slate-600">Mapillary signs</legend>
+                <div className="flex flex-wrap gap-1">
+                  {SIGN_GROUP_IDS.map((group) => {
+                    const on = search.signGroups.includes(group)
+                    return (
+                      <button
+                        aria-pressed={on}
+                        className={`rounded-full border px-2 py-0.5 text-xs ${on ? 'border-slate-800 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400'}`}
+                        key={group}
+                        onClick={() => {
+                          updateSearch({
+                            signGroups: on
+                              ? search.signGroups.filter((id) => id !== group)
+                              : SIGN_GROUP_IDS.filter(
+                                  (id) => id === group || search.signGroups.includes(id),
+                                ),
+                          })
+                        }}
+                        type="button"
+                      >
+                        {SIGN_GROUP_LABELS[group]}
+                      </button>
+                    )
+                  })}
+                </div>
+              </fieldset>
+            ) : null}
+
             <div className="grid grid-cols-2 gap-2">
               <label className="flex flex-col gap-1 text-xs text-slate-600">
                 From
@@ -314,7 +357,7 @@ export const LeftPanel = () => {
                   value={search.date?.from ?? ''}
                   onChange={(event) => {
                     const from = event.target.value || undefined
-                    updateDate(from || search.date?.to ? { ...search.date, from } : undefined)
+                    updateDate({ ...search.date, from })
                   }}
                 />
               </label>
@@ -326,23 +369,36 @@ export const LeftPanel = () => {
                   value={search.date?.to ?? ''}
                   onChange={(event) => {
                     const to = event.target.value || undefined
-                    updateDate(to || search.date?.from ? { ...search.date, to } : undefined)
+                    updateDate({ ...search.date, to })
                   }}
                 />
               </label>
             </div>
 
-            {search.date?.from || search.date?.to ? (
-              <button
-                className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-900"
-                type="button"
-                onClick={() => {
-                  updateDate(undefined)
-                }}
-              >
-                Clear dates
-              </button>
-            ) : null}
+            <div className="flex gap-3">
+              {search.date.from !== defaultDateFrom() || search.date.to ? (
+                <button
+                  className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-900"
+                  type="button"
+                  onClick={() => {
+                    updateDate({ from: defaultDateFrom() })
+                  }}
+                >
+                  Last {DEFAULT_MAX_AGE_YEARS} years
+                </button>
+              ) : null}
+              {search.date.from || search.date.to ? (
+                <button
+                  className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-900"
+                  type="button"
+                  onClick={() => {
+                    updateDate({})
+                  }}
+                >
+                  All dates
+                </button>
+              ) : null}
+            </div>
           </div>
         </section>
 

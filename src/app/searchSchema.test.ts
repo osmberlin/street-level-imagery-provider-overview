@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { serializeMapParam } from '@/app/mapParam'
 import { routerSearch } from '@/app/routerSearch'
 import {
+  defaultDateFrom,
   DEFAULT_MAP,
   DEFAULT_PHOTO_TYPES,
   appSearchSchema,
@@ -21,8 +22,7 @@ describe('appSearchSchema', () => {
     expect(parsed.style).toBe('photoType')
     expect(parsed.photoTypes).toEqual([...DEFAULT_PHOTO_TYPES])
     expect(parsed.leftPanel).toBe('open')
-    expect(parsed.rightPanel).toBe('open')
-    expect(parsed.date).toBeUndefined()
+    expect(parsed.date).toEqual({ from: defaultDateFrom() })
     expect(parsed.clicked).toBeUndefined()
     expect(parsed.selected).toBeUndefined()
   })
@@ -36,13 +36,12 @@ describe('appSearchSchema', () => {
     expect(serializeAppSearch(open).leftPanel).toBeUndefined()
   })
 
-  it('accepts rightPanel=closed and omits the open default from serialized search', () => {
-    const closed = parseAppSearch({ rightPanel: 'closed' })
-    expect(closed.rightPanel).toBe('closed')
-    expect(serializeAppSearch(closed).rightPanel).toBe('closed')
-
-    const open = parseAppSearch({})
-    expect(serializeAppSearch(open).rightPanel).toBeUndefined()
+  it('defaults to the last 2 years, keeps "all dates" as an explicit empty date', () => {
+    expect(defaultDateFrom(new Date('2026-09-28T12:00:00Z'))).toBe('2024-09-28')
+    expect(serializeAppSearch(parseAppSearch({})).date).toBeUndefined()
+    const all = parseAppSearch({ date: {} })
+    expect(all.date).toEqual({})
+    expect(serializeAppSearch(all).date).toEqual({})
   })
 
   it('keeps map as a slash string in validated search', () => {
@@ -138,14 +137,14 @@ describe('appSearchSchema', () => {
     expect(parsed.clicked).toBeUndefined()
   })
 
-  it('degrades a malformed date value to undefined', () => {
+  it('degrades a malformed date value to the default', () => {
     const parsed = parseAppSearch({ date: { from: 'nonsense' } })
-    expect(parsed.date).toBeUndefined()
+    expect(parsed.date).toEqual({ from: defaultDateFrom() })
   })
 
   it('rejects impossible calendar dates', () => {
     const parsed = parseAppSearch({ date: { from: '2024-13-99' } })
-    expect(parsed.date).toBeUndefined()
+    expect(parsed.date).toEqual({ from: defaultDateFrom() })
   })
 
   it('accepts real calendar dates including leap days', () => {

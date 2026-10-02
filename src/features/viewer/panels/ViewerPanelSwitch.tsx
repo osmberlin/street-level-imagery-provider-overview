@@ -1,12 +1,14 @@
 import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
 import type { ProviderId } from '@osm-editor-kit/street-imagery'
-import { StreetLevelImageryViewer } from '@osm-editor-kit/street-imagery-react'
+import {
+  StreetLevelImageryViewer,
+  type MapillaryLookAt,
+} from '@osm-editor-kit/street-imagery-react'
 import { useViewerActions } from '@osm-editor-kit/street-imagery-react'
 import { lazy, Suspense, useEffect } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { useEaseMainMapToPoint } from '@/features/map/useStableMainMapRefs'
-import { PhotoMetadata } from '@/features/viewer/PhotoMetadata'
-import { PhotoViewer } from '@/features/viewer/PhotoViewer'
+import { PhotoStaticPreview } from '@/features/viewer/PhotoViewer'
 
 const PsvPanoPanel = lazy(() =>
   import('@/features/viewer/panels/PsvPanoPanel').then((module) => ({
@@ -31,6 +33,12 @@ const PSV_FLAT_PROVIDERS = new Set<ProviderId>(['kartaview', 'mapilio', 'vegbild
 type ViewerPanelSwitchProps = {
   photo: NormalizedPhoto
   groupPhotos: NormalizedPhoto[]
+  /** Mapillary: full photo data for images reached inside the viewer. */
+  onViewerPhoto?: (photo: NormalizedPhoto) => void
+  /** Mapillary 360° photos: open looking this way (suggested view direction). */
+  lookAtBearing?: number | null
+  /** Mapillary: turn to a place (a map feature) and outline it. */
+  lookAt?: MapillaryLookAt | null
 }
 
 const ViewerPanelPlaceholder = () => (
@@ -39,7 +47,13 @@ const ViewerPanelPlaceholder = () => (
   </div>
 )
 
-export const ViewerPanelSwitch = ({ photo, groupPhotos }: ViewerPanelSwitchProps) => {
+export const ViewerPanelSwitch = ({
+  photo,
+  groupPhotos,
+  onViewerPhoto,
+  lookAtBearing,
+  lookAt,
+}: ViewerPanelSwitchProps) => {
   const actions = useViewerActions()
   const { updateSelected } = useAppSearchNavigation()
   const easeMainMapToPoint = useEaseMainMapToPoint()
@@ -53,44 +67,38 @@ export const ViewerPanelSwitch = ({ photo, groupPhotos }: ViewerPanelSwitchProps
 
   if (photo.providerId === 'mapillary' || photo.providerId === 'panoramax') {
     return (
-      <div className="space-y-3">
-        <StreetLevelImageryViewer
-          groupPhotos={groupPhotos}
-          onEaseMapToPoint={easeMainMapToPoint}
-          onPhotoSelected={updateSelected}
-          photo={photo}
-        />
-        <PhotoMetadata photo={photo} />
-      </div>
+      <StreetLevelImageryViewer
+        groupPhotos={groupPhotos}
+        onEaseMapToPoint={easeMainMapToPoint}
+        onPhotoSelected={updateSelected}
+        lookAt={lookAt}
+        lookAtBearing={lookAtBearing}
+        onViewerPhoto={onViewerPhoto}
+        photo={photo}
+      />
     )
   }
 
   if (photo.providerId === 'streetside') {
     return (
-      <div className="space-y-3">
-        <Suspense fallback={<ViewerPanelPlaceholder />}>
-          <StreetsidePanel photo={photo} groupPhotos={groupPhotos} />
-        </Suspense>
-        <PhotoMetadata photo={photo} />
-      </div>
+      <Suspense fallback={<ViewerPanelPlaceholder />}>
+        <StreetsidePanel photo={photo} groupPhotos={groupPhotos} />
+      </Suspense>
     )
   }
 
   if (PSV_FLAT_PROVIDERS.has(photo.providerId)) {
     const Panel = photo.isPano === true ? PsvPanoPanel : FlatPhotoPanel
     return (
-      <div className="space-y-3">
-        <Suspense fallback={<ViewerPanelPlaceholder />}>
-          <Panel
-            key={`${photo.providerId}:${photo.sequenceId ?? photo.photoId}`}
-            photo={photo}
-            groupPhotos={groupPhotos}
-          />
-        </Suspense>
-        <PhotoMetadata photo={photo} />
-      </div>
+      <Suspense fallback={<ViewerPanelPlaceholder />}>
+        <Panel
+          key={`${photo.providerId}:${photo.sequenceId ?? photo.photoId}`}
+          photo={photo}
+          groupPhotos={groupPhotos}
+        />
+      </Suspense>
     )
   }
 
-  return <PhotoViewer photo={photo} />
+  return <PhotoStaticPreview photo={photo} />
 }

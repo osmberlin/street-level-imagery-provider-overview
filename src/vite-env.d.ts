@@ -3,7 +3,6 @@
 import type { Map as MaplibreMap } from 'maplibre-gl'
 
 interface ImportMetaEnv {
-  readonly VITE_GOOGLE_MAPS_API_KEY?: string
   readonly VITE_PLAYWRIGHT_ENABLED?: string
 }
 

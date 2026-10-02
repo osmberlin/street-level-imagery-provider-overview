@@ -2,6 +2,7 @@ import type { NormalizedMapFeature } from '@osm-editor-kit/street-imagery'
 import { providerById } from '@osm-editor-kit/street-imagery'
 import { mapFeatureExternalLink } from '@osm-editor-kit/street-imagery'
 import { formatFeatureDate, humanizeFeatureValue } from '@/features/viewer/mapFeatureDisplay'
+import { MapFeaturePhotos } from '@/features/viewer/MapFeaturePhotos'
 
 type MapFeatureCardProps = {
   feature: NormalizedMapFeature
@@ -39,6 +40,8 @@ export const MapFeatureCard = ({ feature }: MapFeatureCardProps) => {
           </dl>
         </div>
       </div>
+
+      {feature.providerId.startsWith('mapillary') ? <MapFeaturePhotos feature={feature} /> : null}
 
       <a
         className="mt-4 inline-flex text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-slate-500"

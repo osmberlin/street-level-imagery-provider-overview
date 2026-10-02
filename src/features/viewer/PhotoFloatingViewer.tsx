@@ -1,0 +1,284 @@
+import {
+  findGroupBySelection,
+  findNearestPhoto,
+  providerById,
+  providerExternalLink,
+  type NormalizedPhoto,
+  type PhotoSequenceGroup,
+} from '@osm-editor-kit/street-imagery'
+import {
+  FloatingPhotoViewer,
+  getViewpointSession,
+  useCanGoBack,
+  useCanGoForward,
+  useCurrentHistoryEntry,
+} from '@osm-editor-kit/street-imagery-react'
+import { useEffect, useRef } from 'react'
+import { useAppSearchNavigation } from '@/app/searchNavigation'
+import { isProviderId } from '@/app/searchSchema'
+import { useFeatureTarget } from '@/features/viewer/featureTargetStore'
+import { LookAroundLinkCard } from '@/features/viewer/LookAroundLinkCard'
+import { humanizeFeatureValue } from '@/features/viewer/mapFeatureDisplay'
+import { ViewerPanelSwitch } from '@/features/viewer/panels/ViewerPanelSwitch'
+import { useClickedPhotos } from '@/features/viewer/useClickedPhotos'
+import { useSelectedPhotoForMap } from '@/features/viewer/useSelectedPhotoForMap'
+import { useViewpointPhotos } from '@/features/viewer/useViewpointPhotos'
+
+const formatDate = (capturedAt: number | null) =>
+  capturedAt == null
+    ? 'Unknown date'
+    : new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: 'numeric' }).format(
+        capturedAt,
+      )
+
+const samePhoto = (a: NormalizedPhoto | null | undefined, b: NormalizedPhoto | null | undefined) =>
+  a != null && b != null && a.providerId === b.providerId && a.photoId === b.photoId
+
+const NearbyPhotoList = ({
+  groups,
+  current,
+  onSelect,
+}: {
+  groups: PhotoSequenceGroup[]
+  current: NormalizedPhoto | null
+  onSelect: (group: PhotoSequenceGroup) => void
+}) => (
+  <ul className="space-y-0.5">
+    {groups.map((group) => {
+      const provider = providerById[group.providerId]
+      const first = group.photos[0]
+      const active = group.photos.some((photo) => samePhoto(photo, current))
+      return (
+        <li key={group.groupKey}>
+          <button
+            aria-current={active}
+            className={`flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs ${active ? 'bg-slate-100 font-medium text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
+            onClick={() => onSelect(group)}
+            type="button"
+          >
+            <span
+              aria-hidden
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: provider.color }}
+            />
+            <span className="w-20 shrink-0 truncate">{provider.label}</span>
+            <span className="flex-1 truncate">
+              {formatDate(first?.capturedAt ?? null)}
+              {first?.isPano ? ' · 360°' : ''}
+            </span>
+            <span className="shrink-0 text-slate-400">{Math.round(group.distanceMeters)} m</span>
+          </button>
+        </li>
+      )
+    })}
+  </ul>
+)
+
+/**
+ * Floating photo viewer over the map: suggested views for the clicked viewpoints (Mapillary),
+ * history, the selected photo in its provider viewer, and all other photos near the click.
+ */
+export const PhotoFloatingViewer = () => {
+  const { search } = useAppSearchNavigation()
+  const { clicked, selected, providers } = search
+  const {
+    viewpoints,
+    suggestions,
+    suggestionsLoading,
+    suggestionsError,
+    activeDirectionKey,
+    showPhoto,
+    selectSuggestion,
+    back,
+    forward,
+    close,
+  } = useViewpointPhotos()
+  const currentEntry = useCurrentHistoryEntry()
+  const canGoBack = useCanGoBack()
+  const canGoForward = useCanGoForward()
+  const { groups, isLoading, isFetching, gsvStatus } = useClickedPhotos()
+  const { selectedPhoto } = useSelectedPhotoForMap()
+  const featureTarget = useFeatureTarget()
+
+  // The URL holds the selected photo; history entries carry full data for photos off the map.
+  const urlPhoto: NormalizedPhoto | null =
+    selected?.photoId && isProviderId(selected.provider)
+      ? (selectedPhoto ??
+        (currentEntry?.photo.photoId === selected.photoId ? currentEntry.photo : null))
+      : null
+
+  useEffect(
+    function recordUrlSelectionInHistory() {
+      if (urlPhoto && !samePhoto(urlPhoto, getViewpointSession().current?.photo)) {
+        getViewpointSession().actions.showPhoto({ photo: urlPhoto, directionKey: null })
+      }
+    },
+    [urlPhoto],
+  )
+
+  // Auto-select once per click: the best suggested view, else the nearest photo of any provider.
+  const autoSelectKey = clicked
+    ? `${clicked.lng},${clicked.lat}|${viewpoints.map((v) => v.id).join(',')}`
+    : null
+  const autoSelectedRef = useRef<string | null>(null)
+  const photosSettled = !suggestionsLoading && !isLoading && !isFetching
+  useEffect(
+    function autoSelectBestPhoto() {
+      if (!autoSelectKey || selected || !photosSettled) {
+        return
+      }
+      if (autoSelectedRef.current === autoSelectKey) {
+        return
+      }
+      autoSelectedRef.current = autoSelectKey
+      const bestSuggestion = suggestions.find((suggestion) => suggestion.candidates.length > 0)
+      if (bestSuggestion) {
+        selectSuggestion(bestSuggestion)
+        return
+      }
+      const nearestGroup = groups[0]
+      const nearest =
+        nearestGroup && clicked
+          ? findNearestPhoto(nearestGroup.photos, clicked.lng, clicked.lat)
+          : null
+      if (nearest) {
+        showPhoto(nearest)
+      }
+    },
+    [
+      autoSelectKey,
+      clicked,
+      groups,
+      photosSettled,
+      selectSuggestion,
+      selected,
+      showPhoto,
+      suggestions,
+    ],
+  )
+
+  if (!clicked && !urlPhoto) {
+    return null
+  }
+
+  const photo = urlPhoto
+  const provider = photo ? providerById[photo.providerId] : null
+  const activeGroup = photo
+    ? findGroupBySelection(groups, photo.providerId, photo.sequenceId ?? `photo:${photo.photoId}`)
+    : null
+
+  // A photo opened from a suggested view looks in that view's direction (360° photos turn).
+  const lookAtBearing =
+    currentEntry && samePhoto(currentEntry.photo, photo)
+      ? (suggestions.find((s) => s.direction.key === currentEntry.directionKey)?.direction
+          .bearing ?? null)
+      : null
+  // A photo opened from a map feature (sign, object) turns to the feature and outlines it.
+  const targetImage =
+    photo && featureTarget
+      ? featureTarget.images.find((image) => image.id === photo.photoId)
+      : undefined
+  const lookAt =
+    targetImage && featureTarget
+      ? {
+          lngLat: featureTarget.feature.lngLat,
+          outline: targetImage.outline,
+          value: featureTarget.feature.value,
+          label: humanizeFeatureValue(featureTarget.feature.value),
+        }
+      : null
+  const showLookAround = providers.includes('lookaround') && clicked != null
+  const loading = suggestionsLoading || isLoading || isFetching
+  const suggestionsFound = suggestions.some((suggestion) => suggestion.candidates.length > 0)
+  const status = (() => {
+    if (loading && !photo) {
+      return 'Looking for photos…'
+    }
+    if (suggestionsError) {
+      return 'Could not load Mapillary photos for the suggested views.'
+    }
+    if (!photo && groups.length === 0 && !showLookAround) {
+      if (gsvStatus === 'no-key' && providers.length === 1) {
+        return 'Set GOOGLE_MAPS_API_KEY in src/config.ts to check Google Street View.'
+      }
+      return 'No photos from the enabled providers here. Try another spot, more providers, or wider filters.'
+    }
+    if (suggestions.length > 0 && !suggestionsFound && !loading) {
+      return 'No Mapillary photo looks in any of the suggested directions.'
+    }
+    return null
+  })()
+
+  const selectGroup = (group: PhotoSequenceGroup) => {
+    const nearest = clicked
+      ? findNearestPhoto(group.photos, clicked.lng, clicked.lat)
+      : group.photos[0]
+    if (nearest) {
+      showPhoto(nearest)
+    }
+  }
+
+  return (
+    <FloatingPhotoViewer
+      activeDirectionKey={activeDirectionKey}
+      canGoBack={canGoBack}
+      canGoForward={canGoForward}
+      drawer={
+        groups.length > 0 || (showLookAround && photo)
+          ? {
+              label: `All photos near the click (${groups.length}${showLookAround ? ' + Look Around' : ''})`,
+              content: (
+                <div className="space-y-2">
+                  {showLookAround && photo && clicked ? (
+                    <LookAroundLinkCard lat={clicked.lat} lng={clicked.lng} />
+                  ) : null}
+                  <NearbyPhotoList current={photo} groups={groups} onSelect={selectGroup} />
+                </div>
+              ),
+            }
+          : undefined
+      }
+      footer={
+        photo && provider ? (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>{formatDate(photo.capturedAt)}</span>
+            <span>{photo.isPano ? '360°' : photo.isPano === false ? 'Flat' : 'Unknown type'}</span>
+            {photo.heading != null ? <span>{Math.round(photo.heading)}°</span> : null}
+            <a
+              className="font-medium text-slate-800 underline-offset-2 hover:underline"
+              href={providerExternalLink(photo)}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open in {provider.label}
+            </a>
+          </div>
+        ) : undefined
+      }
+      onBack={back}
+      onClose={close}
+      onForward={forward}
+      onSelectSuggestion={selectSuggestion}
+      status={status}
+      suggestions={suggestions}
+      title={provider ? provider.label : 'Photos here'}
+    >
+      {photo ? (
+        <div className="px-2">
+          <ViewerPanelSwitch
+            groupPhotos={activeGroup?.photos ?? [photo]}
+            lookAt={lookAt}
+            lookAtBearing={lookAtBearing}
+            onViewerPhoto={(viewerPhoto) => showPhoto(viewerPhoto)}
+            photo={photo}
+          />
+        </div>
+      ) : showLookAround && clicked ? (
+        // No photo here (e.g. Look Around only): the Look Around card is the content.
+        <div className="px-2 pb-2">
+          <LookAroundLinkCard lat={clicked.lat} lng={clicked.lng} />
+        </div>
+      ) : null}
+    </FloatingPhotoViewer>
+  )
+}

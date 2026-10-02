@@ -1,7 +1,6 @@
 import type { NormalizedPhoto } from '@osm-editor-kit/street-imagery'
 import { providerById } from '@osm-editor-kit/street-imagery'
 import { usePhotoThumbnail } from '@osm-editor-kit/street-imagery-react'
-import { PhotoMetadata } from '@/features/viewer/PhotoMetadata'
 
 type PhotoViewerProps = {
   photo: NormalizedPhoto
@@ -39,15 +38,6 @@ export const PhotoStaticPreview = ({ photo }: PhotoViewerProps) => {
           ) : null}
         </div>
       )}
-    </div>
-  )
-}
-
-export const PhotoViewer = ({ photo }: PhotoViewerProps) => {
-  return (
-    <div className="space-y-3">
-      <PhotoStaticPreview photo={photo} />
-      <PhotoMetadata photo={photo} />
     </div>
   )
 }

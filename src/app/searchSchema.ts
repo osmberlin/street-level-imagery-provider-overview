@@ -69,10 +69,24 @@ const dateSearchSchema = z.object({
 
 export const DEFAULT_PHOTO_TYPES = ['flat', 'pano'] as const
 
+/** Traffic sign groups of the Mapillary signs layer (ids of the package's `SIGN_GROUPS` + other). */
+export const SIGN_GROUP_IDS = ['bike', 'speed', 'access', 'other'] as const
+
+/** Photos older than this are hidden by default; dense areas are unusable with all years. */
+export const DEFAULT_MAX_AGE_YEARS = 2
+
+/** ISO date `DEFAULT_MAX_AGE_YEARS` before today (UTC). */
+export const defaultDateFrom = (now = new Date()): string => {
+  const date = new Date(now)
+  date.setUTCFullYear(date.getUTCFullYear() - DEFAULT_MAX_AGE_YEARS)
+  return date.toISOString().slice(0, 10)
+}
+
+const defaultDate = () => ({ from: defaultDateFrom() })
+
 export const DEFAULT_MAP = mapParamFallback
 
 export const LEFT_PANEL_DEFAULT = 'open' as const
-export const RIGHT_PANEL_DEFAULT = 'open' as const
 
 export const appSearchSchema = z.object({
   map: mapSearchSchema,
@@ -86,9 +100,13 @@ export const appSearchSchema = z.object({
     .array(photoTypeSchema)
     .default([...DEFAULT_PHOTO_TYPES])
     .catch([...DEFAULT_PHOTO_TYPES]),
+  signGroups: z
+    .array(z.enum(SIGN_GROUP_IDS))
+    .default([...SIGN_GROUP_IDS])
+    .catch([...SIGN_GROUP_IDS]),
   leftPanel: z.enum(['open', 'closed']).default(LEFT_PANEL_DEFAULT).catch(LEFT_PANEL_DEFAULT),
-  rightPanel: z.enum(['open', 'closed']).default(RIGHT_PANEL_DEFAULT).catch(RIGHT_PANEL_DEFAULT),
-  date: dateSearchSchema.optional().catch(undefined),
+  /** Missing → last 2 years. `{}` (no from/to) → all dates. */
+  date: dateSearchSchema.default(defaultDate).catch(defaultDate),
   clicked: clickedSchema.optional().catch(undefined),
   selected: selectedSchema.optional().catch(undefined),
 })
@@ -116,15 +134,16 @@ export const serializeAppSearch = (search: AppSearch): Record<string, unknown> =
     serialized.photoTypes = search.photoTypes
   }
 
+  if (search.signGroups.length !== SIGN_GROUP_IDS.length) {
+    serialized.signGroups = search.signGroups
+  }
+
   if (search.leftPanel !== LEFT_PANEL_DEFAULT) {
     serialized.leftPanel = search.leftPanel
   }
 
-  if (search.rightPanel !== RIGHT_PANEL_DEFAULT) {
-    serialized.rightPanel = search.rightPanel
-  }
-
-  if (search.date?.from || search.date?.to) {
+  const isDefaultDate = search.date.from === defaultDateFrom() && !search.date.to
+  if (!isDefaultDate) {
     serialized.date = search.date
   }
 

@@ -3,6 +3,7 @@ import { photoGroupSequenceId } from '@osm-editor-kit/street-imagery'
 import { useAllProviderPhotos } from '@osm-editor-kit/street-imagery-react'
 import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import {
+  useCurrentHistoryEntry,
   useViewerBearing,
   useViewerHfov,
   useViewerLngLat,
@@ -28,6 +29,7 @@ export const useSelectedPhotoForMap = (): {
   const { photos: allPhotos } = useAllProviderPhotos(providers, bbox, map.zoom, photoTypes, date)
   const streetViewEnabled = providers.includes('streetview')
   const streetViewQuery = useStreetViewClickPhoto(search.clicked, streetViewEnabled)
+  const historyPhoto = useCurrentHistoryEntry()?.photo ?? null
 
   let selectedPhoto: NormalizedPhoto | null = null
   if (selected) {
@@ -39,6 +41,12 @@ export const useSelectedPhotoForMap = (): {
     )
     if (fromAllPhotos) {
       selectedPhoto = fromAllPhotos
+    } else if (
+      historyPhoto?.providerId === selected.provider &&
+      historyPhoto.photoId === selected.photoId
+    ) {
+      // Photos from the viewpoint radius search may not be among the loaded map tiles.
+      selectedPhoto = historyPhoto
     } else {
       const streetViewPhoto = streetViewQuery.data
       if (

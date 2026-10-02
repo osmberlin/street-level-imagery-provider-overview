@@ -3,7 +3,8 @@ import { MapProvider } from 'react-map-gl/maplibre'
 import { TanStackAppDevtools } from '@/components/shared/devtools/TanStackAppDevtools'
 import { MapRoot } from '@/features/map/MapRoot'
 import { LeftPanel } from '@/features/panels/LeftPanel'
-import { RightPanel } from '@/features/panels/RightPanel'
+import { MapFeaturesFloatingCard } from '@/features/viewer/MapFeaturesFloatingCard'
+import { PhotoFloatingViewer } from '@/features/viewer/PhotoFloatingViewer'
 
 type AppShellProps = {
   children?: ReactNode
@@ -16,9 +17,10 @@ export const AppShell = ({ children }: AppShellProps) => {
         <LeftPanel />
         <main className="relative min-h-0 min-w-0 flex-1">
           <MapRoot />
+          <MapFeaturesFloatingCard />
+          <PhotoFloatingViewer />
           {children}
         </main>
-        <RightPanel />
       </div>
       <TanStackAppDevtools />
     </MapProvider>
