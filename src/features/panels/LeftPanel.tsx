@@ -33,6 +33,9 @@ const ORDERED_PROVIDERS = [
   ...LAST_PROVIDER_IDS.flatMap((id) => PROVIDERS.filter((provider) => provider.id === id)),
 ]
 
+const pillClass = (on: boolean) =>
+  `rounded-full border px-2 py-0.5 text-xs ${on ? 'border-slate-800 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400'}`
+
 const STYLE_MODES: AppSearch['style'][] = ['photoType', 'age']
 
 const CloseIcon = () => (
@@ -322,29 +325,25 @@ export const LeftPanel = () => {
               {t.filters.heading}
             </h2>
             <div className="mt-3 space-y-3">
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 text-sm text-slate-700">
-                  <input
-                    checked={flatChecked}
-                    className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
-                    type="checkbox"
-                    onChange={(event) => {
-                      togglePhotoType('flat', event.target.checked)
+              <div className="flex flex-wrap gap-1">
+                {(
+                  [
+                    ['flat', flatChecked, t.filters.flat],
+                    ['pano', panoChecked, t.filters.panorama],
+                  ] as const
+                ).map(([type, on, label]) => (
+                  <button
+                    aria-pressed={on}
+                    className={pillClass(on)}
+                    key={type}
+                    type="button"
+                    onClick={() => {
+                      togglePhotoType(type, !on)
                     }}
-                  />
-                  {t.filters.flat}
-                </label>
-                <label className="flex items-center gap-2 text-sm text-slate-700">
-                  <input
-                    checked={panoChecked}
-                    className="size-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
-                    type="checkbox"
-                    onChange={(event) => {
-                      togglePhotoType('pano', event.target.checked)
-                    }}
-                  />
-                  {t.filters.panorama}
-                </label>
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
 
               {search.providers.includes('mapillary-signs') ? (
@@ -356,7 +355,7 @@ export const LeftPanel = () => {
                       return (
                         <button
                           aria-pressed={on}
-                          className={`rounded-full border px-2 py-0.5 text-xs ${on ? 'border-slate-800 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400'}`}
+                          className={pillClass(on)}
                           key={group}
                           onClick={() => {
                             updateSearch({
@@ -435,17 +434,18 @@ export const LeftPanel = () => {
             <h2 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
               {t.style.heading}
             </h2>
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-3 grid grid-cols-2 overflow-hidden rounded-lg border border-slate-200">
               {STYLE_MODES.map((mode) => {
                 const selected = search.style === mode
                 return (
                   <button
+                    aria-pressed={selected}
                     key={mode}
                     className={twMerge(
-                      'rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
+                      'px-3 py-1.5 text-sm font-medium transition-colors',
                       selected
-                        ? 'border-slate-900 bg-slate-900 text-white'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-white text-slate-700 hover:bg-slate-50',
                     )}
                     type="button"
                     onClick={() => {
