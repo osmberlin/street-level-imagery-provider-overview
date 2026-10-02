@@ -8,7 +8,6 @@ import {
 import {
   FloatingPhotoViewer,
   FloatingViewerInfoButton,
-  PhotoDetailsDialog,
   MapillaryFeatureBar,
   PhotoDate,
   getViewpointSession,
@@ -17,6 +16,10 @@ import {
   useCurrentHistoryEntry,
   useStreetImageryI18n,
 } from '@osm-editor-kit/street-imagery-react'
+import {
+  PHOTO_DETAILS_LABELS,
+  PhotoDetailsDialog,
+} from '@osm-editor-kit/street-imagery-react/photo-details'
 import { useEffect, useRef, useState } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { isProviderId } from '@/app/searchSchema'
@@ -47,7 +50,7 @@ const samePhoto = (a: NormalizedPhoto | null | undefined, b: NormalizedPhoto | n
 export const PhotoFloatingViewer = () => {
   const { search } = useAppSearchNavigation()
   const { clicked, selected, providers } = search
-  const { t } = useAppI18n()
+  const { locale, t } = useAppI18n()
   const { messages } = useStreetImageryI18n()
   // The viewers' own attribution and legend are hidden; the footer shows creator, licence and the
   // other details instead. The viewer knows more about a photo than the map tiles do.
@@ -245,7 +248,7 @@ export const PhotoFloatingViewer = () => {
         titleActions={
           shown ? (
             <FloatingViewerInfoButton
-              label={messages.details.open}
+              label={PHOTO_DETAILS_LABELS[locale].open}
               onClick={() => setDetailsOpen(true)}
             />
           ) : undefined
