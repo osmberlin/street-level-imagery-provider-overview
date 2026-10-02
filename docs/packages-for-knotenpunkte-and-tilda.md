@@ -51,7 +51,7 @@ in and not configurable beyond the options below. Reference: `src/features/map/M
     mapFeatureCircleColor: MAP_FEATURE_COLOR,
     selectedPhoto,
     selectedSequenceId,
-    viewerPov, // viewerPov: useViewerPov()
+    viewerPov: { bearing, hfov, lngLat }, // useViewerBearing(), useViewerHfov(), useViewerLngLat()
     showSelectionHighlight: true,
     showViewCone: true,
   }}
