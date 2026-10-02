@@ -16,6 +16,7 @@ export type AppMessages = {
     openerHint: string
     unavailableInBrowser: string
     checksOnClick: string
+    streetsideNeedsKey: string
     zoomIn: (minZoom: number) => string
     inView: string
   }
@@ -104,6 +105,8 @@ const en: AppMessages = {
     unavailableInBrowser:
       'Not available here: the provider does not allow requests from other websites (CORS).',
     checksOnClick: 'Checks coverage on click',
+    streetsideNeedsKey:
+      'A Bing Maps key (BING_MAPS_KEY in src/config.ts) turns this into a map overlay. Microsoft issues no new keys; existing enterprise keys work until mid-2028. No coverage in Germany.',
     zoomIn: (minZoom) => `Zoom in to see data (z${minZoom}+)`,
     inView: 'In view',
   },
@@ -209,6 +212,8 @@ const de: AppMessages = {
     unavailableInBrowser:
       'Hier nicht verfügbar: Der Anbieter erlaubt keine Anfragen von anderen Websites (CORS).',
     checksOnClick: 'Prüft die Abdeckung beim Klick',
+    streetsideNeedsKey:
+      'Mit einem Bing-Maps-Schlüssel (BING_MAPS_KEY in src/config.ts) wird daraus eine Kartenebene. Microsoft vergibt keine neuen Schlüssel; bestehende Enterprise-Schlüssel gelten bis Mitte 2028. Keine Abdeckung in Deutschland.',
     zoomIn: (minZoom) => `Für Daten näher heranzoomen (z${minZoom}+)`,
     inView: 'Im Ausschnitt',
   },

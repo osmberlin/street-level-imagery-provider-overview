@@ -1,4 +1,4 @@
-import { getGoogleMapsApiKey } from '@osm-editor-kit/street-imagery'
+import { getBingMapsKey, getGoogleMapsApiKey } from '@osm-editor-kit/street-imagery'
 import {
   adapterById,
   isBrowserAvailableProvider,
@@ -95,12 +95,16 @@ export const LeftPanel = () => {
   const panoChecked = photoTypeSet.has('pano')
 
   const googleMapsConfigured = getGoogleMapsApiKey() != null
+  const bingMapsConfigured = getBingMapsKey() != null
 
   const isProviderEnableBlocked = (providerId: ProviderId): boolean => {
     if (!isBrowserAvailableProvider(providerId)) {
       return true
     }
-    return providerId === 'streetview' && !googleMapsConfigured
+    return (
+      (providerId === 'streetview' && !googleMapsConfigured) ||
+      (providerId === 'streetside' && !bingMapsConfigured)
+    )
   }
 
   const setProviderEnabled = (providerId: ProviderId, enabled: boolean) => {
@@ -230,7 +234,22 @@ export const LeftPanel = () => {
                 const streetViewNeedsKey = provider.id === 'streetview' && !googleMapsConfigured
                 const checkboxDisabled = browserUnavailable && !checked
                 const opener = locationOpeners.find((candidate) => candidate.id === provider.id)
-                // Nothing to show on the map (Apple, Google without a key): only the opener.
+                const streetsideNeedsKey = provider.id === 'streetside' && !bingMapsConfigured
+                // Nothing to show on the map (Apple, Google or Bing without a key): only the opener.
+                if (opener && streetsideNeedsKey) {
+                  return (
+                    <li key={provider.id}>
+                      <OpenLocationButton
+                        className="w-full"
+                        opener={opener}
+                        quickLocation={quickLocation}
+                      />
+                      <p className="mt-1 px-0.5 text-xs leading-snug text-slate-500">
+                        {t.providers.streetsideNeedsKey}
+                      </p>
+                    </li>
+                  )
+                }
                 if (opener && !checked && (provider.id === 'lookaround' || streetViewNeedsKey)) {
                   return (
                     <li key={provider.id}>

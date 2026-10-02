@@ -15,6 +15,12 @@ export const MAPILLARY_TOKEN = 'MLY|4100327730013843|5bb78b81720791946a9a7b956c5
 export const GOOGLE_MAPS_API_KEY = ''
 
 /**
+ * Bing Maps key for the Streetside overlay, or '' to keep Streetside an "open in" button.
+ * Microsoft issues no new Bing Maps keys; existing enterprise keys work until June 30, 2028.
+ */
+export const BING_MAPS_KEY = ''
+
+/**
  * The infra3D projects we link to; each gets its own "Open in infra3D …" button. `uid` is the
  * `projectUID` of the infra3D URL, `name` is shown on the button. infra3D asks for a login, so
  * the ids alone give no access.
