@@ -60,7 +60,6 @@ export type AppMessages = {
     pano: string
     flat: string
     unknownType: string
-    photoBy: (name: string) => string
     license: string
     loadingViewer: string
     loadingPreview: string
@@ -162,7 +161,6 @@ const en: AppMessages = {
     pano: '360°',
     flat: 'Flat',
     unknownType: 'Unknown type',
-    photoBy: (name) => `Photo: ${name}`,
     license: 'CC BY-SA',
     loadingViewer: 'Loading viewer…',
     loadingPreview: 'Loading preview…',
@@ -274,7 +272,6 @@ const de: AppMessages = {
     pano: '360°',
     flat: 'Normal',
     unknownType: 'Typ unbekannt',
-    photoBy: (name) => `Foto: ${name}`,
     license: 'CC BY-SA',
     loadingViewer: 'Ansicht wird geladen…',
     loadingPreview: 'Vorschau wird geladen…',

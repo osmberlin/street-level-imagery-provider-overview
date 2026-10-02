@@ -285,7 +285,7 @@ export const PhotoFloatingViewer = () => {
               </span>
               {creator?.photoId === photo.photoId ? (
                 <span className="truncate">
-                  {t.viewer.photoBy(creator.name)} · {t.viewer.license}
+                  {creator.name} · {t.viewer.license}
                 </span>
               ) : null}
             </p>

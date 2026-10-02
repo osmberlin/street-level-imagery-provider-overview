@@ -1,5 +1,8 @@
+import { useAllProviderMapFeatures, useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import type { FeatureCollection, LineString, Point } from 'geojson'
 import { Layer, Source } from 'react-map-gl/maplibre'
+import { useAppSearchNavigation } from '@/app/searchNavigation'
+import { MAIN_MAP_ID } from '@/features/map/constants'
 import { useSelectedFeature } from '@/features/viewer/useSelectedFeature'
 
 const COLOR = '#f59e0b'
@@ -12,16 +15,26 @@ const COLOR = '#f59e0b'
  */
 export const SelectedFeatureLayer = () => {
   const { data, shownImage } = useSelectedFeature()
+  const { map, search } = useAppSearchNavigation()
+  const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
+  const drawnFeatures = useAllProviderMapFeatures(search.providers, bbox, map.zoom)
+
+  // The dot on the map comes from the vector tiles, whose position can differ a little from the
+  // Graph API's. Ring the dot that is drawn; fall back to the API position when it is not loaded.
+  const target = data
+    ? (drawnFeatures.find((feature) => feature.featureId === data.feature.id)?.lngLat ??
+      data.feature.lngLat)
+    : null
 
   const camera = shownImage?.lngLat
   const points: FeatureCollection<Point> = {
     type: 'FeatureCollection',
-    features: data
+    features: target
       ? [
           {
             type: 'Feature',
             properties: {},
-            geometry: { type: 'Point', coordinates: data.feature.lngLat },
+            geometry: { type: 'Point', coordinates: target },
           },
         ]
       : [],
@@ -29,12 +42,12 @@ export const SelectedFeatureLayer = () => {
   const line: FeatureCollection<LineString> = {
     type: 'FeatureCollection',
     features:
-      data && camera
+      target && camera
         ? [
             {
               type: 'Feature',
               properties: {},
-              geometry: { type: 'LineString', coordinates: [camera, data.feature.lngLat] },
+              geometry: { type: 'LineString', coordinates: [camera, target] },
             },
           ]
         : [],
