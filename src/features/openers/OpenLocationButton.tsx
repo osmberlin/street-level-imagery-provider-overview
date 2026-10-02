@@ -62,8 +62,8 @@ export const OpenLocationButton = ({
 
   if (location) {
     const handleLinkClick = (event: MouseEvent<HTMLAnchorElement>) => {
-      // Plain link for openers without a look-at lookup, and for "open in new window" clicks.
-      if (!opener.lookAtUrl || event.metaKey || event.ctrlKey || event.shiftKey) {
+      // With a modifier key the browser handles the link itself.
+      if (event.metaKey || event.ctrlKey || event.shiftKey) {
         return
       }
       event.preventDefault()

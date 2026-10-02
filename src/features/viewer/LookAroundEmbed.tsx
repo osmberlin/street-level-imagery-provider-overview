@@ -1,5 +1,6 @@
 import { lookAroundDeepLink } from '@osm-editor-kit/street-imagery'
 import { useEffect, useRef, useState } from 'react'
+import { ExternalLink } from '@/app/ExternalLink'
 import { getAppleMapKitToken, loadMapKitJs } from '@/features/viewer/mapkitLoader'
 import { useAppI18n } from '@/i18n/useAppI18n'
 
@@ -109,14 +110,12 @@ export const LookAroundEmbed = ({ lat, lng }: LookAroundEmbedProps) => {
       {status === 'no-imagery' || status === 'error' ? (
         <p className="text-xs text-slate-500">
           {status === 'no-imagery' ? t.lookAround.noImagery : t.lookAround.error}{' '}
-          <a
+          <ExternalLink
             className="font-medium text-[#007AFF] underline underline-offset-2"
             href={deepLink}
-            rel="noreferrer"
-            target="_blank"
           >
             {t.lookAround.openInAppleMaps}
-          </a>
+          </ExternalLink>
         </p>
       ) : null}
     </div>

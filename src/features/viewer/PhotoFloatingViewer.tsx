@@ -21,6 +21,7 @@ import {
   PhotoDetailsDialog,
 } from '@osm-editor-kit/street-imagery-react/photo-details'
 import { useEffect, useRef, useState } from 'react'
+import { ExternalLink } from '@/app/ExternalLink'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { isProviderId } from '@/app/searchSchema'
 import { LookAroundLinkCard } from '@/features/viewer/LookAroundLinkCard'
@@ -273,15 +274,13 @@ export const PhotoFloatingViewer = () => {
                   <>
                     {separator}
                     {photo.providerId === 'mapillary' ? (
-                      <a
+                      <ExternalLink
                         className="underline-offset-2 hover:underline"
                         href={`https://www.mapillary.com/app/user/${encodeURIComponent(creatorName)}?pKey=${encodeURIComponent(photo.photoId)}&focus=photo`}
-                        rel="noreferrer"
-                        target="_blank"
                         title={t.viewer.creatorProfile}
                       >
                         {creatorName}
-                      </a>
+                      </ExternalLink>
                     ) : (
                       <span title={details?.creatorContact}>{creatorName}</span>
                     )}
@@ -291,28 +290,24 @@ export const PhotoFloatingViewer = () => {
                   <>
                     {separator}
                     {details?.licenseUrl ? (
-                      <a
+                      <ExternalLink
                         className="underline-offset-2 hover:underline"
                         href={details.licenseUrl}
-                        rel="noreferrer"
-                        target="_blank"
                       >
                         {license}
-                      </a>
+                      </ExternalLink>
                     ) : (
                       license
                     )}
                   </>
                 ) : null}
               </p>
-              <a
+              <ExternalLink
                 className="shrink-0 text-slate-800 underline-offset-2 hover:underline"
                 href={providerExternalLink(photo)}
-                rel="noreferrer"
-                target="_blank"
               >
                 {t.opener.openIn(provider.label)}
-              </a>
+              </ExternalLink>
             </div>
           ) : undefined
         }

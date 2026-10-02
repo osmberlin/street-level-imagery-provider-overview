@@ -1,4 +1,5 @@
 import { lookAroundDeepLink } from '@osm-editor-kit/street-imagery'
+import { ExternalLink } from '@/app/ExternalLink'
 import { hasAppleMapKitToken, LookAroundEmbed } from '@/features/viewer/LookAroundEmbed'
 import { useAppI18n } from '@/i18n/useAppI18n'
 
@@ -30,11 +31,9 @@ export const LookAroundLinkCard = ({ lat, lng }: LookAroundLinkCardProps) => {
 
           {canEmbed ? <LookAroundEmbed lat={lat} lng={lng} /> : null}
 
-          <a
+          <ExternalLink
             className="inline-flex items-center gap-1.5 rounded-md bg-[#007AFF] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0066D6]"
             href={href}
-            rel="noreferrer"
-            target="_blank"
           >
             {t.lookAround.open}
             <svg
@@ -51,7 +50,7 @@ export const LookAroundLinkCard = ({ lat, lng }: LookAroundLinkCardProps) => {
               <path d="M15 3h6v6" />
               <path d="M10 14 21 3" />
             </svg>
-          </a>
+          </ExternalLink>
         </div>
       </div>
     </div>

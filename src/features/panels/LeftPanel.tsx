@@ -12,6 +12,7 @@ import {
 import { getLocationOpeners, STREET_IMAGERY_LOCALES } from '@osm-editor-kit/street-imagery'
 import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
 import { twMerge } from 'tailwind-merge'
+import { ExternalLink } from '@/app/ExternalLink'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import type { AppSearch } from '@/app/searchSchema'
 import {
@@ -212,14 +213,12 @@ export const LeftPanel = () => {
         </div>
         <p className="px-5 pt-3 text-sm leading-snug text-slate-600">
           {t.app.intro}{' '}
-          <a
+          <ExternalLink
             className="text-slate-800 underline decoration-slate-300 underline-offset-2 hover:text-slate-900 hover:decoration-slate-500"
             href="https://github.com/osmberlin/street-level-imagery-provider-overview"
-            rel="noreferrer"
-            target="_blank"
           >
             {t.app.sourceOnGitHub}
-          </a>
+          </ExternalLink>
         </p>
 
         <div className="px-5 py-5">
