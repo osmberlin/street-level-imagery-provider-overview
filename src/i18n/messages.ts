@@ -54,7 +54,6 @@ export type AppMessages = {
     noStreetViewKey: string
     noPhotos: string
     noSuggestedPhotos: string
-    nearbyPhotos: (count: number, withLookAround: boolean) => string
     previousOnStreet: string
     nextOnStreet: string
     pano: string
@@ -155,8 +154,6 @@ const en: AppMessages = {
     noPhotos:
       'No photos from the enabled providers here. Try another spot, more providers, or wider filters.',
     noSuggestedPhotos: 'No Mapillary photo looks in any of the suggested directions.',
-    nearbyPhotos: (count, withLookAround) =>
-      `All photos near the click (${count}${withLookAround ? ' + Look Around' : ''})`,
     previousOnStreet: 'Previous photo along the street (Alt + ←)',
     nextOnStreet: 'Next photo along the street (Alt + →)',
     pano: '360°',
@@ -267,8 +264,6 @@ const de: AppMessages = {
     noPhotos:
       'Hier gibt es keine Fotos der aktiven Anbieter. Anderen Ort, mehr Anbieter oder weitere Filter probieren.',
     noSuggestedPhotos: 'Kein Mapillary-Foto schaut in eine der vorgeschlagenen Richtungen.',
-    nearbyPhotos: (count, withLookAround) =>
-      `Alle Fotos nahe dem Klick (${count}${withLookAround ? ' + Look Around' : ''})`,
     previousOnStreet: 'Vorheriges Foto entlang der Straße (Alt + ←)',
     nextOnStreet: 'Nächstes Foto entlang der Straße (Alt + →)',
     pano: '360°',

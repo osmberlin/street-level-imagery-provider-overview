@@ -4,7 +4,6 @@ import {
   providerById,
   providerExternalLink,
   type NormalizedPhoto,
-  type PhotoSequenceGroup,
 } from '@osm-editor-kit/street-imagery'
 import {
   FloatingPhotoViewer,
@@ -38,50 +37,10 @@ const separator = (
 const samePhoto = (a: NormalizedPhoto | null | undefined, b: NormalizedPhoto | null | undefined) =>
   a != null && b != null && a.providerId === b.providerId && a.photoId === b.photoId
 
-const NearbyPhotoList = ({
-  groups,
-  current,
-  onSelect,
-}: {
-  groups: PhotoSequenceGroup[]
-  current: NormalizedPhoto | null
-  onSelect: (group: PhotoSequenceGroup) => void
-}) => (
-  <ul className="space-y-0.5">
-    {groups.map((group) => {
-      const provider = providerById[group.providerId]
-      const first = group.photos[0]
-      const active = group.photos.some((photo) => samePhoto(photo, current))
-      return (
-        <li key={group.groupKey}>
-          <button
-            aria-current={active}
-            className={`flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs ${active ? 'bg-slate-100 font-medium text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
-            onClick={() => onSelect(group)}
-            type="button"
-          >
-            <span
-              aria-hidden
-              className="size-2 shrink-0 rounded-full"
-              style={{ backgroundColor: provider.color }}
-            />
-            <span className="w-20 shrink-0 truncate">{provider.label}</span>
-            <span className="flex-1 truncate">
-              <PhotoDate timestamp={first?.capturedAt} />
-              {first?.isPano ? ' · 360°' : ''}
-            </span>
-            <span className="shrink-0 text-slate-400">{Math.round(group.distanceMeters)} m</span>
-          </button>
-        </li>
-      )
-    })}
-  </ul>
-)
-
 /**
  * The one floating panel over the map. It shows a photo in its provider viewer, and above it
  * either the suggested views of the clicked spot or street (Mapillary), or the selected map
- * feature (sign, object) with its capture days. Plus history and all other photos near the click.
+ * feature (sign, object) with its capture days. Plus history.
  */
 export const PhotoFloatingViewer = () => {
   const { search } = useAppSearchNavigation()
@@ -249,35 +208,11 @@ export const PhotoFloatingViewer = () => {
     return null
   })()
 
-  const selectGroup = (group: PhotoSequenceGroup) => {
-    const nearest = clicked
-      ? findNearestPhoto(group.photos, clicked.lng, clicked.lat)
-      : group.photos[0]
-    if (nearest) {
-      showPhoto(nearest)
-    }
-  }
-
   return (
     <FloatingPhotoViewer
       activeDirectionKey={activeDirectionKey}
       canGoBack={canGoBack}
       canGoForward={canGoForward}
-      drawer={
-        groups.length > 0 || (showLookAround && photo)
-          ? {
-              label: t.viewer.nearbyPhotos(groups.length, showLookAround),
-              content: (
-                <div className="space-y-2">
-                  {showLookAround && photo && clicked ? (
-                    <LookAroundLinkCard lat={clicked.lat} lng={clicked.lng} />
-                  ) : null}
-                  <NearbyPhotoList current={photo} groups={groups} onSelect={selectGroup} />
-                </div>
-              ),
-            }
-          : undefined
-      }
       footer={
         photo && provider ? (
           <div className="flex items-center gap-3 text-[11px]">
