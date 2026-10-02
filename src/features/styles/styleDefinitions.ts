@@ -1,3 +1,8 @@
+import {
+  MAP_FEATURE_COLOR,
+  PHOTO_TYPE_COLORS,
+  photoTypeColorExpression,
+} from '@osm-editor-kit/street-imagery'
 import type { DataDrivenPropertyValueSpecification, ExpressionSpecification } from 'maplibre-gl'
 import type { AppSearch } from '@/app/searchSchema'
 import {
@@ -29,14 +34,8 @@ export type StyleDefinition = {
   circleColorExpression: DataDrivenPropertyValueSpecification<string>
 }
 
-export const PHOTO_TYPE_COLORS = {
-  panorama: '#2563eb',
-  flat: '#16a34a',
-  unknown: '#9ca3af',
-} as const
-
 export const MAP_FEATURE_COLORS = {
-  feature: '#7c3aed',
+  feature: MAP_FEATURE_COLOR,
 } as const
 
 export const AGE_COLORS = {
@@ -110,14 +109,7 @@ const ageCategories: LegendCategory[] = [
   },
 ]
 
-const photoTypeCircleColor: DataDrivenPropertyValueSpecification<string> = [
-  'case',
-  ['==', ['get', 'isPano'], true],
-  PHOTO_TYPE_COLORS.panorama,
-  ['==', ['get', 'isPano'], false],
-  PHOTO_TYPE_COLORS.flat,
-  PHOTO_TYPE_COLORS.unknown,
-]
+const photoTypeCircleColor = photoTypeColorExpression
 
 const ageCircleColor: DataDrivenPropertyValueSpecification<string> = [
   'case',
