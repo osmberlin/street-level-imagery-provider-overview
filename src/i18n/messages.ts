@@ -61,6 +61,7 @@ export type AppMessages = {
     flat: string
     unknownType: string
     license: string
+    creatorProfile: string
     loadingViewer: string
     loadingPreview: string
     loadingImage: string
@@ -162,6 +163,7 @@ const en: AppMessages = {
     flat: 'Flat',
     unknownType: 'Unknown type',
     license: 'CC BY-SA',
+    creatorProfile: 'Profile on Mapillary, with this photo',
     loadingViewer: 'Loading viewer…',
     loadingPreview: 'Loading preview…',
     loadingImage: 'Loading image…',
@@ -273,6 +275,7 @@ const de: AppMessages = {
     flat: 'Normal',
     unknownType: 'Typ unbekannt',
     license: 'CC BY-SA',
+    creatorProfile: 'Profil bei Mapillary, mit diesem Foto',
     loadingViewer: 'Ansicht wird geladen…',
     loadingPreview: 'Vorschau wird geladen…',
     loadingImage: 'Bild wird geladen…',

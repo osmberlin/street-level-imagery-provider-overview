@@ -285,7 +285,16 @@ export const PhotoFloatingViewer = () => {
               </span>
               {creator?.photoId === photo.photoId ? (
                 <span className="truncate">
-                  {creator.name} · {t.viewer.license}
+                  <a
+                    className="underline-offset-2 hover:underline"
+                    href={`https://www.mapillary.com/app/user/${encodeURIComponent(creator.name)}?pKey=${encodeURIComponent(photo.photoId)}&focus=photo`}
+                    rel="noreferrer"
+                    target="_blank"
+                    title={t.viewer.creatorProfile}
+                  >
+                    {creator.name}
+                  </a>{' '}
+                  · {t.viewer.license}
                 </span>
               ) : null}
             </p>
