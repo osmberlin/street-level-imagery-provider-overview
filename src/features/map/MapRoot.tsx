@@ -261,8 +261,6 @@ export const MapRoot = () => {
           showSelectionHighlight: true,
           showSequences: true,
           showViewCone: true,
-          // A selected feature: a smaller cone, pointing at it.
-          viewConeScale: search.feature ? 1.5 : undefined,
           viewerPov,
         }}
         providers={providers}
