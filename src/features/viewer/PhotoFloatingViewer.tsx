@@ -7,6 +7,8 @@ import {
 } from '@osm-editor-kit/street-imagery'
 import {
   FloatingPhotoViewer,
+  FloatingViewerInfoButton,
+  PhotoDetailsDialog,
   MapillaryFeatureBar,
   PhotoDate,
   getViewpointSession,
@@ -50,6 +52,7 @@ export const PhotoFloatingViewer = () => {
   // The viewers' own attribution and legend are hidden; the footer shows creator, licence and the
   // other details instead. The viewer knows more about a photo than the map tiles do.
   const [viewerPhoto, setViewerPhoto] = useState<NormalizedPhoto | null>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const {
     viewpoints,
     suggestions,
@@ -229,118 +232,138 @@ export const PhotoFloatingViewer = () => {
       .join('\n') || undefined
 
   return (
-    <FloatingPhotoViewer
-      activeDirectionKey={activeDirectionKey}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      footer={
-        photo && provider ? (
-          <div className="flex items-center gap-3 text-[11px]">
-            <p className="min-w-0 flex-1 truncate">
-              <PhotoDate localDateTime={details?.capturedAtLocal} timestamp={photo.capturedAt} />
-              {separator}
-              <span title={typeTooltip}>
-                {photo.isPano
-                  ? t.viewer.pano
-                  : photo.isPano === false
-                    ? t.viewer.flat
-                    : t.viewer.unknownType}
-              </span>
-              {creatorName ? (
-                <>
-                  {separator}
-                  {photo.providerId === 'mapillary' ? (
-                    <a
-                      className="underline-offset-2 hover:underline"
-                      href={`https://www.mapillary.com/app/user/${encodeURIComponent(creatorName)}?pKey=${encodeURIComponent(photo.photoId)}&focus=photo`}
-                      rel="noreferrer"
-                      target="_blank"
-                      title={t.viewer.creatorProfile}
-                    >
-                      {creatorName}
-                    </a>
-                  ) : (
-                    <span title={details?.creatorContact}>{creatorName}</span>
-                  )}
-                </>
-              ) : null}
-              {license ? (
-                <>
-                  {separator}
-                  {details?.licenseUrl ? (
-                    <a
-                      className="underline-offset-2 hover:underline"
-                      href={details.licenseUrl}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      {license}
-                    </a>
-                  ) : (
-                    license
-                  )}
-                </>
-              ) : null}
-            </p>
-            <a
-              className="shrink-0 text-slate-800 underline-offset-2 hover:underline"
-              href={providerExternalLink(photo)}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {t.opener.openIn(provider.label)}
-            </a>
-          </div>
-        ) : undefined
-      }
-      onBack={back}
-      onClose={close}
-      onForward={forward}
-      onSelectSuggestion={selectSuggestion}
-      status={status}
-      step={
-        lineSteps
-          ? {
-              onPrevious: previousOnLine
-                ? () => showPhoto(previousOnLine, activeDirectionKey)
-                : undefined,
-              onNext: nextOnLine ? () => showPhoto(nextOnLine, activeDirectionKey) : undefined,
-              previousLabel: t.viewer.previousOnStreet,
-              nextLabel: t.viewer.nextOnStreet,
-            }
-          : undefined
-      }
-      toolbar={
-        featureData ? (
-          <MapillaryFeatureBar
-            data={featureData}
-            onShow={(image) => showPhoto(targetImageToPhoto(image))}
-            shownImage={selectedFeature.shownImage}
-          />
-        ) : undefined
-      }
-      suggestions={suggestions}
-      title={featureData ? t.viewer.titleFeature : provider ? provider.label : t.viewer.titlePhotos}
-    >
-      {photo ? (
-        <div className="px-2">
-          <ViewerPanelSwitch
-            groupPhotos={activeGroup?.photos ?? [photo]}
-            lookAt={lookAt}
-            lookAtBearing={lookAtBearing}
-            onViewerPhoto={(loaded) => {
-              setViewerPhoto(loaded)
-              showPhoto(loaded)
-            }}
-            photo={photo}
-          />
-        </div>
-      ) : showLookAround && clicked ? (
-        // No photo here (e.g. Look Around only): the Look Around card is the content.
-        <div className="px-2 pb-2">
-          <LookAroundLinkCard lat={clicked.lat} lng={clicked.lng} />
-        </div>
+    <>
+      {shown ? (
+        <PhotoDetailsDialog
+          externalUrl={providerExternalLink(shown)}
+          open={detailsOpen}
+          photo={shown}
+          onClose={() => setDetailsOpen(false)}
+        />
       ) : null}
-    </FloatingPhotoViewer>
+      <FloatingPhotoViewer
+        titleActions={
+          shown ? (
+            <FloatingViewerInfoButton
+              label={messages.details.open}
+              onClick={() => setDetailsOpen(true)}
+            />
+          ) : undefined
+        }
+        activeDirectionKey={activeDirectionKey}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        footer={
+          photo && provider ? (
+            <div className="flex items-center gap-3 text-[11px]">
+              <p className="min-w-0 flex-1 truncate">
+                <PhotoDate localDateTime={details?.capturedAtLocal} timestamp={photo.capturedAt} />
+                {separator}
+                <span title={typeTooltip}>
+                  {photo.isPano
+                    ? t.viewer.pano
+                    : photo.isPano === false
+                      ? t.viewer.flat
+                      : t.viewer.unknownType}
+                </span>
+                {creatorName ? (
+                  <>
+                    {separator}
+                    {photo.providerId === 'mapillary' ? (
+                      <a
+                        className="underline-offset-2 hover:underline"
+                        href={`https://www.mapillary.com/app/user/${encodeURIComponent(creatorName)}?pKey=${encodeURIComponent(photo.photoId)}&focus=photo`}
+                        rel="noreferrer"
+                        target="_blank"
+                        title={t.viewer.creatorProfile}
+                      >
+                        {creatorName}
+                      </a>
+                    ) : (
+                      <span title={details?.creatorContact}>{creatorName}</span>
+                    )}
+                  </>
+                ) : null}
+                {license ? (
+                  <>
+                    {separator}
+                    {details?.licenseUrl ? (
+                      <a
+                        className="underline-offset-2 hover:underline"
+                        href={details.licenseUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        {license}
+                      </a>
+                    ) : (
+                      license
+                    )}
+                  </>
+                ) : null}
+              </p>
+              <a
+                className="shrink-0 text-slate-800 underline-offset-2 hover:underline"
+                href={providerExternalLink(photo)}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {t.opener.openIn(provider.label)}
+              </a>
+            </div>
+          ) : undefined
+        }
+        onBack={back}
+        onClose={close}
+        onForward={forward}
+        onSelectSuggestion={selectSuggestion}
+        status={status}
+        step={
+          lineSteps
+            ? {
+                onPrevious: previousOnLine
+                  ? () => showPhoto(previousOnLine, activeDirectionKey)
+                  : undefined,
+                onNext: nextOnLine ? () => showPhoto(nextOnLine, activeDirectionKey) : undefined,
+                previousLabel: t.viewer.previousOnStreet,
+                nextLabel: t.viewer.nextOnStreet,
+              }
+            : undefined
+        }
+        toolbar={
+          featureData ? (
+            <MapillaryFeatureBar
+              data={featureData}
+              onShow={(image) => showPhoto(targetImageToPhoto(image))}
+              shownImage={selectedFeature.shownImage}
+            />
+          ) : undefined
+        }
+        suggestions={suggestions}
+        title={
+          featureData ? t.viewer.titleFeature : provider ? provider.label : t.viewer.titlePhotos
+        }
+      >
+        {photo ? (
+          <div className="px-2">
+            <ViewerPanelSwitch
+              groupPhotos={activeGroup?.photos ?? [photo]}
+              lookAt={lookAt}
+              lookAtBearing={lookAtBearing}
+              onViewerPhoto={(loaded) => {
+                setViewerPhoto(loaded)
+                showPhoto(loaded)
+              }}
+              photo={photo}
+            />
+          </div>
+        ) : showLookAround && clicked ? (
+          // No photo here (e.g. Look Around only): the Look Around card is the content.
+          <div className="px-2 pb-2">
+            <LookAroundLinkCard lat={clicked.lat} lng={clicked.lng} />
+          </div>
+        ) : null}
+      </FloatingPhotoViewer>
+    </>
   )
 }
