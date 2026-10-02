@@ -16,12 +16,14 @@ import {
 import { useEffect, useRef } from 'react'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
 import { isProviderId } from '@/app/searchSchema'
-import { useFeatureTarget } from '@/features/viewer/featureTargetStore'
+import { FeatureBar } from '@/features/viewer/FeatureBar'
 import { LookAroundLinkCard } from '@/features/viewer/LookAroundLinkCard'
 import { humanizeFeatureValue } from '@/features/viewer/mapFeatureDisplay'
 import { ViewerPanelSwitch } from '@/features/viewer/panels/ViewerPanelSwitch'
 import { useClickedPhotos } from '@/features/viewer/useClickedPhotos'
+import { targetImageToPhoto, useSelectedFeature } from '@/features/viewer/useSelectedFeature'
 import { useSelectedPhotoForMap } from '@/features/viewer/useSelectedPhotoForMap'
+import { useStepAlongLine } from '@/features/viewer/useStepAlongLine'
 import { useViewpointPhotos } from '@/features/viewer/useViewpointPhotos'
 
 const formatDate = (capturedAt: number | null) =>
@@ -75,8 +77,9 @@ const NearbyPhotoList = ({
 )
 
 /**
- * Floating photo viewer over the map: suggested views for the clicked viewpoints (Mapillary),
- * history, the selected photo in its provider viewer, and all other photos near the click.
+ * The one floating panel over the map. It shows a photo in its provider viewer, and above it
+ * either the suggested views of the clicked spot or street (Mapillary), or the selected map
+ * feature (sign, object) with its capture days. Plus history and all other photos near the click.
  */
 export const PhotoFloatingViewer = () => {
   const { search } = useAppSearchNavigation()
@@ -98,7 +101,8 @@ export const PhotoFloatingViewer = () => {
   const canGoForward = useCanGoForward()
   const { groups, isLoading, isFetching, gsvStatus } = useClickedPhotos()
   const { selectedPhoto } = useSelectedPhotoForMap()
-  const featureTarget = useFeatureTarget()
+  const selectedFeature = useSelectedFeature()
+  const featureData = selectedFeature.data
 
   // The URL holds the selected photo; history entries carry full data for photos off the map.
   const urlPhoto: NormalizedPhoto | null =
@@ -124,7 +128,8 @@ export const PhotoFloatingViewer = () => {
   const photosSettled = !suggestionsLoading && !isLoading && !isFetching
   useEffect(
     function autoSelectBestPhoto() {
-      if (!autoSelectKey || selected || !photosSettled) {
+      // A selected map feature opens its own best photo (below).
+      if (!autoSelectKey || selected || !photosSettled || selectedFeature.featureId) {
         return
       }
       if (autoSelectedRef.current === autoSelectKey) {
@@ -152,12 +157,37 @@ export const PhotoFloatingViewer = () => {
       photosSettled,
       selectSuggestion,
       selected,
+      selectedFeature.featureId,
       showPhoto,
       suggestions,
     ],
   )
 
-  if (!clicked && !urlPhoto) {
+  // A newly selected feature opens the newest day's best photo of it, once.
+  const { firstImage } = selectedFeature
+  const featureOpenedRef = useRef<string | null>(null)
+  useEffect(
+    function openBestPhotoOfFeature() {
+      const featureId = selectedFeature.featureId
+      if (!featureId) {
+        featureOpenedRef.current = null
+        return
+      }
+      if (!firstImage || featureOpenedRef.current === featureId) {
+        return
+      }
+      featureOpenedRef.current = featureId
+      if (!selectedFeature.shownImage) {
+        showPhoto(targetImageToPhoto(firstImage))
+      }
+    },
+    [firstImage, selectedFeature.featureId, selectedFeature.shownImage, showPhoto],
+  )
+
+  const activeSuggestion = suggestions.find((s) => s.direction.key === activeDirectionKey)
+  const lineSteps = useStepAlongLine(urlPhoto, activeSuggestion)
+
+  if (!clicked && !urlPhoto && !selectedFeature.featureId) {
     return null
   }
 
@@ -173,24 +203,28 @@ export const PhotoFloatingViewer = () => {
       ? (suggestions.find((s) => s.direction.key === currentEntry.directionKey)?.direction
           .bearing ?? null)
       : null
-  // A photo opened from a map feature (sign, object) turns to the feature and outlines it.
-  const targetImage =
-    photo && featureTarget
-      ? featureTarget.images.find((image) => image.id === photo.photoId)
-      : undefined
+  // A photo of the selected map feature turns to the feature and outlines it.
   const lookAt =
-    targetImage && featureTarget
+    featureData && selectedFeature.shownImage
       ? {
-          lngLat: featureTarget.feature.lngLat,
-          outline: targetImage.outline,
-          value: featureTarget.feature.value,
-          label: humanizeFeatureValue(featureTarget.feature.value),
+          lngLat: featureData.feature.lngLat,
+          outline: selectedFeature.shownImage.outline,
+          value: featureData.feature.value,
+          label: humanizeFeatureValue(featureData.feature.value),
         }
       : null
+  const previousOnLine = lineSteps?.previous ?? null
+  const nextOnLine = lineSteps?.next ?? null
   const showLookAround = providers.includes('lookaround') && clicked != null
   const loading = suggestionsLoading || isLoading || isFetching
   const suggestionsFound = suggestions.some((suggestion) => suggestion.candidates.length > 0)
   const status = (() => {
+    if (selectedFeature.featureId) {
+      if (selectedFeature.isLoading) {
+        return 'Loading the feature and its photos…'
+      }
+      return selectedFeature.isError ? 'Could not load this feature from Mapillary.' : null
+    }
     if (loading && !photo) {
       return 'Looking for photos…'
     }
@@ -260,8 +294,29 @@ export const PhotoFloatingViewer = () => {
       onForward={forward}
       onSelectSuggestion={selectSuggestion}
       status={status}
+      step={
+        lineSteps
+          ? {
+              onPrevious: previousOnLine
+                ? () => showPhoto(previousOnLine, activeDirectionKey)
+                : undefined,
+              onNext: nextOnLine ? () => showPhoto(nextOnLine, activeDirectionKey) : undefined,
+              previousLabel: 'Previous photo along the street (Alt + ←)',
+              nextLabel: 'Next photo along the street (Alt + →)',
+            }
+          : undefined
+      }
+      toolbar={
+        featureData ? (
+          <FeatureBar
+            data={featureData}
+            onShow={(image) => showPhoto(targetImageToPhoto(image))}
+            shownImage={selectedFeature.shownImage}
+          />
+        ) : undefined
+      }
       suggestions={suggestions}
-      title={provider ? provider.label : 'Photos here'}
+      title={featureData ? 'Mapillary feature' : provider ? provider.label : 'Photos here'}
     >
       {photo ? (
         <div className="px-2">

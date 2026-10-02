@@ -19,19 +19,21 @@ import { useAppSearchNavigation } from '@/app/searchNavigation'
  */
 export const useViewpointPhotos = () => {
   const { search, updateSelected, updateSearch } = useAppSearchNavigation()
-  const { clicked, providers, photoTypes, date } = search
+  const { clicked, providers, photoTypes, date, feature } = search
   const sessionViewpoints = useViewpoints()
   const activeDirectionKey = useActiveDirectionKey()
 
   // Suggested views come from Mapillary only; without it, clicks don't create viewpoints.
   const viewpointsEnabled = providers.includes('mapillary')
-  const viewpoints = !viewpointsEnabled
-    ? []
-    : sessionViewpoints.length > 0
-      ? sessionViewpoints
-      : clicked
-        ? [viewpointFromPoint([clicked.lng, clicked.lat])]
-        : []
+  // A selected map feature shows its own photos; views around the click would only distract.
+  const viewpoints =
+    !viewpointsEnabled || feature
+      ? []
+      : sessionViewpoints.length > 0
+        ? sessionViewpoints
+        : clicked
+          ? [viewpointFromPoint([clicked.lng, clicked.lat])]
+          : []
 
   const { suggestions, isLoading, isError } = useViewSuggestions(viewpoints, {
     photoTypes,
@@ -75,7 +77,7 @@ export const useViewpointPhotos = () => {
 
   const close = () => {
     getViewpointSession().actions.close()
-    updateSearch({ clicked: undefined, selected: undefined }, { replace: true })
+    updateSearch({ clicked: undefined, selected: undefined, feature: undefined }, { replace: true })
   }
 
   return {

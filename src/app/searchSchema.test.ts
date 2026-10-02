@@ -44,6 +44,13 @@ describe('appSearchSchema', () => {
     expect(serializeAppSearch(all).date).toEqual({})
   })
 
+  it('keeps the selected map feature id as a string', () => {
+    expect(parseAppSearch({ feature: '1014865383456284' }).feature).toBe('1014865383456284')
+    expect(parseAppSearch({ feature: 1014865383456284 }).feature).toBe('1014865383456284')
+    expect(parseAppSearch({ feature: 'abc' }).feature).toBeUndefined()
+    expect(serializeAppSearch(parseAppSearch({ feature: '12' })).feature).toBe('12')
+  })
+
   it('keeps map as a slash string in validated search', () => {
     const parsed = parseAppSearch({ map: '15.678/52.520008/13.404954' })
 

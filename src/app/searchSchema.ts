@@ -111,6 +111,15 @@ export const appSearchSchema = z.object({
   date: dateSearchSchema.default(defaultDate).catch(defaultDate),
   clicked: clickedSchema.optional().catch(undefined),
   selected: selectedSchema.optional().catch(undefined),
+  /** Selected Mapillary map feature (sign, object); its photos show in the viewer. */
+  feature: z
+    .preprocess(
+      // A hand-written `feature=123` arrives as a number; ids beyond 2^53 would lose digits.
+      (raw) => (typeof raw === 'number' && Number.isSafeInteger(raw) ? String(raw) : raw),
+      z.string().regex(/^\d+$/),
+    )
+    .optional()
+    .catch(undefined),
 })
 
 export type AppSearch = z.infer<typeof appSearchSchema>
@@ -155,6 +164,10 @@ export const serializeAppSearch = (search: AppSearch): Record<string, unknown> =
 
   if (search.selected) {
     serialized.selected = search.selected
+  }
+
+  if (search.feature) {
+    serialized.feature = search.feature
   }
 
   return serialized
