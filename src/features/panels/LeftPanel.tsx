@@ -235,7 +235,7 @@ export const LeftPanel = () => {
                 const checkboxDisabled = browserUnavailable && !checked
                 const opener = locationOpeners.find((candidate) => candidate.id === provider.id)
                 const streetsideNeedsKey = provider.id === 'streetside' && !bingMapsConfigured
-                // Nothing to show on the map (Apple, Google or Bing without a key): only the opener.
+                // Nothing to show on the map (Apple; Google or Bing without a key): only the opener.
                 if (opener && streetsideNeedsKey) {
                   return (
                     <li key={provider.id}>
@@ -244,9 +244,6 @@ export const LeftPanel = () => {
                         opener={opener}
                         quickLocation={quickLocation}
                       />
-                      <p className="mt-1 px-0.5 text-xs leading-snug text-slate-500">
-                        {t.providers.streetsideNeedsKey}
-                      </p>
                     </li>
                   )
                 }
