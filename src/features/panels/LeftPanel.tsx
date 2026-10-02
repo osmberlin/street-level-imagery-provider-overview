@@ -301,7 +301,11 @@ export const LeftPanel = () => {
                             </span>
                           ) : belowMinZoom ? (
                             <span className="text-xs text-slate-500">
-                              {t.providers.zoomIn(meta.minZoom)}
+                              {adapter.coverageTiles && currentZoom >= adapter.coverageTiles.minZoom
+                                ? t.providers.zoomInForPhotos(meta.minZoom)
+                                : t.providers.zoomIn(
+                                    adapter.coverageTiles?.minZoom ?? meta.minZoom,
+                                  )}
                             </span>
                           ) : null}
                         </span>

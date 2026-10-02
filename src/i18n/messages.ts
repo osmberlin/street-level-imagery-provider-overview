@@ -18,6 +18,7 @@ export type AppMessages = {
     checksOnClick: string
     notAvailableHere: (area: string) => string
     zoomIn: (minZoom: number) => string
+    zoomInForPhotos: (minZoom: number) => string
     inView: string
   }
   filters: {
@@ -109,6 +110,7 @@ const en: AppMessages = {
     checksOnClick: 'Checks coverage on click',
     notAvailableHere: (area) => `Not available here (${area} only)`,
     zoomIn: (minZoom) => `Zoom in to see data (z${minZoom}+)`,
+    zoomInForPhotos: (minZoom) => `Lines show coverage. Zoom in for photos (z${minZoom}+)`,
     inView: 'In view',
   },
   filters: {
@@ -217,6 +219,8 @@ const de: AppMessages = {
     notAvailableHere: (area) =>
       `Hier nicht verfügbar (nur ${area === 'Norway' ? 'Norwegen' : area})`,
     zoomIn: (minZoom) => `Für Daten näher heranzoomen (z${minZoom}+)`,
+    zoomInForPhotos: (minZoom) =>
+      `Linien zeigen die Abdeckung. Für Fotos näher heranzoomen (z${minZoom}+)`,
     inView: 'Im Ausschnitt',
   },
   filters: {
