@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { MapProvider } from 'react-map-gl/maplibre'
 import { MapRoot } from '@/features/map/MapRoot'
+import { StreetViewsToggle } from '@/features/map/StreetViewsToggle'
 import { LocationPickHint } from '@/features/openers/LocationPickHint'
 import { LeftPanel } from '@/features/panels/LeftPanel'
 import { PhotoFloatingViewer } from '@/features/viewer/PhotoFloatingViewer'
@@ -16,6 +17,7 @@ export const AppShell = ({ children }: AppShellProps) => {
         <LeftPanel />
         <main className="relative min-h-0 min-w-0 flex-1">
           <MapRoot />
+          <StreetViewsToggle />
           <PhotoFloatingViewer />
           <LocationPickHint />
           {children}

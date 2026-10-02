@@ -11,6 +11,7 @@ const baseSearch: AppSearch = {
   photoTypes: ['flat', 'pano'],
   leftPanel: 'open',
   date: {},
+  streetViews: 'off',
   signGroups: ['bike', 'speed', 'access', 'other'],
 }
 

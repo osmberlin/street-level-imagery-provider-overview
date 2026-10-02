@@ -10,7 +10,8 @@ import {
   STREET_SOURCE_LAYER,
 } from '@/features/map/streetLines'
 
-const STREET_COLOR = '#2563eb'
+/** Same family as the view cones (`VIEWPOINT_DEFAULT_COLOR`): streets are where views start. */
+const STREET_COLOR = '#a21caf'
 const MIN_ZOOM = 14
 
 const streetFilter: FilterSpecification = [
@@ -51,7 +52,7 @@ export const StreetLinesLayer = ({ hovered }: StreetLinesLayerProps) => {
         minzoom={MIN_ZOOM}
         paint={{
           'line-color': STREET_COLOR,
-          'line-opacity': 0.55,
+          'line-opacity': 0.45,
           'line-width': ['interpolate', ['linear'], ['zoom'], 14, 0.75, 18, 1.5],
         }}
         source={STREET_SOURCE_ID}

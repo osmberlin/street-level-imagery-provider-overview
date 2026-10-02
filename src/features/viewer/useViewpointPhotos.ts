@@ -23,8 +23,9 @@ export const useViewpointPhotos = () => {
   const sessionViewpoints = useViewpoints()
   const activeDirectionKey = useActiveDirectionKey()
 
-  // Suggested views come from Mapillary only; without it, clicks don't create viewpoints.
-  const viewpointsEnabled = providers.includes('mapillary')
+  // Suggested views come from Mapillary only, and only while the map's "Street views" toggle is
+  // on; otherwise clicks just select photos and features.
+  const viewpointsEnabled = providers.includes('mapillary') && search.streetViews === 'on'
   // A selected map feature shows its own photos; views around the click would only distract.
   const viewpoints =
     !viewpointsEnabled || feature

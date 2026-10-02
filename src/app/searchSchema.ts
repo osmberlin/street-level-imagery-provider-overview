@@ -106,6 +106,8 @@ export const appSearchSchema = z.object({
     .array(z.enum(SIGN_GROUP_IDS))
     .default([...SIGN_GROUP_IDS])
     .catch([...SIGN_GROUP_IDS]),
+  /** Map toggle: show clickable streets and suggest views for clicks on streets and spots. */
+  streetViews: z.enum(['on', 'off']).default('off').catch('off'),
   leftPanel: z.enum(['open', 'closed']).default(LEFT_PANEL_DEFAULT).catch(LEFT_PANEL_DEFAULT),
   /** Missing → last 2 years. `{}` (no from/to) → all dates. */
   date: dateSearchSchema.default(defaultDate).catch(defaultDate),
@@ -147,6 +149,10 @@ export const serializeAppSearch = (search: AppSearch): Record<string, unknown> =
 
   if (search.signGroups.length !== SIGN_GROUP_IDS.length) {
     serialized.signGroups = search.signGroups
+  }
+
+  if (search.streetViews === 'on') {
+    serialized.streetViews = search.streetViews
   }
 
   if (search.leftPanel !== LEFT_PANEL_DEFAULT) {
