@@ -8,13 +8,13 @@ import {
 import {
   FloatingPhotoViewer,
   FloatingViewerInfoButton,
+  MAPILLARY_FEATURE_BAR_LABELS,
   MapillaryFeatureBar,
   PhotoDate,
   getViewpointSession,
   useCanGoBack,
   useCanGoForward,
   useCurrentHistoryEntry,
-  useStreetImageryI18n,
 } from '@osm-editor-kit/street-imagery-react'
 import {
   PHOTO_DETAILS_LABELS,
@@ -52,7 +52,6 @@ export const PhotoFloatingViewer = () => {
   const { search } = useAppSearchNavigation()
   const { clicked, selected, providers } = search
   const { locale, t } = useAppI18n()
-  const { messages } = useStreetImageryI18n()
   // The viewers' own attribution and legend are hidden; the footer shows creator, licence and the
   // other details instead. The viewer knows more about a photo than the map tiles do.
   const [viewerPhoto, setViewerPhoto] = useState<NormalizedPhoto | null>(null)
@@ -183,7 +182,7 @@ export const PhotoFloatingViewer = () => {
           lngLat: featureData.feature.lngLat,
           outline: selectedFeature.shownImage.outline,
           value: featureData.feature.value,
-          label: messages.feature.name(featureData.feature.value),
+          label: MAPILLARY_FEATURE_BAR_LABELS[locale].name(featureData.feature.value),
         }
       : null
   const previousOnLine = lineSteps?.previous ?? null

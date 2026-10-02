@@ -1,6 +1,5 @@
 import { getBingMapsKey, getGoogleMapsApiKey } from '@osm-editor-kit/street-imagery'
 import {
-  adapterById,
   isBrowserAvailableProvider,
   isClickOnlyPhotoProvider,
   providerCoversBbox,
@@ -227,10 +226,9 @@ export const LeftPanel = () => {
               {ORDERED_PROVIDERS.map((provider) => {
                 const checked = activeProviders.has(provider.id)
                 const meta = providerById[provider.id]
-                const adapter = adapterById[provider.id]
                 const clickOnly = isClickOnlyPhotoProvider(provider.id)
                 const belowMinZoom = !clickOnly && currentZoom < meta.minZoom
-                const browserUnavailable = adapter.browserUnavailableReason != null
+                const browserUnavailable = meta.browserUnavailableReason != null
                 const streetViewNeedsKey = provider.id === 'streetview' && !googleMapsConfigured
                 // Providers with a coverage area (Vegbilder: Norway) are off elsewhere.
                 const outsideCoverage = bbox != null && !providerCoversBbox(provider.id, bbox)
@@ -301,11 +299,9 @@ export const LeftPanel = () => {
                             </span>
                           ) : belowMinZoom ? (
                             <span className="text-xs text-slate-500">
-                              {adapter.coverageTiles && currentZoom >= adapter.coverageTiles.minZoom
+                              {meta.coverageTiles && currentZoom >= meta.coverageTiles.minZoom
                                 ? t.providers.zoomInForPhotos(meta.minZoom)
-                                : t.providers.zoomIn(
-                                    adapter.coverageTiles?.minZoom ?? meta.minZoom,
-                                  )}
+                                : t.providers.zoomIn(meta.coverageTiles?.minZoom ?? meta.minZoom)}
                             </span>
                           ) : null}
                         </span>

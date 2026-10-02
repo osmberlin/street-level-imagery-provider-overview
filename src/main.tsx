@@ -1,4 +1,9 @@
-import { createStreetImageryConfig, setStreetImageryConfig } from '@osm-editor-kit/street-imagery'
+import {
+  createStreetImageryConfig,
+  registerProviderAdapters,
+  setStreetImageryConfig,
+} from '@osm-editor-kit/street-imagery'
+import { ALL_PROVIDER_ADAPTERS } from '@osm-editor-kit/street-imagery/providers/all'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
@@ -15,6 +20,9 @@ setStreetImageryConfig(
     infra3d: { projects: INFRA3D_PROJECTS },
   }),
 )
+
+// This app shows every provider; apps that use a few register those from their own entries.
+registerProviderAdapters(ALL_PROVIDER_ADAPTERS)
 
 const rootElement = document.getElementById('root')
 if (!rootElement) {

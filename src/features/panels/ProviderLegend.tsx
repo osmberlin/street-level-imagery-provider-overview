@@ -1,6 +1,6 @@
 import { mapFeatureMatchesDateRange, photoMatchesFilters } from '@osm-editor-kit/street-imagery'
 import type { Bbox } from '@osm-editor-kit/street-imagery'
-import { adapterById, providerById, type ProviderId } from '@osm-editor-kit/street-imagery'
+import { providerById, type ProviderId } from '@osm-editor-kit/street-imagery'
 import { useProviderMapFeatures, useProviderPhotos } from '@osm-editor-kit/street-imagery-react'
 import type { AppSearch } from '@/app/searchSchema'
 import { countMapFeaturesByCategory } from '@/features/styles/countViewportMapFeatures'
@@ -30,11 +30,10 @@ export const ProviderLegend = ({
 }: ProviderLegendProps) => {
   const { t } = useAppI18n()
   const meta = providerById[providerId]
-  const adapter = adapterById[providerId]
   const { data: photos = [] } = useProviderPhotos(providerId, bbox, zoom)
   const { data: mapFeatures = [] } = useProviderMapFeatures(providerId, bbox, zoom)
 
-  const isMapFeature = adapter.kind === 'mapFeature'
+  const isMapFeature = meta.kind === 'mapFeature'
   const styleDefinition = isMapFeature
     ? getMapFeatureStyleDefinition(style)
     : getStyleDefinition(style)

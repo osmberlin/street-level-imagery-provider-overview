@@ -14,9 +14,19 @@ bun add @osm-editor-kit/street-imagery@alpha @osm-editor-kit/street-imagery-reac
 ```
 
 ```ts
-// Once at boot. Each app registers its own Mapillary client token.
+import { mapillaryAdapter } from '@osm-editor-kit/street-imagery/providers/mapillary'
+import { mapillarySignsAdapter } from '@osm-editor-kit/street-imagery/providers/mapillary-signs'
+
+// Once at boot. Each app registers its own Mapillary client token …
 setStreetImageryConfig(createStreetImageryConfig({ mapillaryToken: MAPILLARY_TOKEN }))
+// … and the providers it shows. Only these are bundled; a provider without an adapter shows no
+// map data. Entries: providers/mapillary, mapillary-signs, mapillary-map-features, panoramax,
+// kartaview, mapilio, streetside, vegbilder, all.
+registerProviderAdapters([mapillaryAdapter, mapillarySignsAdapter])
 ```
+
+The "open in …" links (`getLocationOpeners()`) and the provider names and colours (`providerById`)
+need no adapter.
 
 ```css
 /* Tailwind does not scan node_modules. */
