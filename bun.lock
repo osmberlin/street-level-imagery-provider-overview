@@ -6,8 +6,8 @@
       "name": "street-level-imagery-provider-overview",
       "dependencies": {
         "@mapbox/vector-tile": "^3.0.0",
-        "@osm-editor-kit/street-imagery": "0.1.0-alpha.6",
-        "@osm-editor-kit/street-imagery-react": "0.1.0-alpha.7",
+        "@osm-editor-kit/street-imagery": "0.1.0-alpha.7",
+        "@osm-editor-kit/street-imagery-react": "0.1.0-alpha.8",
         "@panoramax/web-viewer": "^5.3.0",
         "@photo-sphere-viewer/core": "^5.15.1",
         "@photo-sphere-viewer/cubemap-adapter": "^5.15.1",
@@ -193,9 +193,9 @@
 
     "@mdn/browser-compat-data": ["@mdn/browser-compat-data@6.1.5", "", {}, "sha512-PzdZZzRhcXvKB0begee28n5lvwAcinGKYuLZOVxHAZm+n7y01ddEGfdS1ZXRuVcV+ndG6mSEAE8vgudom5UjYg=="],
 
-    "@osm-editor-kit/street-imagery": ["@osm-editor-kit/street-imagery@0.1.0-alpha.6", "", { "dependencies": { "@mapbox/vector-tile": "^3.0.0", "date-fns": "^4.4.0", "pbf": "^5.1.0" } }, "sha512-jFUO1WhYdhueBQzaAzUglqZ86MCSUrZuc1j4RKvTFtdlHnT5Em9bdws3uhlKYyQ5HTeEvpQvfuB0w+YMU9LxZQ=="],
+    "@osm-editor-kit/street-imagery": ["@osm-editor-kit/street-imagery@0.1.0-alpha.7", "", { "dependencies": { "@mapbox/vector-tile": "^3.0.0", "date-fns": "^4.4.0", "pbf": "^5.1.0" } }, "sha512-hPDOjjU1s5LbHWlopmM+9xQpxnz0j696/9lgRERNuUm601TlBna5Xt9Mau1dLtzHxS6zfWQaiBT2vVpC6X43Tg=="],
 
-    "@osm-editor-kit/street-imagery-react": ["@osm-editor-kit/street-imagery-react@0.1.0-alpha.7", "", { "peerDependencies": { "@osm-editor-kit/street-imagery": "^0.1.0-alpha.6", "@panoramax/web-viewer": "^5", "@tanstack/react-query": "^5", "mapillary-js": "^4", "maplibre-gl": "^6", "react": "^19", "react-dom": "^19", "react-map-gl": "^8", "zustand": "^5" } }, "sha512-0ajIQCiAdIFkiAuPhJp6dgFK6pKE2elwFZyzYowlFsrZLom8Haeu1OIStqZoFZBIY+y5XzIkVnTa4mu6ourbCQ=="],
+    "@osm-editor-kit/street-imagery-react": ["@osm-editor-kit/street-imagery-react@0.1.0-alpha.8", "", { "peerDependencies": { "@osm-editor-kit/street-imagery": "^0.1.0-alpha.7", "@panoramax/web-viewer": "^5", "@tanstack/react-query": "^5", "mapillary-js": "^4", "maplibre-gl": "^6", "react": "^19", "react-dom": "^19", "react-map-gl": "^8", "zustand": "^5" } }, "sha512-uLNsnZDJrjyixRAT5tDXCITgk2ca8ti/WOf2kLRuo/lSuQm1+XWIx8bgg2fXM7cGBSOzxQDgF6FfmgqTxx6Vrg=="],
 
     "@oxc-project/types": ["@oxc-project/types@0.151.0", "", {}, "sha512-J1yXrIlNDZVzE3ada310xeAw7nH8yCAyLPuUIsjKatFPmfn5bS1oW+cM+QsGOtVWd5nhSpbwZWx/rue+r5Z+PA=="],
 

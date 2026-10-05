@@ -2,6 +2,7 @@ import {
   DEFAULT_STREET_IMAGERY_LOCALE,
   isBrowserAvailableProvider,
   PROVIDER_IDS,
+  SIGN_GROUP_IDS,
   STREET_IMAGERY_LOCALES,
   type ProviderId,
 } from '@osm-editor-kit/street-imagery'
@@ -73,8 +74,8 @@ const dateSearchSchema = z.object({
 
 export const DEFAULT_PHOTO_TYPES = ['flat', 'pano'] as const
 
-/** Traffic sign groups of the Mapillary signs layer (ids of the package's `SIGN_GROUPS` + other). */
-export const SIGN_GROUP_IDS = ['bike', 'speed', 'access', 'other'] as const
+/** Traffic sign groups of the Mapillary signs layer (the package's `SIGN_GROUPS` + other). */
+export { SIGN_GROUP_IDS }
 
 /** Photos older than this are hidden by default; dense areas are unusable with all years. */
 export const DEFAULT_MAX_AGE_YEARS = 2

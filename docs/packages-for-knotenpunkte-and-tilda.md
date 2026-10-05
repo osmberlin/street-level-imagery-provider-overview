@@ -75,6 +75,10 @@ in and not configurable beyond the options below. Reference: `src/features/map/M
   lines take it. The shown photo is orange with a black outline; its sequence is thicker and the
   others step back. Sequence lines run through their photos.
 - A dense area needs a date filter: without one, Berlin loads hundreds of thousands of photos.
+  `PhotoDateRangeFilter` is that filter as a component: a slider with two handles after iD, marks
+  for where photos are (`capturedAt`), year lines, a red line for `recommendedMaxAgeYears`,
+  dashed `markers` for fixed dates, and optional inputs for exact days. It takes and gives the
+  same `{ from?, to? }` as `filter.date`.
 
 ## The floating viewer
 

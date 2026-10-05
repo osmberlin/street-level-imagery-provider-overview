@@ -3,6 +3,7 @@ import {
   findNearestPhoto,
   providerById,
   providerExternalLink,
+  targetImageToPhoto,
   viewpointFromPoint,
   type NormalizedPhoto,
 } from '@osm-editor-kit/street-imagery'
@@ -29,7 +30,7 @@ import { isProviderId } from '@/app/searchSchema'
 import { LookAroundLinkCard } from '@/features/viewer/LookAroundLinkCard'
 import { ViewerPanelSwitch } from '@/features/viewer/panels/ViewerPanelSwitch'
 import { useClickedPhotos } from '@/features/viewer/useClickedPhotos'
-import { targetImageToPhoto, useSelectedFeature } from '@/features/viewer/useSelectedFeature'
+import { useSelectedFeature } from '@/features/viewer/useSelectedFeature'
 import { useSelectedPhotoForMap } from '@/features/viewer/useSelectedPhotoForMap'
 import { useStepAlongLine } from '@/features/viewer/useStepAlongLine'
 import { useViewpointPhotos } from '@/features/viewer/useViewpointPhotos'

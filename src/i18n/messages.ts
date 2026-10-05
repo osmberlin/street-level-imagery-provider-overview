@@ -1,4 +1,4 @@
-import type { StreetImageryLocale } from '@osm-editor-kit/street-imagery'
+import type { SignGroupId, StreetImageryLocale } from '@osm-editor-kit/street-imagery'
 
 /** Every text of the app, per language. Texts with values are plain functions. */
 export type AppMessages = {
@@ -26,11 +26,7 @@ export type AppMessages = {
     flat: string
     panorama: string
     signs: string
-    signGroup: { bike: string; speed: string; access: string; other: string }
-    from: string
-    to: string
-    lastYears: (years: number) => string
-    allDates: string
+    signGroup: Record<SignGroupId, string>
   }
   style: {
     heading: string
@@ -118,11 +114,13 @@ const en: AppMessages = {
     flat: 'Flat',
     panorama: 'Panorama',
     signs: 'Mapillary signs',
-    signGroup: { bike: 'Bike', speed: 'Speed', access: 'Access & oneway', other: 'Other' },
-    from: 'From',
-    to: 'To',
-    lastYears: (years) => `Last ${years} years`,
-    allDates: 'All dates',
+    signGroup: {
+      parking: 'Parking & stopping',
+      bike: 'Bike',
+      speed: 'Speed',
+      access: 'Access & oneway',
+      other: 'Other',
+    },
   },
   style: {
     heading: 'Map style',
@@ -229,15 +227,12 @@ const de: AppMessages = {
     panorama: 'Panorama',
     signs: 'Mapillary-Verkehrszeichen',
     signGroup: {
+      parking: 'Parken & Halten',
       bike: 'Rad',
       speed: 'Tempo',
       access: 'Zufahrt & Einbahn',
       other: 'Sonstige',
     },
-    from: 'Von',
-    to: 'Bis',
-    lastYears: (years) => `Letzte ${years} Jahre`,
-    allDates: 'Alle Daten',
   },
   style: {
     heading: 'Kartenstil',

@@ -9,7 +9,11 @@ import {
   type ProviderId,
 } from '@osm-editor-kit/street-imagery'
 import { getLocationOpeners, STREET_IMAGERY_LOCALES } from '@osm-editor-kit/street-imagery'
-import { useMapViewportBbox } from '@osm-editor-kit/street-imagery-react'
+import {
+  PhotoDateRangeFilter,
+  useAllProviderPhotos,
+  useMapViewportBbox,
+} from '@osm-editor-kit/street-imagery-react'
 import { twMerge } from 'tailwind-merge'
 import { ExternalLink } from '@/app/ExternalLink'
 import { useAppSearchNavigation } from '@/app/searchNavigation'
@@ -17,7 +21,6 @@ import type { AppSearch } from '@/app/searchSchema'
 import {
   DEFAULT_MAX_AGE_YEARS,
   DEFAULT_PHOTO_TYPES,
-  defaultDateFrom,
   isProviderId,
   SIGN_GROUP_IDS,
 } from '@/app/searchSchema'
@@ -25,6 +28,7 @@ import { MAIN_MAP_ID } from '@/features/map/constants'
 import { OpenLocationButton } from '@/features/openers/OpenLocationButton'
 import { ProviderLegend } from '@/features/panels/ProviderLegend'
 import { useResizableLeftPanelWidth } from '@/features/panels/useResizableLeftPanelWidth'
+import { APP_START_NOW } from '@/features/styles/ageBuckets'
 import { useAppI18n } from '@/i18n/useAppI18n'
 
 /** Shown after the other providers: little or no coverage for most users. */
@@ -85,6 +89,13 @@ export const LeftPanel = () => {
   } = useAppSearchNavigation()
   const { locale, t } = useAppI18n()
   const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
+  // All photos in view, before the date filter: the marks above the date slider.
+  const { photos: photosInView } = useAllProviderPhotos(
+    search.providers,
+    bbox,
+    map.zoom,
+    search.photoTypes,
+  )
   const activeProviders = new Set(search.providers)
   const currentZoom = map.zoom
   const quickLocation: OpenTarget = { lngLat: [map.lng, map.lat], zoom: map.zoom }
@@ -399,57 +410,13 @@ export const LeftPanel = () => {
                 </fieldset>
               ) : null}
 
-              <div className="grid grid-cols-2 gap-2">
-                <label className="flex flex-col gap-1 text-xs text-slate-600">
-                  {t.filters.from}
-                  <input
-                    className="rounded-md border border-slate-200 px-2 py-1.5 text-sm text-slate-800"
-                    type="date"
-                    value={search.date?.from ?? ''}
-                    onChange={(event) => {
-                      const from = event.target.value || undefined
-                      updateDate({ ...search.date, from })
-                    }}
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-xs text-slate-600">
-                  {t.filters.to}
-                  <input
-                    className="rounded-md border border-slate-200 px-2 py-1.5 text-sm text-slate-800"
-                    type="date"
-                    value={search.date?.to ?? ''}
-                    onChange={(event) => {
-                      const to = event.target.value || undefined
-                      updateDate({ ...search.date, to })
-                    }}
-                  />
-                </label>
-              </div>
-
-              <div className="flex gap-3">
-                {search.date.from !== defaultDateFrom() || search.date.to ? (
-                  <button
-                    className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-900"
-                    type="button"
-                    onClick={() => {
-                      updateDate({ from: defaultDateFrom() })
-                    }}
-                  >
-                    {t.filters.lastYears(DEFAULT_MAX_AGE_YEARS)}
-                  </button>
-                ) : null}
-                {search.date.from || search.date.to ? (
-                  <button
-                    className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-900"
-                    type="button"
-                    onClick={() => {
-                      updateDate({})
-                    }}
-                  >
-                    {t.filters.allDates}
-                  </button>
-                ) : null}
-              </div>
+              <PhotoDateRangeFilter
+                capturedAt={photosInView.map((photo) => photo.capturedAt)}
+                now={APP_START_NOW}
+                onChange={updateDate}
+                recommendedMaxAgeYears={DEFAULT_MAX_AGE_YEARS}
+                value={search.date}
+              />
             </div>
           </section>
 

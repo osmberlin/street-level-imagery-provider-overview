@@ -1,6 +1,7 @@
 import '@/features/map/maplibre-worker'
 import {
   isClickOnlyPhotoProvider,
+  signGroupFilter,
   snapToLine,
   viewpointFromPoint,
   type LngLat,
@@ -10,6 +11,7 @@ import {
   getViewpointSession,
   LocationPickOnMap,
   queryStreetImageryFeatures,
+  SelectedMapFeatureLayer,
   StreetLevelImagerySourcesAndLayers,
   streetImageryInteractiveLayerIds,
   useArmedLocationOpenerId,
@@ -31,8 +33,6 @@ import { MAIN_MAP_ID } from '@/features/map/constants'
 import { exposeMainMapForDebugging } from '@/features/map/exposeMainMapForDebugging'
 import { useMapActions } from '@/features/map/map-store'
 import { rememberWrittenMapViewport } from '@/features/map/mapViewportSync'
-import { SelectedFeatureLayer } from '@/features/map/SelectedFeatureLayer'
-import { signGroupFilter } from '@/features/map/signGroupFilter'
 import {
   geometryLines,
   joinStreetFragments,
@@ -46,6 +46,7 @@ import {
   getMapFeatureStyleDefinition,
   getStyleDefinition,
 } from '@/features/styles/styleDefinitions'
+import { useSelectedFeature } from '@/features/viewer/useSelectedFeature'
 import { useSelectedPhotoForMap } from '@/features/viewer/useSelectedPhotoForMap'
 import { useViewpointPhotos } from '@/features/viewer/useViewpointPhotos'
 
@@ -81,6 +82,7 @@ export const MapRoot = () => {
   const { viewpointsEnabled, viewpoints, suggestions, activeDirectionKey, selectSuggestion } =
     useViewpointPhotos()
   const viewpointLine = useViewpointLine()
+  const selectedFeature = useSelectedFeature()
   const { markMapLoaded } = useMapActions()
   const pickingLocation = useArmedLocationOpenerId() != null
 
@@ -272,7 +274,13 @@ export const MapRoot = () => {
         providers={providers}
         zoom={map.zoom}
       />
-      <SelectedFeatureLayer />
+      <SelectedMapFeatureLayer
+        bbox={bbox}
+        data={selectedFeature.data}
+        providers={providers}
+        shownImage={selectedFeature.shownImage}
+        zoom={map.zoom}
+      />
       {viewpointsEnabled ? (
         <ViewpointLayer
           activeDirectionKey={activeDirectionKey}
