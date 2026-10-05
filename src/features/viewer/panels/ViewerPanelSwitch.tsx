@@ -29,6 +29,13 @@ const StreetsidePanel = lazy(() =>
   })),
 )
 
+// Panoramax's own viewer, kept as a second option: `panoramaxViewer="panoramax"` in the URL.
+const PanoramaxWebViewerPanel = lazy(() =>
+  import('@osm-editor-kit/street-imagery-react/panoramax-web-viewer').then((module) => ({
+    default: module.PanoramaxWebViewerPanel,
+  })),
+)
+
 const PSV_FLAT_PROVIDERS = new Set<ProviderId>(['kartaview', 'mapilio', 'vegbilder'])
 
 type ViewerPanelSwitchProps = {
@@ -59,7 +66,7 @@ export const ViewerPanelSwitch = ({
   lookAt,
 }: ViewerPanelSwitchProps) => {
   const actions = useViewerActions()
-  const { updateSelected } = useAppSearchNavigation()
+  const { search, updateSelected } = useAppSearchNavigation()
   const easeMainMapToPoint = useEaseMainMapToPoint()
 
   useEffect(
@@ -79,6 +86,9 @@ export const ViewerPanelSwitch = ({
         lookAt={lookAt}
         lookAtBearing={lookAtBearing}
         onViewerPhoto={onViewerPhoto}
+        panoramaxPanel={
+          search.panoramaxViewer === 'panoramax' ? PanoramaxWebViewerPanel : undefined
+        }
         photo={photo}
       />
     )
