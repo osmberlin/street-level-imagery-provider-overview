@@ -22,7 +22,7 @@ export const BING_MAPS_KEY = ''
 
 /**
  * The infra3D projects we link to; each gets its own "Open in infra3D …" button. `uid` is the
- * `projectUID` of the infra3D URL, `name` is shown on the button. infra3D asks for a login, so
+ * `projectUID` of the infra3D URL, `label` is shown on the button. infra3D asks for a login, so
  * the ids alone give no access.
  */
 export const INFRA3D_PROJECTS: Infra3dProject[] = [
@@ -30,6 +30,6 @@ export const INFRA3D_PROJECTS: Infra3dProject[] = [
     // infra3D's own name: "Berlin - Alle Daten". Holds the drives of 2025 (iNovitas) and of
     // 2021 and 2022 (Cyclomedia).
     uid: 'ec2428b7-8e49-4d93-80a0-edfec6da1cf3',
-    name: 'Berlin 2025 + 2021/22',
+    label: 'infra3D Berlin 2025 + 2021/22',
   },
 ]
