@@ -111,11 +111,6 @@ export const appSearchSchema = z.object({
     .catch([...SIGN_GROUP_IDS]),
   /** Map toggle: show clickable streets and suggest views for clicks on streets and spots. */
   streetViews: z.enum(['on', 'off']).default('off').catch('off'),
-  /**
-   * Viewer for Panoramax photos: the Mapillary viewer (default) or Panoramax's own. No control in
-   * the app; set `panoramaxViewer="panoramax"` in the URL to compare the two.
-   */
-  panoramaxViewer: z.enum(['mapillary', 'panoramax']).default('mapillary').catch('mapillary'),
   /** Language of the texts and dates. */
   locale: z
     .enum(STREET_IMAGERY_LOCALES)
@@ -166,10 +161,6 @@ export const serializeAppSearch = (search: AppSearch): Record<string, unknown> =
 
   if (search.streetViews === 'on') {
     serialized.streetViews = search.streetViews
-  }
-
-  if (search.panoramaxViewer !== 'mapillary') {
-    serialized.panoramaxViewer = search.panoramaxViewer
   }
 
   if (search.locale !== DEFAULT_STREET_IMAGERY_LOCALE) {

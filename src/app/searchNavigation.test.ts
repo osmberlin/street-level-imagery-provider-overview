@@ -13,7 +13,6 @@ const baseSearch: AppSearch = {
   leftPanel: 'open',
   date: {},
   streetViews: 'off',
-  panoramaxViewer: 'mapillary',
   signGroups: ['bike', 'speed', 'access', 'other'],
 }
 

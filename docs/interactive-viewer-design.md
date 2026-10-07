@@ -34,12 +34,12 @@ metadata `<dl>` + external link stay below the panel.
 | providerId                    | isPano                   | Panel              | Library                                                   | prev/next                                      |
 | ----------------------------- | ------------------------ | ------------------ | --------------------------------------------------------- | ---------------------------------------------- |
 | mapillary                     | any                      | `MapillaryPanel`   | `mapillary-js@^4.1.2`                                     | native sequence component                      |
-| panoramax                     | any                      | `PanoramaxPanel`   | `@panoramax/web-viewer@^5.1.2` `<pnx-photo-viewer>`       | native                                         |
+| panoramax                     | any                      | `PanoramaxPanel`   | `mapillary-js` with a `PanoramaxDataProvider`             | native sequence component                      |
 | streetside                    | always pano              | `StreetsidePanel`  | PSV core + `cubemap-tiles-adapter`                        | virtual-tour arrows (nearby bubbles)           |
 | mapilio, vegbilder, kartaview | pano (`isPano === true`) | `PsvEquirectPanel` | `@photo-sphere-viewer/core@^5.14` + `virtual-tour-plugin` | virtual-tour GPS-mode arrows from group photos |
 | mapilio, vegbilder, kartaview | flat / unknown           | `FlatPhotoPanel`   | none (pointer pan + wheel zoom, ~100 lines)               | existing card buttons                          |
 
-New deps: `mapillary-js`, `@panoramax/web-viewer`, `@photo-sphere-viewer/core`,
+New deps: `mapillary-js`, `@photo-sphere-viewer/core`,
 `@photo-sphere-viewer/cubemap-tiles-adapter`, `@photo-sphere-viewer/virtual-tour-plugin`,
 `zustand@^5`. All viewers are framework-agnostic: mount into a `div` ref inside `useEffect`, keep
 the instance in a ref (never state), `remove()/destroy()` on cleanup, `resize()` on container

@@ -18,5 +18,3 @@ declare global {
 }
 
 export {}
-
-declare module '@panoramax/web-viewer' {}

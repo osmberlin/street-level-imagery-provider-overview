@@ -80,7 +80,6 @@ updates:
           - 'zod'
           - 'zustand'
           - 'mapillary-js'
-          - '@panoramax/*'
           - '@photo-sphere-viewer/*'
           - '@osm-editor-kit/*'
         update-types:
@@ -105,7 +104,6 @@ updates:
           - 'zod'
           - 'zustand'
           - 'mapillary-js'
-          - '@panoramax/*'
           - '@photo-sphere-viewer/*'
           - '@osm-editor-kit/*'
 
