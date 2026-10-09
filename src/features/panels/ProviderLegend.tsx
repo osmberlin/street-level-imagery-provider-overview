@@ -1,4 +1,4 @@
-import { mapFeatureMatchesDateRange, photoMatchesFilters } from '@osm-editor-kit/street-imagery'
+import { mapFeatureMatchesDateRange, photoFilter } from '@osm-editor-kit/street-imagery'
 import type { Bbox } from '@osm-editor-kit/street-imagery'
 import { providerById, type ProviderId } from '@osm-editor-kit/street-imagery'
 import { useProviderMapFeatures, useProviderPhotos } from '@osm-editor-kit/street-imagery-react'
@@ -38,7 +38,7 @@ export const ProviderLegend = ({
     ? getMapFeatureStyleDefinition(style)
     : getStyleDefinition(style)
 
-  const filteredPhotos = photos.filter((photo) => photoMatchesFilters(photo, photoTypes, date))
+  const filteredPhotos = photos.filter(photoFilter(photoTypes, date))
   const filteredMapFeatures = mapFeatures.filter((feature) =>
     mapFeatureMatchesDateRange(feature, date),
   )

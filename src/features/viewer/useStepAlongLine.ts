@@ -49,7 +49,7 @@ export const useStepAlongLine = (
 ) => {
   const line = useViewpointLine()
   const { map, search } = useAppSearchNavigation()
-  const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
+  const bbox = useMapViewportBbox(MAIN_MAP_ID)
   const { photos } = useAllProviderPhotos(
     ['mapillary'],
     line ? bbox : null,

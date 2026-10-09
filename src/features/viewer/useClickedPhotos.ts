@@ -24,7 +24,7 @@ export type ClickedPhotosResult = {
 
 export const useClickedPhotos = (): ClickedPhotosResult => {
   const { map, search } = useAppSearchNavigation()
-  const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
+  const bbox = useMapViewportBbox(MAIN_MAP_ID)
   const { clicked, providers, photoTypes, date } = search
 
   const {

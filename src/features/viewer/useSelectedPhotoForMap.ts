@@ -23,7 +23,7 @@ export const useSelectedPhotoForMap = (): {
   }
 } => {
   const { map, search } = useAppSearchNavigation()
-  const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
+  const bbox = useMapViewportBbox(MAIN_MAP_ID)
   const { selected, providers, photoTypes, date } = search
 
   const { photos: allPhotos } = useAllProviderPhotos(providers, bbox, map.zoom, photoTypes, date)

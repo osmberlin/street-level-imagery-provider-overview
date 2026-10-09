@@ -6,8 +6,8 @@
       "name": "street-level-imagery-provider-overview",
       "dependencies": {
         "@mapbox/vector-tile": "^3.0.0",
-        "@osm-editor-kit/street-imagery": "0.1.0-alpha.8",
-        "@osm-editor-kit/street-imagery-react": "0.1.0-alpha.10",
+        "@osm-editor-kit/street-imagery": "0.1.0-alpha.10",
+        "@osm-editor-kit/street-imagery-react": "0.1.0-alpha.13",
         "@photo-sphere-viewer/core": "^5.15.1",
         "@photo-sphere-viewer/cubemap-adapter": "^5.15.1",
         "@photo-sphere-viewer/cubemap-tiles-adapter": "^5.15.1",
@@ -175,9 +175,9 @@
 
     "@mdn/browser-compat-data": ["@mdn/browser-compat-data@6.1.5", "", {}, "sha512-PzdZZzRhcXvKB0begee28n5lvwAcinGKYuLZOVxHAZm+n7y01ddEGfdS1ZXRuVcV+ndG6mSEAE8vgudom5UjYg=="],
 
-    "@osm-editor-kit/street-imagery": ["@osm-editor-kit/street-imagery@0.1.0-alpha.8", "", { "dependencies": { "@mapbox/vector-tile": "^3.0.0", "date-fns": "^4.4.0", "pbf": "^5.1.0" } }, "sha512-6u/IGZSKZuMVae7BsjVX9CtrF0vSo/cg5oRHZSr2xTxM+mdx4qIaAM0kVZFeN6locnjkD/SiIbYUCBwHpDySkw=="],
+    "@osm-editor-kit/street-imagery": ["@osm-editor-kit/street-imagery@0.1.0-alpha.10", "", { "dependencies": { "@mapbox/vector-tile": "^3.0.0", "date-fns": "^4.4.0", "pbf": "^5.1.0" } }, "sha512-pYDjVLgyKP4V+WFEhgfvK/J5+jUvH+0kGz4CokjNukGnxBNc7zu/LKmp/NzHEY7G9i0VNA+6OXC/SyqG/kRS8w=="],
 
-    "@osm-editor-kit/street-imagery-react": ["@osm-editor-kit/street-imagery-react@0.1.0-alpha.10", "", { "peerDependencies": { "@osm-editor-kit/street-imagery": "^0.1.0-alpha.8", "@panoramax/web-viewer": "^5", "@tanstack/react-query": "^5", "mapillary-js": "^4", "maplibre-gl": "^6", "react": "^19", "react-dom": "^19", "react-map-gl": "^8", "zustand": "^5" }, "optionalPeers": ["@panoramax/web-viewer"] }, "sha512-i4gMo4siiKuqm8RPqH1xdFRbzl9g6wEeufCEqM6ByHAIHq/S+0JzVyDIVwrPNeQZ3bChcZKSDCzpREesDPdE8w=="],
+    "@osm-editor-kit/street-imagery-react": ["@osm-editor-kit/street-imagery-react@0.1.0-alpha.13", "", { "peerDependencies": { "@osm-editor-kit/street-imagery": "^0.1.0-alpha.10", "@panoramax/web-viewer": "^5", "@tanstack/react-query": "^5", "mapillary-js": "^4", "maplibre-gl": "^6", "react": "^19", "react-dom": "^19", "react-map-gl": "^8", "zustand": "^5" }, "optionalPeers": ["@panoramax/web-viewer"] }, "sha512-GN1E28TosbKjLewHnfjfxljqTBJ/RtbSVRNMWXAZT8z+SvikTXk1Fqb8X1RabVuRD8L8A3TFR0toRlyScIDZMQ=="],
 
     "@oxc-project/types": ["@oxc-project/types@0.151.0", "", {}, "sha512-J1yXrIlNDZVzE3ada310xeAw7nH8yCAyLPuUIsjKatFPmfn5bS1oW+cM+QsGOtVWd5nhSpbwZWx/rue+r5Z+PA=="],
 

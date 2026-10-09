@@ -88,7 +88,7 @@ export const LeftPanel = () => {
     updateSearch,
   } = useAppSearchNavigation()
   const { locale, t } = useAppI18n()
-  const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
+  const bbox = useMapViewportBbox(MAIN_MAP_ID)
   // All photos in view, before the date filter: the marks above the date slider.
   const { photos: photosInView } = useAllProviderPhotos(
     search.providers,

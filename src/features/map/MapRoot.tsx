@@ -75,7 +75,7 @@ export { MAIN_MAP_ID } from '@/features/map/constants'
 export const MapRoot = () => {
   const { map, search, updateMapViewport, updateSearch } = useAppSearchNavigation()
   const { providers, style, photoTypes, date, signGroups } = search
-  const bbox = useMapViewportBbox(MAIN_MAP_ID, map)
+  const bbox = useMapViewportBbox(MAIN_MAP_ID)
   const { selectedPhoto, selectedSequenceId, viewerPov } = useSelectedPhotoForMap()
   const [cursor, setCursor] = useState('grab')
   const [hoveredStreet, setHoveredStreet] = useState<LngLat[] | null>(null)
